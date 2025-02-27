@@ -1,5 +1,6 @@
 package com.likelion.attserver.Entity;
 
+import com.likelion.attserver.DTO.UserDTO;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,11 +15,10 @@ import java.util.List;
 @AllArgsConstructor
 public class UserEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
-    private Long studentId;
+    @Column(nullable = false)
+    private String password;
 
     @Column(nullable = false)
     private String name;
@@ -33,5 +33,13 @@ public class UserEntity {
     public enum Role {
         ADMIN, // 운영자
         STUDENT // 학생
+    }
+
+    public static UserDTO toDTO(UserEntity userEntity) {
+        return UserDTO.builder()
+                .id(userEntity.getId())
+                .name(userEntity.getName())
+                .role(userEntity.getRole())
+                .build();
     }
 }
