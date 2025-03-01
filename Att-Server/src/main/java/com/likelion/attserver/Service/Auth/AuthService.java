@@ -3,9 +3,9 @@ package com.likelion.attserver.Service.Auth;
 import com.likelion.attserver.DTO.AuthDTO;
 import com.likelion.attserver.DTO.UserDTO;
 
-import java.util.Map;
+import java.util.LinkedHashMap;
 
 public interface AuthService {
     UserDTO signup(AuthDTO user);
-    Map<String,Object> getDetails(String username);
+    LinkedHashMap<String,Object> getDetails(String username);
 }
