@@ -2,7 +2,6 @@ package com.likelion.attserver.DAO.Attendance;
 
 import com.likelion.attserver.Entity.AttendanceEntity;
 import com.likelion.attserver.Entity.UserEntity;
-import com.likelion.attserver.Repository.AttendanceRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -14,7 +13,6 @@ import java.util.List;
 @Transactional
 @RequiredArgsConstructor
 public class AttendanceDAOImpl implements AttendanceDAO {
-    private final AttendanceRepository attendanceRepository;
 
     @Override
     public List<AttendanceEntity> addAttendances(List<UserEntity> users) {

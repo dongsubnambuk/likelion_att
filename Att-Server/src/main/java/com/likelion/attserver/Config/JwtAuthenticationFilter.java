@@ -24,14 +24,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String path = request.getRequestURI();
+        String method = request.getMethod();
 
         // JWT 검증을 생략할 경로 설정
         if (path.equals("/api/auth") ||
                 path.equals("/api/auth/signin") ||
                 path.equals("/api/team/all") ||
                 path.equals("/api/user") ||
-                path.equals("/api/user/all") ||
-                path.startsWith("/api/schedules")) {
+                path.equals("/api/user/all")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -56,14 +56,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        // JWT에서 ROLE 정보 가져오기
-        UserEntity.Role role = jwtUtil.getRoleFromToken(token);
-        if (role != UserEntity.Role.ADMIN) { // ADMIN이 아니면 차단
-            response.setStatus(HttpStatus.FORBIDDEN.value());
-            response.setContentType("application/json");
-            String errorMessage = "{ \"message\": \"Access Denied: Admin role required\" }";
-            response.getWriter().write(errorMessage);
-            return;
+        if((path.equals("/api/schedules") && method.equals("POST")) ||
+                (path.equals("/api/team") && method.equals("POST"))) {
+            // JWT에서 ROLE 정보 가져오기
+            UserEntity.Role role = jwtUtil.getRoleFromToken(token);
+            if (role != UserEntity.Role.ADMIN) { // ADMIN이 아니면 차단
+                response.setStatus(HttpStatus.FORBIDDEN.value());
+                response.setContentType("application/json");
+                String errorMessage = "{ \"message\": \"Access Denied: Admin role required\" }";
+                response.getWriter().write(errorMessage);
+                return;
+            }
         }
 
         filterChain.doFilter(request, response);

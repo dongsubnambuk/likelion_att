@@ -1,6 +1,5 @@
 package com.likelion.attserver.Entity;
 
-import com.likelion.attserver.DTO.AuthDTO;
 import com.likelion.attserver.DTO.UserDTO;
 import jakarta.persistence.*;
 import lombok.*;
