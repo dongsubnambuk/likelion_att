@@ -46,9 +46,9 @@ public class Auth {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(id, password));
 
             final UserDetails userDetails = customUserDetailsService.loadUserByUsername(id.toString());
-            final String token = jwtTokenUtil.generateToken(userDetails.getUsername());
-
             Map<String, Object> response = authService.getDetails(userDetails.getUsername()); // id가 username 으로 저장됨.
+            final String token = jwtTokenUtil.generateToken(userDetails.getUsername(), response.get("role"));
+
             response.put("token", token);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
