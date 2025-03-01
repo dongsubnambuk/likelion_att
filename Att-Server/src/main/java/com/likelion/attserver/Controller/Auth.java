@@ -1,10 +1,10 @@
 package com.likelion.attserver.Controller;
 
 import com.likelion.attserver.DTO.StatusDTO;
-import com.likelion.attserver.DTO.UserDTO;
+import com.likelion.attserver.DTO.AuthDTO;
 import com.likelion.attserver.JWT.CustomUserDetailsService;
 import com.likelion.attserver.JWT.JwtTokenUtil;
-import com.likelion.attserver.Service.AuthService;
+import com.likelion.attserver.Service.Auth.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,11 +12,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin("http://localhost")
 @RequiredArgsConstructor
 public class Auth {
     private final AuthenticationManager authenticationManager;
@@ -24,8 +24,9 @@ public class Auth {
     private final JwtTokenUtil jwtTokenUtil;
     private final AuthService authService;
 
+    // 회갑
     @PostMapping
-    public ResponseEntity<?> signup(@RequestBody UserDTO user) {
+    public ResponseEntity<?> signup(@RequestBody AuthDTO user) {
         try {
             return ResponseEntity.ok(StatusDTO
                     .builder()
@@ -38,12 +39,13 @@ public class Auth {
         }
     }
 
+    // 로긴
     @PostMapping("/signin")
     public ResponseEntity<?> signin(@RequestParam Long id, @RequestParam String password) {
         try{
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(id, password));
 
-            final UserDetails userDetails = customUserDetailsService.loadUserByUsername(id);
+            final UserDetails userDetails = customUserDetailsService.loadUserByUsername(id.toString());
             final String token = jwtTokenUtil.generateToken(userDetails.getUsername());
 
             Map<String, Object> response = authService.getDetails(userDetails.getUsername()); // id가 username 으로 저장됨.
@@ -56,4 +58,3 @@ public class Auth {
         }
     }
 }
-

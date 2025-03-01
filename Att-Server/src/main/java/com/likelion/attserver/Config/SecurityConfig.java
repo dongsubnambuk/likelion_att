@@ -9,9 +9,11 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -21,48 +23,32 @@ import java.util.Arrays;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebSecurity // WebSecurity 설정을 사용
 @RequiredArgsConstructor
 public class SecurityConfig {
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .authorizeHttpRequests(authorizeRequests ->
-                        authorizeRequests
-
-                                // POST 요청만 허용
-                                .requestMatchers(HttpMethod.POST,
-                                        "/todo/auth/sign-up",
-                                        "/todo/auth/sign-in",
-                                        "/todo/todo",
-                                        "/todo/category",
-                                        "/todo/todo/sympathy")
-                                .permitAll()
-
-                                // GET 요청만 허용
-                                .requestMatchers(HttpMethod.GET,
-                                        "/todo/todo/user")
-                                .permitAll()
-
-                                .requestMatchers(HttpMethod.PATCH,
-                                        "/todo/category")
-                                .permitAll()
-
-                                .requestMatchers(HttpMethod.PUT,
-                                        "/todo/todo/sympathy")
-                                .permitAll()
-
-                                .requestMatchers(HttpMethod.DELETE,
-                                        "/todo/category",
-                                        "/todo/todo")
-                                .permitAll()
-                                // 그 외의 요청은 인증 필요
-                                .anyRequest().authenticated()
+                .csrf(AbstractHttpConfigurer::disable) // CSRF 비활성화
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 비활성화
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.POST, "/api/auth",
+                                "/api/auth/signin",
+                                "/api/team").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/user/all",
+                                "/api/user",
+                                "/api/team",
+                                "/api/team/all").permitAll()
+                        .requestMatchers(HttpMethod.PATCH, "/todo/category").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/todo/todo/sympathy").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/todo/category", "/todo/todo").permitAll()
+                        .anyRequest().authenticated()
                 )
-                .formLogin(withDefaults())
-                .logout(withDefaults())
-                .csrf(AbstractHttpConfigurer::disable) // CSRF 보호 비활성화
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // JWT 필터 추가
                 .cors(withDefaults());
+
         return http.build();
     }
 

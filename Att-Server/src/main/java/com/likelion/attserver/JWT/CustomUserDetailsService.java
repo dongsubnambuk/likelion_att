@@ -13,12 +13,13 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
-public abstract class CustomUserDetailsService implements UserDetailsService {
+public class CustomUserDetailsService implements UserDetailsService {
     private final UserRepository userRepository;
 
-    public UserDetails loadUserByUsername(Long id) throws UsernameNotFoundException {
+    @Override
+    public UserDetails loadUserByUsername(String id) throws UsernameNotFoundException {
         // 먼저 사용자 찾기
-        UserEntity user = userRepository.findById(id).orElse(null);
+        UserEntity user = userRepository.findById(Long.parseLong(id)).orElse(null);
 
         return new org.springframework.security.core.userdetails.User(
                     Objects.requireNonNull(user).getId().toString(),

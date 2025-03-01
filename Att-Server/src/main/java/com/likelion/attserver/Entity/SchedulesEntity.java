@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @Entity
 @Table(name = "Schedules")
@@ -23,4 +24,7 @@ public class SchedulesEntity {
 
     @Column(nullable = false)
     private LocalTime time;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    private List<AttendanceEntity> attendances;
 }
