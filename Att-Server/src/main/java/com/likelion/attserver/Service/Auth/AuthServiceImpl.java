@@ -6,7 +6,7 @@ import com.likelion.attserver.DTO.UserDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
+import java.util.LinkedHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +23,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public Map<String, Object> getDetails(String username) {
+    public LinkedHashMap<String, Object> getDetails(String username) {
         try{
             return userDAO.findDetails(username);
         } catch (Exception e) {

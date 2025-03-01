@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,11 +35,11 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public Map<String, Object> findDetails(String id) {
+    public LinkedHashMap<String, Object> findDetails(String id) {
         UserEntity user = userRepository.findById(Long.parseLong(id))
                 .orElseThrow(() -> new IllegalArgumentException("잘못된 ID"));
 
-        Map<String, Object> details = new HashMap<>();
+        LinkedHashMap<String, Object> details = new LinkedHashMap<>();
         details.put("id", id);
         details.put("name", user.getName());
         details.put("role", user.getRole());
