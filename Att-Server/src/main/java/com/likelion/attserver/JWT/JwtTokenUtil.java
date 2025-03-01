@@ -1,5 +1,7 @@
 package com.likelion.attserver.JWT;
 
+import com.likelion.attserver.Entity.UserEntity;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -19,8 +21,9 @@ public class JwtTokenUtil {
         this.secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
     }
 
-    public String generateToken(String username) {
+    public String generateToken(String username, Object role) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("role", role);
         return doGenerateToken(claims, username);
     }
 
@@ -34,14 +37,17 @@ public class JwtTokenUtil {
                 .compact();
     }
 
-    public String getEmailFromToken(String token) {
-        return Jwts.parserBuilder()
+    public UserEntity.Role getRoleFromToken(String token) {
+        Claims claims = Jwts.parserBuilder()
                 .setSigningKey(secretKey)
                 .build()
                 .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+                .getBody();
+
+        String roleStr = claims.get("role", String.class); // "role" 클레임 가져오기
+        return UserEntity.Role.valueOf(roleStr); // 문자열을 Enum으로 변환
     }
+
 
     public boolean validateToken(String token) {
         try {
