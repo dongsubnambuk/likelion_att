@@ -36,11 +36,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/api/auth",
                                 "/api/auth/signin",
-                                "/api/team").permitAll()
+                                "/api/team",
+                                "/api/schedules").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/user/all",
                                 "/api/user",
                                 "/api/team",
-                                "/api/team/all").permitAll()
+                                "/api/team/all",
+                                "/api/schedules").permitAll()
                         .requestMatchers(HttpMethod.PATCH, "/todo/category").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/todo/todo/sympathy").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/todo/category", "/todo/todo").permitAll()
