@@ -20,7 +20,6 @@ import java.util.*;
 @Transactional
 @RequiredArgsConstructor
 public class SchedulesDAOImpl implements SchedulesDAO {
-    private final SchedulesRepository schedulesRepository;
     private final TeamRepository teamRepository;
     private final AttendanceDAO attendanceDAO;
 
