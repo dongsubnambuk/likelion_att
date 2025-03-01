@@ -1,5 +1,6 @@
-package com.likelion.attserver.DAO;
+package com.likelion.attserver.DAO.User;
 
+import com.likelion.attserver.DTO.AuthDTO;
 import com.likelion.attserver.DTO.UserDTO;
 import com.likelion.attserver.Entity.UserEntity;
 import com.likelion.attserver.Repository.UserRepository;
@@ -9,8 +10,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -20,7 +21,7 @@ public class UserDAOImpl implements UserDAO {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public UserDTO addUser(UserDTO user) {
+    public AuthDTO addUser(AuthDTO user) {
         if(userRepository.existsById(user.getId()))
             throw new IllegalArgumentException("이미 존재하는 학생");
         UserEntity userEntity = UserEntity.builder()
@@ -42,5 +43,18 @@ public class UserDAOImpl implements UserDAO {
         details.put("name", user.getName());
         details.put("role", user.getRole());
         return details;
+    }
+
+    @Override
+    public List<UserDTO> getUserByRole(String role) {
+        return userRepository.findByRole(UserEntity.Role.valueOf(role));
+    }
+
+    @Override
+    public Map<String, Object> userMap() throws IllegalStateException{
+        Map<String, Object> userMap = new HashMap<>();
+        userMap.put("admin", userRepository.findByRole(UserEntity.Role.ADMIN));
+        userMap.put("users", userRepository.findByRole(UserEntity.Role.STUDENT));
+        return userMap;
     }
 }

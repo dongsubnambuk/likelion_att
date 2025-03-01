@@ -1,7 +1,7 @@
-package com.likelion.attserver.Service;
+package com.likelion.attserver.Service.Auth;
 
-import com.likelion.attserver.DAO.UserDAO;
-import com.likelion.attserver.DTO.UserDTO;
+import com.likelion.attserver.DAO.User.UserDAO;
+import com.likelion.attserver.DTO.AuthDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +13,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserDAO userDAO;
 
     @Override
-    public UserDTO signup(UserDTO user){
+    public AuthDTO signup(AuthDTO user){
         try {
             return userDAO.addUser(user);
         } catch (Exception e) {

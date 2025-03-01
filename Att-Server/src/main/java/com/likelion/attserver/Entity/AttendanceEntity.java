@@ -15,9 +15,9 @@ public class AttendanceEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "schedulesId", referencedColumnName = "id", nullable = false)
-    private SchedulesEntity schedules;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "userId", referencedColumnName = "id", nullable = false)
+    private UserEntity user;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
