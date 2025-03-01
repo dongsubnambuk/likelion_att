@@ -1,6 +1,7 @@
 package com.likelion.attserver.Entity;
 
 import com.likelion.attserver.DTO.AuthDTO;
+import com.likelion.attserver.DTO.UserDTO;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -30,9 +31,9 @@ public class UserEntity {
         STUDENT // 학생
     }
 
-    public static AuthDTO toDTO(UserEntity userEntity) {
-        return AuthDTO.builder()
-                .id(userEntity.getId())
+    public static UserDTO toDTO(UserEntity userEntity) {
+        return UserDTO.builder()
+                .studentId(userEntity.getId())
                 .name(userEntity.getName())
                 .role(userEntity.getRole())
                 .build();

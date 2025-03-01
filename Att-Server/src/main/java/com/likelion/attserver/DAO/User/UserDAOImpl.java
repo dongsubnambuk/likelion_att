@@ -21,7 +21,7 @@ public class UserDAOImpl implements UserDAO {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public AuthDTO addUser(AuthDTO user) {
+    public UserDTO addUser(AuthDTO user) {
         if(userRepository.existsById(user.getId()))
             throw new IllegalArgumentException("이미 존재하는 학생");
         UserEntity userEntity = UserEntity.builder()

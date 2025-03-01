@@ -1,5 +1,6 @@
 package com.likelion.attserver.Entity;
 
+import com.likelion.attserver.DTO.AttendanceDTO;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -31,5 +32,14 @@ public class AttendanceEntity {
         PRESENT, // 출석
         LATE, // 지각
         ABSENT // 결석
+    }
+
+    public static AttendanceDTO toDTO(AttendanceEntity attendance){
+        AttendanceDTO attendanceDTO = new AttendanceDTO();
+        attendanceDTO.setId(attendance.getId());
+        attendanceDTO.setUser(UserEntity.toDTO(attendance.getUser()));
+        attendanceDTO.setNote(attendance.getNote());
+        attendanceDTO.setStatus(attendance.getStatus());
+        return attendanceDTO;
     }
 }

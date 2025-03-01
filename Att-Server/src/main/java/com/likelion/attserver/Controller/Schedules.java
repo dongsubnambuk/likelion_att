@@ -27,4 +27,15 @@ public class Schedules {
                             .build());
         }
     }
+
+    @GetMapping
+    public ResponseEntity<?> getSchedules(@RequestParam Long teamId) {
+        try{
+            return ResponseEntity.ok(schedulesService.getSchedules(teamId));
+        } catch (Exception e) {
+            return ResponseEntity.status(404).body(StatusDTO.builder()
+                            .content(e.getMessage())
+                            .build());
+        }
+    }
 }
