@@ -42,9 +42,10 @@ public class TeamDAOImpl implements TeamDAO {
                 boolean exists = teamEntity.getUsers().stream()
                         .anyMatch(user -> user.getId().equals(data));
 
+                UserEntity user = userRepository.findById(data)
+                        .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
                 if (!exists) {
-                    UserEntity user = userRepository.findById(data)
-                            .orElseThrow(() -> new IllegalArgumentException("User not found"));
                     teamEntity.getUsers().add(user);
 
                     // 이미 있는 스케쥴에 출석 추가
@@ -52,9 +53,6 @@ public class TeamDAOImpl implements TeamDAO {
                         schedule.getAttendances().add(attendanceDAO.addAttendance(user));
                     }
                 } else {
-                    UserEntity user = userRepository.findById(data)
-                            .orElseThrow(() -> new IllegalArgumentException("User not found"));
-
                     teamEntity.getSchedules().forEach(schedule ->
                             schedule.getAttendances().removeIf(attendanceEntity ->
                                     attendanceEntity.getUser().equals(user)
