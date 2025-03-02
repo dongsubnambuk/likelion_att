@@ -2,7 +2,6 @@ package com.likelion.attserver.DAO.Team;
 
 import com.likelion.attserver.DAO.Attendance.AttendanceDAO;
 import com.likelion.attserver.DTO.UserDTO;
-import com.likelion.attserver.Entity.AttendanceEntity;
 import com.likelion.attserver.Entity.SchedulesEntity;
 import com.likelion.attserver.Entity.TeamEntity;
 import com.likelion.attserver.Entity.UserEntity;
@@ -99,5 +98,12 @@ public class TeamDAOImpl implements TeamDAO {
         }
 
         return teamMap;
+    }
+
+    @Override
+    public void removeTeam(Long teamId) {
+        TeamEntity team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("Team not found"));
+        teamRepository.delete(team);
     }
 }

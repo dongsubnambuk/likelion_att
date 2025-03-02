@@ -42,4 +42,13 @@ public class TeamServiceImpl implements TeamService {
             throw new IllegalStateException(e.getMessage());
         }
     }
+
+    @Override
+    public void deleteTeam(Long teamId) {
+        try {
+            teamDAO.removeTeam(teamId);
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage());
+        }
+    }
 }

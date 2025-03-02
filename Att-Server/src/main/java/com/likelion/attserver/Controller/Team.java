@@ -51,4 +51,18 @@ public class Team {
                             .build());
         }
     }
+
+    @DeleteMapping
+    public ResponseEntity<?> deleteTeam(@RequestParam Long teamId) {
+        try {
+            teamService.deleteTeam(teamId);
+            return ResponseEntity.ok(StatusDTO.builder()
+                            .content("Successfully deleted team " + teamId)
+                            .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(404).body(StatusDTO.builder()
+                            .content(e.getMessage())
+                            .build());
+        }
+    }
 }

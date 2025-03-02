@@ -9,4 +9,5 @@ public interface TeamService {
     Map<String, Long> createTeam(Long teamId, List<Long> teamData);
     List<UserDTO> getTeam(Long teamId);
     Map<Long, List<UserDTO>> getAllTeam();
+    void deleteTeam(Long teamId);
 }

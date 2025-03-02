@@ -44,9 +44,10 @@ public class SecurityConfig {
                                 "/api/team/all",
                                 "/api/schedules",
                                 "/api/schedules/all").permitAll()
-                        .requestMatchers(HttpMethod.PATCH, "/todo/category").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/todo/todo/sympathy").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/api/schedules").permitAll()
+                        .requestMatchers(HttpMethod.PATCH, "/api/att").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/att").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/api/schedules",
+                                "/api/team").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // JWT 필터 추가
