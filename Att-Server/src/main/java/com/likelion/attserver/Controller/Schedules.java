@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/schedules")
-@CrossOrigin("http://localhost")
+@CrossOrigin("http://127.0.0.1:3000")
 @RequiredArgsConstructor
 public class Schedules {
     private final SchedulesService schedulesService;

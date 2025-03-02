@@ -10,7 +10,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/team")
-@CrossOrigin("http://localhost")
+@CrossOrigin("http://127.0.0.1:3000")
 @RequiredArgsConstructor
 public class Team {
     private final TeamService teamService;
