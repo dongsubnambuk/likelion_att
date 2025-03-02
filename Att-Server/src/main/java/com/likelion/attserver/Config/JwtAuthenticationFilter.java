@@ -28,10 +28,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // JWT 검증을 생략할 경로 설정
         if (path.equals("/api/auth") ||
-                path.equals("/api/auth/signin") ||
-                path.equals("/api/team/all") ||
-                path.equals("/api/user") ||
-                path.equals("/api/user/all")) {
+                path.equals("/api/auth/signin")) {
             filterChain.doFilter(request, response);
             return;
         }
