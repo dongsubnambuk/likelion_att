@@ -8,4 +8,6 @@ import java.util.List;
 public interface SchedulesDAO {
     void addSchedule(Long teamId, SchedulesDTO schedules);
     List<LinkedHashMap<String, Object>> getSchedules(Long teamId);
+    LinkedHashMap<String, List<LinkedHashMap<String, Object>>> getAllSchedules();
+    void removeSchedule(Long teamId, Long id);
 }

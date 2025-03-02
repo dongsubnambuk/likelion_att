@@ -25,4 +25,12 @@ public class AttendanceDAOImpl implements AttendanceDAO {
         }
         return attendances;
     }
+
+    @Override
+    public AttendanceEntity addAttendance(UserEntity user) {
+        return AttendanceEntity.builder()
+                .user(user)
+                .status(AttendanceEntity.Status.NOT)
+                .build();
+    }
 }

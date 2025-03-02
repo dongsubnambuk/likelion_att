@@ -16,7 +16,7 @@ public class Schedules {
 
     @PostMapping
     public ResponseEntity<?> createSchedule(@RequestParam Long teamId, @RequestBody SchedulesDTO schedule) {
-        try{
+        try {
             schedulesService.createSchedule(teamId, schedule);
             return ResponseEntity.ok(StatusDTO.builder()
                             .content("Schedule created")
@@ -30,10 +30,35 @@ public class Schedules {
 
     @GetMapping
     public ResponseEntity<?> getSchedules(@RequestParam Long teamId) {
-        try{
+        try {
             return ResponseEntity.ok(schedulesService.getSchedules(teamId));
         } catch (Exception e) {
             return ResponseEntity.status(404).body(StatusDTO.builder()
+                            .content(e.getMessage())
+                            .build());
+        }
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllSchedules() {
+        try {
+            return ResponseEntity.ok(schedulesService.getAllSchedules());
+        } catch (Exception e) {
+            return ResponseEntity.status(403).body(StatusDTO.builder()
+                            .content(e.getMessage())
+                            .build());
+        }
+    }
+
+    @DeleteMapping
+    public ResponseEntity<?> deleteSchedule(@RequestParam Long teamId, @RequestParam Long id) {
+        try {
+            schedulesService.deleteSchedule(teamId, id);
+            return ResponseEntity.ok(StatusDTO.builder()
+                            .content("Schedule deleted")
+                            .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(403).body(StatusDTO.builder()
                             .content(e.getMessage())
                             .build());
         }
