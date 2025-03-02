@@ -9,4 +9,5 @@ public interface TeamDAO {
     Long addTeam(Long teamId, List<Long> teamData);
     List<UserDTO> getTeam(Long teamId);
     Map<Long, List<UserDTO>> getTeams();
+    void removeTeam(Long teamId);
 }

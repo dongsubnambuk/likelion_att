@@ -58,7 +58,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if((path.equals("/api/schedules") && method.equals("POST")) ||
                 (path.equals("/api/team") && method.equals("POST")) ||
-                (path.equals("/api/schedules") && method.equals("DELETE"))) {
+                (path.equals("/api/schedules") && method.equals("DELETE")) ||
+                (path.equals("/api/att") && method.equals("PUT")) ||
+                (path.equals("/api/team") && method.equals("DELETE"))) {
             // JWT에서 ROLE 정보 가져오기
             UserEntity.Role role = jwtUtil.getRoleFromToken(token);
             if (role != UserEntity.Role.ADMIN) { // ADMIN이 아니면 차단
