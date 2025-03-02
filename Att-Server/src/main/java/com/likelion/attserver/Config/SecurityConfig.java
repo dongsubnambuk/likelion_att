@@ -42,10 +42,11 @@ public class SecurityConfig {
                                 "/api/user",
                                 "/api/team",
                                 "/api/team/all",
-                                "/api/schedules").permitAll()
+                                "/api/schedules",
+                                "/api/schedules/all").permitAll()
                         .requestMatchers(HttpMethod.PATCH, "/todo/category").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/todo/todo/sympathy").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/todo/category", "/todo/todo").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/api/schedules").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // JWT 필터 추가

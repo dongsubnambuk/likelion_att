@@ -6,7 +6,6 @@ import com.likelion.attserver.DTO.SchedulesDTO;
 import com.likelion.attserver.Entity.AttendanceEntity;
 import com.likelion.attserver.Entity.SchedulesEntity;
 import com.likelion.attserver.Entity.TeamEntity;
-import com.likelion.attserver.Repository.SchedulesRepository;
 import com.likelion.attserver.Repository.TeamRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -59,6 +58,12 @@ public class SchedulesDAOImpl implements SchedulesDAO {
         List<LinkedHashMap<String, Object>> result = new ArrayList<>();
         List<SchedulesEntity> schedules = teamRepository.getSchedulesById(teamId);
 
+        convertScheduleList(schedules, result);
+
+        return result;
+    }
+
+    private static void convertScheduleList(List<SchedulesEntity> schedules, List<LinkedHashMap<String, Object>> result) {
         for (SchedulesEntity schedule : schedules) {
             LinkedHashMap<String, Object> scheduleMap = new LinkedHashMap<>();
             scheduleMap.put("id", schedule.getId());
@@ -73,8 +78,27 @@ public class SchedulesDAOImpl implements SchedulesDAO {
 
             result.add(scheduleMap);
         }
+    }
 
+    @Override
+    public LinkedHashMap<String, List<LinkedHashMap<String, Object>>> getAllSchedules() {
+        LinkedHashMap<String, List<LinkedHashMap<String, Object>>> result = new LinkedHashMap<>();
+        List<TeamEntity> teams = teamRepository.findAll();
+        for(TeamEntity team : teams) {
+            result.put(team.getId().toString(), getSchedules(team.getId()));
+        }
         return result;
     }
 
+    @Override
+    public void removeSchedule(Long teamId, Long id) {
+        TeamEntity team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid team id"));
+        boolean removed = team.getSchedules().removeIf(schedule -> schedule.getId().equals(id));
+
+        if (!removed) {
+            throw new NoSuchElementException("Invalid Schedule Id (" + id + ").");
+        }
+        teamRepository.save(team);
+    }
 }

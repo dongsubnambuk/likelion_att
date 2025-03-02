@@ -30,4 +30,22 @@ public class SchedulesServiceImpl implements SchedulesService {
             throw new IllegalStateException(e.getMessage());
         }
     }
+
+    @Override
+    public LinkedHashMap<String, List<LinkedHashMap<String, Object>>> getAllSchedules() {
+        try {
+            return schedulesDAO.getAllSchedules();
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage());
+        }
+    }
+
+    @Override
+    public void deleteSchedule(Long teamId, Long id) {
+        try {
+            schedulesDAO.removeSchedule(teamId, id);
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage());
+        }
+    }
 }

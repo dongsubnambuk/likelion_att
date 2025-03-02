@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface AttendanceDAO {
     List<AttendanceEntity> addAttendances(List<UserEntity> users);
+    AttendanceEntity addAttendance(UserEntity user);
 }

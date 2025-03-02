@@ -1,6 +1,9 @@
 package com.likelion.attserver.DAO.Team;
 
+import com.likelion.attserver.DAO.Attendance.AttendanceDAO;
 import com.likelion.attserver.DTO.UserDTO;
+import com.likelion.attserver.Entity.AttendanceEntity;
+import com.likelion.attserver.Entity.SchedulesEntity;
 import com.likelion.attserver.Entity.TeamEntity;
 import com.likelion.attserver.Entity.UserEntity;
 import com.likelion.attserver.Repository.TeamRepository;
@@ -20,6 +23,7 @@ import java.util.stream.Collectors;
 public class TeamDAOImpl implements TeamDAO {
     private final TeamRepository teamRepository;
     private final UserRepository userRepository;
+    private final AttendanceDAO attendanceDAO;
 
     @Override
     public Long addTeam(Long teamId, List<Long> teamData) {
@@ -43,6 +47,21 @@ public class TeamDAOImpl implements TeamDAO {
                     UserEntity user = userRepository.findById(data)
                             .orElseThrow(() -> new IllegalArgumentException("User not found"));
                     teamEntity.getUsers().add(user);
+
+                    // 이미 있는 스케쥴에 출석 추가
+                    for(SchedulesEntity schedule : teamEntity.getSchedules()) {
+                        schedule.getAttendances().add(attendanceDAO.addAttendance(user));
+                    }
+                } else {
+                    UserEntity user = userRepository.findById(data)
+                            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+                    teamEntity.getSchedules().forEach(schedule ->
+                            schedule.getAttendances().removeIf(attendanceEntity ->
+                                    attendanceEntity.getUser().equals(user)
+                            )
+                    );
+                    teamEntity.getUsers().remove(user);
                 }
             }
             return teamRepository.save(teamEntity).getId();

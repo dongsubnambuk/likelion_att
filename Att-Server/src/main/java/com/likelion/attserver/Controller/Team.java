@@ -15,9 +15,10 @@ import java.util.List;
 public class Team {
     private final TeamService teamService;
 
-    // 새로 생성 가능 / teamId 맞춰서 추가 인원 보내면 기존 팀에 팀원 추가 가능, 자동으로 중복 인원 필터 가능
+    // 새로 생성 가능 / teamId 맞춰서 추가 인원 보내면 기존 팀에 팀원 추가 가능
+    // 이미 있는 인원이 오면 팀원 목록에서 삭제
     @PostMapping
-    public ResponseEntity<?> createGroup(@RequestParam Long teamId, @RequestBody List<Long> teamData) {
+    public ResponseEntity<?> teamControl(@RequestParam Long teamId, @RequestBody List<Long> teamData) {
         try{
             return ResponseEntity.ok(teamService.createTeam(teamId, teamData));
         } catch (Exception e) {
