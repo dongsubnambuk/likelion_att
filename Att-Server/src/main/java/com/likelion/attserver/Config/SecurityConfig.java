@@ -44,7 +44,6 @@ public class SecurityConfig {
                                 "/api/team/all",
                                 "/api/schedules",
                                 "/api/schedules/all").permitAll()
-                        .requestMatchers(HttpMethod.PATCH, "/api/att").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/att").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/schedules",
                                 "/api/team").permitAll()
@@ -69,7 +68,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://127.0.0.1:3000"));
+        configuration.setAllowedOrigins(Arrays.asList("http://127.0.0.1:3000",
+                                                        "http://localhost:3000"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.addAllowedHeader("*");
         configuration.addAllowedOriginPattern("*");

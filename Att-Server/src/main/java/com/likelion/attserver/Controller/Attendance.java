@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/att")
-@CrossOrigin("http://localhost")
+@CrossOrigin("http://127.0.0.1:3000")
 @RequiredArgsConstructor
 public class Attendance {
     private final AttendanceService attendanceService;

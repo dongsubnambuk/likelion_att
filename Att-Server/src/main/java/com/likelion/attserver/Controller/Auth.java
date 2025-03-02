@@ -16,7 +16,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin("http://localhost")
+@CrossOrigin("http://127.0.0.1:3000")
 @RequiredArgsConstructor
 public class Auth {
     private final AuthenticationManager authenticationManager;
