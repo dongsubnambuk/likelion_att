@@ -28,7 +28,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // JWT 검증을 생략할 경로 설정
         if (path.equals("/api/auth") ||
-                path.equals("/api/auth/signin")) {
+                path.equals("/api/auth/signin") ||
+                path.startsWith("/swagger-ui") ||
+                path.startsWith("/v3/api-docs") ||
+                path.startsWith("/swagger-resources") ||
+                path.startsWith("/webjars")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -61,7 +65,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // JWT에서 ROLE 정보 가져오기
             UserEntity.Role role = jwtUtil.getRoleFromToken(token);
             if (role != UserEntity.Role.ADMIN) { // ADMIN이 아니면 차단
-                response.setStatus(HttpStatus.FORBIDDEN.value());
+                response.setStatus(HttpStatus.UNAUTHORIZED.value());
                 response.setContentType("application/json");
                 String errorMessage = "{ \"message\": \"Access Denied: Admin role required\" }";
                 response.getWriter().write(errorMessage);
