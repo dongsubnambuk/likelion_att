@@ -45,6 +45,7 @@ public class AttendanceDAOImpl implements AttendanceDAO {
                     .orElseThrow(() -> new IllegalArgumentException("Invalid attendance ID"));
             attendanceEntity.setStatus(attendance.getStatus());
             attendanceEntity.setNote(attendance.getNote());
+            attendanceEntity.setScore(attendance.getScore());
             attendanceRepository.save(attendanceEntity);
             updatedAttendances.add(AttendanceEntity.toDTO(attendanceEntity));
         }

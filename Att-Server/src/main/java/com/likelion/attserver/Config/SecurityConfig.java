@@ -50,7 +50,8 @@ public class SecurityConfig {
                                 "/api/schedules/all").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/att").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/schedules",
-                                "/api/team").permitAll()
+                                "/api/team",
+                                "/api/user").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // JWT 필터 추가
