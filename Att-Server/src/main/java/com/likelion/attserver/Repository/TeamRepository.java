@@ -14,4 +14,5 @@ public interface TeamRepository extends JpaRepository<TeamEntity, Long> {
     @Query(value = "select t.schedules from TeamEntity t where t.id = :teamId")
     List<SchedulesEntity> getSchedulesById(Long teamId);
     TeamEntity getByUsersContaining(UserEntity user);
+    boolean existsByUsersContaining(UserEntity user);
 }

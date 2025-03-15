@@ -1,6 +1,7 @@
 package com.likelion.attserver.DAO.Team;
 
 import com.likelion.attserver.DTO.UserDTO;
+import com.likelion.attserver.Entity.TeamEntity;
 import com.likelion.attserver.Entity.UserEntity;
 
 import java.util.List;

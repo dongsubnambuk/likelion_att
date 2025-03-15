@@ -109,10 +109,6 @@ public class SchedulesDAOImpl implements SchedulesDAO {
 
     @Override
     public void deleteUserSchedule(List<SchedulesEntity> schedules, UserEntity user) {
-        for (SchedulesEntity schedule : schedules) {
-            log.info("Delete schedule presence");
-            schedule.getAttendances().removeIf(attendance -> attendance.getUser().equals(user));
-            log.info("Delete user presence");
-        }
+
     }
 }

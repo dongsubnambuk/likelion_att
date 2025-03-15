@@ -3,9 +3,12 @@ package com.likelion.attserver.DAO.Team;
 import com.likelion.attserver.DAO.Attendance.AttendanceDAO;
 import com.likelion.attserver.DAO.Schedules.SchedulesDAO;
 import com.likelion.attserver.DTO.UserDTO;
+import com.likelion.attserver.Entity.AttendanceEntity;
 import com.likelion.attserver.Entity.SchedulesEntity;
 import com.likelion.attserver.Entity.TeamEntity;
 import com.likelion.attserver.Entity.UserEntity;
+import com.likelion.attserver.Repository.AttendanceRepository;
+import com.likelion.attserver.Repository.SchedulesRepository;
 import com.likelion.attserver.Repository.TeamRepository;
 import com.likelion.attserver.Repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -24,7 +27,8 @@ public class TeamDAOImpl implements TeamDAO {
     private final TeamRepository teamRepository;
     private final UserRepository userRepository;
     private final AttendanceDAO attendanceDAO;
-    private final SchedulesDAO schedulesDAO;
+    private final SchedulesRepository schedulesRepository;
+    private final AttendanceRepository attendanceRepository;
 
     @Override
     public Long addTeam(Long teamId, List<Long> teamData) {
@@ -109,9 +113,22 @@ public class TeamDAOImpl implements TeamDAO {
 
     @Override
     public void deleteUserTeam(UserEntity user) {
-        TeamEntity team = teamRepository.getByUsersContaining(user);
-        schedulesDAO.deleteUserSchedule(team.getSchedules(), user);
-        team.getUsers().remove(user);
-        teamRepository.save(team);
+        if(teamRepository.existsByUsersContaining(user)) {
+            TeamEntity team = teamRepository.getByUsersContaining(user);
+            for (SchedulesEntity schedule : team.getSchedules()) {
+                List<AttendanceEntity> attendances = schedule.getAttendances();
+                for (AttendanceEntity attendance : attendances) {
+                    if (attendance.getUser().equals(user)) {
+                        attendances.remove(attendance);
+                        attendanceRepository.delete(attendance);
+                    }
+                }
+                log.info("Delete user attendance presence");
+                schedulesRepository.save(schedule);
+                log.info("Delete user schedule presence");
+            }
+            team.getUsers().remove(user);
+            teamRepository.save(team);
+        }
     }
 }
