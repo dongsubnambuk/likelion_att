@@ -13,4 +13,5 @@ public class AttendanceDTO {
     private UserDTO user;
     private AttendanceEntity.Status status;
     private String note;
+    private Long score;
 }

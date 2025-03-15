@@ -6,6 +6,9 @@ import com.likelion.attserver.DTO.SchedulesDTO;
 import com.likelion.attserver.Entity.AttendanceEntity;
 import com.likelion.attserver.Entity.SchedulesEntity;
 import com.likelion.attserver.Entity.TeamEntity;
+import com.likelion.attserver.Entity.UserEntity;
+import com.likelion.attserver.Repository.AttendanceRepository;
+import com.likelion.attserver.Repository.SchedulesRepository;
 import com.likelion.attserver.Repository.TeamRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +24,8 @@ import java.util.*;
 public class SchedulesDAOImpl implements SchedulesDAO {
     private final TeamRepository teamRepository;
     private final AttendanceDAO attendanceDAO;
+    private final SchedulesRepository schedulesRepository;
+    private final AttendanceRepository attendanceRepository;
 
     public boolean existSchedule(List<SchedulesEntity> schedules, SchedulesDTO schedulesDTO) {
         for(SchedulesEntity schedule : schedules) {
@@ -100,5 +105,14 @@ public class SchedulesDAOImpl implements SchedulesDAO {
             throw new NoSuchElementException("Invalid Schedule Id (" + id + ").");
         }
         teamRepository.save(team);
+    }
+
+    @Override
+    public void deleteUserSchedule(List<SchedulesEntity> schedules, UserEntity user) {
+        for (SchedulesEntity schedule : schedules) {
+            log.info("Delete schedule presence");
+            schedule.getAttendances().removeIf(attendance -> attendance.getUser().equals(user));
+            log.info("Delete user presence");
+        }
     }
 }

@@ -27,6 +27,9 @@ public class AttendanceEntity {
     @Column
     private String note;
 
+    @Column
+    private Long score;
+
     public enum Status {
         NOT, // 미출결
         PRESENT, // 출석
@@ -40,6 +43,7 @@ public class AttendanceEntity {
         attendanceDTO.setUser(UserEntity.toDTO(attendance.getUser()));
         attendanceDTO.setNote(attendance.getNote());
         attendanceDTO.setStatus(attendance.getStatus());
+        attendanceDTO.setScore(attendance.getScore());
         return attendanceDTO;
     }
 }

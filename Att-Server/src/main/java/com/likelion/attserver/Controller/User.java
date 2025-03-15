@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "유저 API", description = "유저 정보, 권한 조회 관련 API")
 @RequiredArgsConstructor
 public class User {
+    private final AuthenticationManager authenticationManager;
     private final UserService userService;
 
     // 전체 유저 조회
@@ -39,6 +42,19 @@ public class User {
             return ResponseEntity.status(403).body(StatusDTO.builder()
                     .content(e.getMessage())
                     .build());
+        }
+    }
+
+    @Operation(summary = "회원 탍퇴", description = "해당 인원의 모든 정보 삭제")
+    @DeleteMapping
+    public  ResponseEntity<?> deleteUser(@RequestParam Long id,  @RequestParam String password) {
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(id, password));
+            return ResponseEntity.ok(userService.deleteUser(id, password));
+        } catch (Exception e) {
+            return ResponseEntity.status(403).body(StatusDTO.builder()
+                            .content(e.getMessage())
+                            .build());
         }
     }
 }

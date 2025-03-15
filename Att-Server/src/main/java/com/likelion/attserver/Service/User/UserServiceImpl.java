@@ -1,6 +1,7 @@
 package com.likelion.attserver.Service.User;
 
 import com.likelion.attserver.DAO.User.UserDAO;
+import com.likelion.attserver.DTO.StatusDTO;
 import com.likelion.attserver.DTO.UserDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,18 @@ public class UserServiceImpl implements UserService {
         try{
             return userDAO.userMap();
         } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage());
+        }
+    }
+
+    @Override
+    public StatusDTO deleteUser(Long id, String password) {
+        try {
+            userDAO.deleteUser(id, password);
+            return StatusDTO.builder()
+                    .content("탈퇴 완료")
+                    .build();
+        }  catch (Exception e) {
             throw new IllegalStateException(e.getMessage());
         }
     }

@@ -12,4 +12,5 @@ public interface UserDAO {
     LinkedHashMap<String, Object> findDetails(String id);
     List<UserDTO> getUserByRole(String role);
     Map<String, Object> userMap();
+    void deleteUser(Long id, String password);
 }

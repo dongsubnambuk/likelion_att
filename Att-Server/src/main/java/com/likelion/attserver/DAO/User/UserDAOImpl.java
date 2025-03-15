@@ -1,5 +1,7 @@
 package com.likelion.attserver.DAO.User;
 
+import com.likelion.attserver.DAO.Attendance.AttendanceDAO;
+import com.likelion.attserver.DAO.Team.TeamDAO;
 import com.likelion.attserver.DTO.AuthDTO;
 import com.likelion.attserver.DTO.UserDTO;
 import com.likelion.attserver.Entity.UserEntity;
@@ -20,6 +22,8 @@ import java.util.Map;
 public class UserDAOImpl implements UserDAO {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AttendanceDAO attendanceDAO;
+    private final TeamDAO teamDAO;
 
     @Override
     public UserDTO addUser(AuthDTO user) {
@@ -57,5 +61,13 @@ public class UserDAOImpl implements UserDAO {
         userMap.put("admin", userRepository.findByRole(UserEntity.Role.ADMIN));
         userMap.put("users", userRepository.findByRole(UserEntity.Role.STUDENT));
         return userMap;
+    }
+
+    @Override
+    public void deleteUser(Long id, String password) {
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("잘못된 유저 ID"));
+        teamDAO.deleteUserTeam(user);
+        userRepository.deleteById(id);
     }
 }
