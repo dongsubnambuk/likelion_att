@@ -12,5 +12,4 @@ public interface SchedulesDAO {
     List<LinkedHashMap<String, Object>> getSchedules(Long teamId);
     LinkedHashMap<String, List<LinkedHashMap<String, Object>>> getAllSchedules();
     void removeSchedule(Long teamId, Long id);
-    void deleteUserSchedule(List<SchedulesEntity> schedules, UserEntity user);
 }

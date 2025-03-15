@@ -1,7 +1,6 @@
 package com.likelion.attserver.DAO.Team;
 
 import com.likelion.attserver.DAO.Attendance.AttendanceDAO;
-import com.likelion.attserver.DAO.Schedules.SchedulesDAO;
 import com.likelion.attserver.DTO.UserDTO;
 import com.likelion.attserver.Entity.AttendanceEntity;
 import com.likelion.attserver.Entity.SchedulesEntity;
