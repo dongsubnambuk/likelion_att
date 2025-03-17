@@ -1,0 +1,109 @@
+/* src/components/Tabs.css */
+.tabs {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.tab-headers {
+  display: flex;
+  border-bottom: 1px solid var(--gray);
+  position: relative;
+}
+
+.tab-header {
+  padding: 12px 20px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border-bottom: 3px solid transparent;
+  color: var(--secondary-light);
+  position: relative;
+  overflow: hidden;
+}
+
+.tab-header:hover {
+  color: var(--primary-color);
+  background-color: rgba(223, 119, 59, 0.05);
+}
+
+.tab-header.active {
+  color: var(--primary-color);
+  border-bottom: 3px solid var(--primary-color);
+}
+
+.tab-header.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: var(--primary-gradient);
+  transform: translateX(-100%);
+  animation: slideIn 0.3s forwards;
+}
+
+@keyframes slideIn {
+  to {
+    transform: translateX(0);
+  }
+}
+
+.tab-content {
+  padding: 20px 0;
+}
+
+.tab-pane {
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 표시자 스타일 */
+.tab-counter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(223, 119, 59, 0.1);
+  color: var(--primary-color);
+  border-radius: 12px;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  margin-left: 6px;
+  transition: all 0.3s ease;
+}
+
+.tab-header.active .tab-counter {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .tab-headers {
+    flex-wrap: wrap;
+  }
+  
+  .tab-header {
+    flex: 1;
+    min-width: 100px;
+    text-align: center;
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+  
+  .tab-counter {
+    font-size: 0.7rem;
+    padding: 1px 6px;
+  }
+}
