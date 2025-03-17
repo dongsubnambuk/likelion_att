@@ -23,38 +23,20 @@ public class User {
     @Operation(summary = "모든 유저 조회", description = "모든 유저 조회")
     @GetMapping("/all")
     public ResponseEntity<?> getUsers() {
-        try{
-            return ResponseEntity.ok(userService.getUsers());
-        } catch (Exception e) {
-            return ResponseEntity.status(403).body(StatusDTO.builder()
-                    .content(e.getMessage())
-                    .build());
-        }
+        return ResponseEntity.ok(userService.getUsers());
     }
 
     // 역할별 조회
     @Operation(summary = "권한 조회", description = "해당 권한을 가지는 유저 리스트 조회")
     @GetMapping
     public ResponseEntity<?> getRole(@RequestParam String role) {
-        try{
-            return ResponseEntity.ok(userService.getUserByRole(role));
-        } catch (Exception e) {
-            return ResponseEntity.status(403).body(StatusDTO.builder()
-                    .content(e.getMessage())
-                    .build());
-        }
+        return ResponseEntity.ok(userService.getUserByRole(role));
     }
 
     @Operation(summary = "회원 탍퇴", description = "해당 인원의 모든 정보 삭제")
     @DeleteMapping
     public  ResponseEntity<?> deleteUser(@RequestParam Long id,  @RequestParam String password) {
-        try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(id, password));
-            return ResponseEntity.ok(userService.deleteUser(id, password));
-        } catch (Exception e) {
-            return ResponseEntity.status(403).body(StatusDTO.builder()
-                            .content(e.getMessage())
-                            .build());
-        }
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(id, password));
+        return ResponseEntity.ok(userService.deleteUser(id, password));
     }
 }

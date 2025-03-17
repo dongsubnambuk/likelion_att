@@ -2,7 +2,9 @@ package com.likelion.attserver.Service.Schedules;
 
 import com.likelion.attserver.DAO.Schedules.SchedulesDAO;
 import com.likelion.attserver.DTO.SchedulesDTO;
+import com.likelion.attserver.Exception.CustomException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedHashMap;
@@ -18,7 +20,7 @@ public class SchedulesServiceImpl implements SchedulesService {
         try {
             schedulesDAO.addSchedule(teamId, schedule);
         } catch (Exception e) {
-            throw new IllegalStateException(e.getMessage());
+            throw new CustomException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -27,7 +29,7 @@ public class SchedulesServiceImpl implements SchedulesService {
         try {
             return schedulesDAO.getSchedules(teamId);
         } catch (Exception e) {
-            throw new IllegalStateException(e.getMessage());
+            throw new CustomException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -36,7 +38,7 @@ public class SchedulesServiceImpl implements SchedulesService {
         try {
             return schedulesDAO.getAllSchedules();
         } catch (Exception e) {
-            throw new IllegalStateException(e.getMessage());
+            throw new CustomException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -45,7 +47,7 @@ public class SchedulesServiceImpl implements SchedulesService {
         try {
             schedulesDAO.removeSchedule(teamId, id);
         } catch (Exception e) {
-            throw new IllegalStateException(e.getMessage());
+            throw new CustomException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 }

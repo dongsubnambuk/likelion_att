@@ -10,6 +10,6 @@ import java.util.List;
 
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
-    @Query("select new com.likelion.attserver.DTO.UserDTO(u.id, u.name, u.role) from UserEntity u where u.role = :role")
+    @Query("select new com.likelion.attserver.DTO.UserDTO(u.id, u.name, u.phone, u.track, u.role) from UserEntity u where u.role = :role")
     List<UserDTO> findByRole(UserEntity.Role role);
 }

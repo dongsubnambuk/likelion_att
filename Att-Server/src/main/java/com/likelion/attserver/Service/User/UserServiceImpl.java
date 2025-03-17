@@ -3,7 +3,9 @@ package com.likelion.attserver.Service.User;
 import com.likelion.attserver.DAO.User.UserDAO;
 import com.likelion.attserver.DTO.StatusDTO;
 import com.likelion.attserver.DTO.UserDTO;
+import com.likelion.attserver.Exception.CustomException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,7 +21,7 @@ public class UserServiceImpl implements UserService {
         try{
             return userDAO.getUserByRole(role);
         } catch (Exception e) {
-            throw new IllegalStateException(e.getMessage());
+            throw new CustomException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -28,7 +30,7 @@ public class UserServiceImpl implements UserService {
         try{
             return userDAO.userMap();
         } catch (Exception e) {
-            throw new IllegalStateException(e.getMessage());
+            throw new CustomException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -40,7 +42,7 @@ public class UserServiceImpl implements UserService {
                     .content("탈퇴 완료")
                     .build();
         }  catch (Exception e) {
-            throw new IllegalStateException(e.getMessage());
+            throw new CustomException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 }
