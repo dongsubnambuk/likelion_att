@@ -13,5 +13,7 @@ public class AuthDTO {
     private Long id;
     private String name;
     private String password;
+    private Long phone;
+    private UserEntity.Track track;
     private UserEntity.Role role;
 }

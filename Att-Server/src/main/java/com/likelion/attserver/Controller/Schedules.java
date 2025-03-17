@@ -20,54 +20,30 @@ public class Schedules {
     @Operation(summary = "스케쥴 생성", description = "teamId와 scheduleDTO로 스케쥴 생성")
     @PostMapping
     public ResponseEntity<?> createSchedule(@RequestParam Long teamId, @RequestBody SchedulesDTO schedule) {
-        try {
-            schedulesService.createSchedule(teamId, schedule);
-            return ResponseEntity.ok(StatusDTO.builder()
-                            .content("Schedule created")
-                            .build());
-        } catch (Exception e) {
-            return ResponseEntity.status(404).body(StatusDTO.builder()
-                            .content(e.getMessage())
-                            .build());
-        }
+        schedulesService.createSchedule(teamId, schedule);
+        return ResponseEntity.ok(StatusDTO.builder()
+                .content("Schedule created")
+                .build());
     }
 
     @Operation(summary = "스케쥴 조회", description = "teamId와 연관된 모든 스케쥴 조회")
     @GetMapping
     public ResponseEntity<?> getSchedules(@RequestParam Long teamId) {
-        try {
-            return ResponseEntity.ok(schedulesService.getSchedules(teamId));
-        } catch (Exception e) {
-            return ResponseEntity.status(404).body(StatusDTO.builder()
-                            .content(e.getMessage())
-                            .build());
-        }
+        return ResponseEntity.ok(schedulesService.getSchedules(teamId));
     }
 
     @Operation(summary = "스케쥴 전체 조회", description = "모든 스케쥴 조회")
     @GetMapping("/all")
     public ResponseEntity<?> getAllSchedules() {
-        try {
-            return ResponseEntity.ok(schedulesService.getAllSchedules());
-        } catch (Exception e) {
-            return ResponseEntity.status(403).body(StatusDTO.builder()
-                            .content(e.getMessage())
-                            .build());
-        }
+        return ResponseEntity.ok(schedulesService.getAllSchedules());
     }
 
     @Operation(summary = "스케쥴 삭제", description = "teamId와 schedule의 Id로 해당 스케쥴 삭제")
     @DeleteMapping
     public ResponseEntity<?> deleteSchedule(@RequestParam Long teamId, @RequestParam Long id) {
-        try {
-            schedulesService.deleteSchedule(teamId, id);
-            return ResponseEntity.ok(StatusDTO.builder()
-                            .content("Schedule deleted")
-                            .build());
-        } catch (Exception e) {
-            return ResponseEntity.status(403).body(StatusDTO.builder()
-                            .content(e.getMessage())
-                            .build());
-        }
+        schedulesService.deleteSchedule(teamId, id);
+        return ResponseEntity.ok(StatusDTO.builder()
+                .content("Schedule deleted")
+                .build());
     }
 }

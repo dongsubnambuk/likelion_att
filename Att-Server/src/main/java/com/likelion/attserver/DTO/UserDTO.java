@@ -12,5 +12,7 @@ import lombok.*;
 public class UserDTO {
     private Long studentId;
     private String name;
+    private Long phone;
+    private UserEntity.Track track;
     private UserEntity.Role role;
 }

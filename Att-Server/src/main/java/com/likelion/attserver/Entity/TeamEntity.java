@@ -16,6 +16,9 @@ public class TeamEntity {
     @Id
     private Long id;
 
+    @Column
+    private String note;
+
     @OneToMany
     private List<UserEntity> users;
 

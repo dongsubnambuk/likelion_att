@@ -2,7 +2,9 @@ package com.likelion.attserver.Service.Attendance;
 
 import com.likelion.attserver.DAO.Attendance.AttendanceDAO;
 import com.likelion.attserver.DTO.AttendanceDTO;
+import com.likelion.attserver.Exception.CustomException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,7 +19,7 @@ public class AttendanceServiceImpl implements AttendanceService {
         try {
             return attendanceDAO.updateAttendance(attendances);
         } catch (Exception e) {
-            throw new IllegalArgumentException(e.getMessage());
+            throw new CustomException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 }

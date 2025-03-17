@@ -9,7 +9,7 @@ import java.util.Map;
 
 public interface UserDAO {
     UserDTO addUser(AuthDTO user);
-    LinkedHashMap<String, Object> findDetails(String id);
+    Map<String, Object> signin(Long id, String password);
     List<UserDTO> getUserByRole(String role);
     Map<String, Object> userMap();
     void deleteUser(Long id, String password);

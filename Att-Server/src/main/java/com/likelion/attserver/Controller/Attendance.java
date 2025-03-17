@@ -25,12 +25,6 @@ public class Attendance {
             List형식으로 보내야하며, 리스트에 여러개 보낼 시 한번에 수정 가능""")
     @PutMapping
     public ResponseEntity<?> updateAttendances(@RequestBody List<AttendanceDTO> attendanceDTO) {
-        try {
-            return ResponseEntity.ok(attendanceService.updateAttendance(attendanceDTO));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(StatusDTO.builder()
-                            .content(e.getMessage())
-                            .build());
-        }
+        return ResponseEntity.ok(attendanceService.updateAttendance(attendanceDTO));
     }
 }
