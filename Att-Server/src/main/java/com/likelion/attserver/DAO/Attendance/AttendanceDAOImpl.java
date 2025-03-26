@@ -3,9 +3,11 @@ package com.likelion.attserver.DAO.Attendance;
 import com.likelion.attserver.DTO.AttendanceDTO;
 import com.likelion.attserver.Entity.AttendanceEntity;
 import com.likelion.attserver.Entity.UserEntity;
+import com.likelion.attserver.Exception.CustomException;
 import com.likelion.attserver.Repository.AttendanceRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -42,7 +44,7 @@ public class AttendanceDAOImpl implements AttendanceDAO {
         List<AttendanceDTO> updatedAttendances = new ArrayList<>();
         for(AttendanceDTO attendance : attendances) {
             AttendanceEntity attendanceEntity = attendanceRepository.findById(attendance.getId())
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid attendance ID"));
+                    .orElseThrow(() -> new CustomException("Invalid attendance ID", HttpStatus.BAD_REQUEST));
             attendanceEntity.setStatus(attendance.getStatus());
             attendanceEntity.setNote(attendance.getNote());
             attendanceEntity.setScore(attendance.getScore());

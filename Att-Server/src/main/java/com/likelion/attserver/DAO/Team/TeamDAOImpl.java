@@ -30,18 +30,19 @@ public class TeamDAOImpl implements TeamDAO {
     private final AttendanceRepository attendanceRepository;
 
     @Override
-    public Long addTeam(Long teamId, List<Long> teamData) {
+    public Long addTeam(Long teamId, String note, List<Long> teamData) {
         if(!teamRepository.existsById(teamId)) {
             List<UserEntity> users = userRepository.findAllById(teamData);
             log.info("Adding team {} to database", teamData);
             TeamEntity teamEntity = new TeamEntity();
             teamEntity.setId(teamId);
+            teamEntity.setNote(note);
             teamEntity.setUsers(users);
             return teamRepository.save(teamEntity).getId();
         } else {
             TeamEntity teamEntity = teamRepository.findById(teamId)
                     .orElseThrow(() -> new IllegalArgumentException("Team not found"));
-
+            teamEntity.setNote(note);
             for (Long data : teamData) {
                 // UserEntity 리스트에서 ID를 비교하여 중복 확인 스트림은 신이야
                 boolean exists = teamEntity.getUsers().stream()
@@ -71,21 +72,25 @@ public class TeamDAOImpl implements TeamDAO {
     }
 
     @Override
-    public List<UserDTO> getTeam(Long teamId) {
-        return teamRepository.findById(teamId)
-                .orElseThrow(() -> new IllegalArgumentException("Team not found"))
-                .getUsers().stream()
+    public Map<String, List<UserDTO>> getTeam(Long teamId) {
+        TeamEntity team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("Team not found"));
+        Map<String, List<UserDTO>> result = new HashMap<>();
+        result.put(team.getNote(), team.getUsers().stream()
                 .map(user -> UserDTO.builder()
                         .studentId(user.getId())
                         .name(user.getName())
+                        .track(user.getTrack())
                         .role(user.getRole())
                         .build())
-                .toList();
+                .toList());
+        return result;
     }
 
     @Override
-    public Map<Long, List<UserDTO>> getTeams() {
-        Map<Long, List<UserDTO>> teamMap = new HashMap<>();
+    public LinkedHashMap<Long, LinkedHashMap<String, List<UserDTO>>> getTeams() {
+        LinkedHashMap<String, List<UserDTO>> teamMap = new LinkedHashMap<>();
+        LinkedHashMap<Long, LinkedHashMap<String, List<UserDTO>>> result = new LinkedHashMap<>();
         List<TeamEntity> teams = teamRepository.findAll();
 
         for(TeamEntity team : teams) {
@@ -93,14 +98,16 @@ public class TeamDAOImpl implements TeamDAO {
                     .map(user -> UserDTO.builder()
                             .studentId(user.getId())
                             .name(user.getName())
+                            .track(user.getTrack())
                             .role(user.getRole())
                             .build())
                     .collect(Collectors.toList());
 
-            teamMap.put(team.getId(), users);
+            teamMap.put(team.getNote(), users);
+            result.put(team.getId(), teamMap);
         }
 
-        return teamMap;
+        return result;
     }
 
     @Override
