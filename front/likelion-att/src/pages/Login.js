@@ -12,10 +12,20 @@ const SignupModal = ({ isOpen, onClose, onSuccess }) => {
     name: '',
     password: '',
     confirmPassword: '',
+    phone: '', // 추가된 필드
+    track: 'EduFront', // 추가된 필드 (기본값 EduFront)
     role: 'STUDENT' // 기본값 STUDENT
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // 트랙 옵션
+  const trackOptions = [
+    { value: 'EduFront', label: '교육 프론트엔드' },
+    { value: 'EduBack', label: '교육 백엔드' },
+    { value: 'ProFront', label: '프로젝트 프론트엔드' },
+    { value: 'ProBack', label: '프로젝트 백엔드' }
+  ];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -26,7 +36,7 @@ const SignupModal = ({ isOpen, onClose, onSuccess }) => {
     e.preventDefault();
     
     // 유효성 검사
-    if (!formData.id || !formData.name || !formData.password) {
+    if (!formData.id || !formData.name || !formData.password || !formData.phone) {
       setError('모든 필수 항목을 입력해주세요.');
       return;
     }
@@ -40,14 +50,15 @@ const SignupModal = ({ isOpen, onClose, onSuccess }) => {
     setError('');
 
     try {
-      // API 호출 - 수정된 API 경로 사용
+      // API 호출 - 수정된 요청 형식 사용
       const response = await api.post('/api/auth', {
         id: Number(formData.id),
         name: formData.name,
         password: formData.password,
+        phone: formData.phone, // 추가
+        track: formData.track, // 추가
         role: formData.role
       });
-      
       
       if (response.data && response.data.content) {
         onSuccess(response.data.content);
@@ -82,7 +93,7 @@ const SignupModal = ({ isOpen, onClose, onSuccess }) => {
             )}
 
             <div className="form-group">
-              <label htmlFor="id" className="form-label">학번/사번 *</label>
+              <label htmlFor="id" className="form-label">학번 *</label>
               <input
                 type="text"
                 id="id"
@@ -90,7 +101,7 @@ const SignupModal = ({ isOpen, onClose, onSuccess }) => {
                 className="form-control"
                 value={formData.id}
                 onChange={handleChange}
-                placeholder="학번 또는 사번을 입력하세요"
+                placeholder="학번을 입력하세요"
                 disabled={loading}
               />
             </div>
@@ -107,6 +118,38 @@ const SignupModal = ({ isOpen, onClose, onSuccess }) => {
                 placeholder="이름을 입력하세요"
                 disabled={loading}
               />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="phone" className="form-label">전화번호 *</label>
+              <input
+                type="text"
+                id="phone"
+                name="phone"
+                className="form-control"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="전화번호를 입력하세요"
+                disabled={loading}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="track" className="form-label">트랙 *</label>
+              <select
+                id="track"
+                name="track"
+                className="form-control"
+                value={formData.track}
+                onChange={handleChange}
+                disabled={loading}
+              >
+                {trackOptions.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="form-group">
@@ -252,7 +295,7 @@ const Login = () => {
 
         <form className="login-form" onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="username" className="form-label">아이디</label>
+            <label htmlFor="username" className="form-label">학번</label>
             <div className="search-container">
               <input
                 type="text"
@@ -260,7 +303,7 @@ const Login = () => {
                 className="search-input"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="학번 또는 사번을 입력하세요"
+                placeholder="학번을 입력하세요"
                 disabled={loading}
               />
               <div className="search-button">

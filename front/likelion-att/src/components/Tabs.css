@@ -9,17 +9,21 @@
   display: flex;
   border-bottom: 1px solid var(--gray);
   position: relative;
+  margin-bottom: 10px;
+  padding: 0 10px;
 }
 
 .tab-header {
-  padding: 12px 20px;
+  padding: 14px 24px;
   cursor: pointer;
   font-weight: 600;
-  transition: all 0.3s ease;
-  border-bottom: 3px solid transparent;
+  transition: all 0.4s ease;
+  border-radius: 16px 16px 0 0;
   color: var(--secondary-light);
   position: relative;
-  overflow: hidden;
+  margin: 0 4px;
+  background-color: transparent;
+  z-index: 1;
 }
 
 .tab-header:hover {
@@ -29,36 +33,32 @@
 
 .tab-header.active {
   color: var(--primary-color);
-  border-bottom: 3px solid var(--primary-color);
+  background-color: white;
+  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
 }
 
-.tab-header.active::before {
+.tab-header.active::after {
   content: '';
   position: absolute;
-  top: 0;
+  bottom: -1px;
   left: 0;
   width: 100%;
-  height: 3px;
-  background: var(--primary-gradient);
-  transform: translateX(-100%);
-  animation: slideIn 0.3s forwards;
-}
-
-@keyframes slideIn {
-  to {
-    transform: translateX(0);
-  }
+  height: 2px;
+  background-color: white;
 }
 
 .tab-content {
-  padding: 20px 0;
+  padding: 20px 15px;
+  background-color: white;
+  border-radius: 0 16px 16px 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
 .tab-pane {
-  animation: fadeIn 0.4s ease;
+  animation: fadeInUp 0.5s ease;
 }
 
-@keyframes fadeIn {
+@keyframes fadeInUp {
   from {
     opacity: 0;
     transform: translateY(10px);
@@ -76,34 +76,55 @@
   justify-content: center;
   background-color: rgba(223, 119, 59, 0.1);
   color: var(--primary-color);
-  border-radius: 12px;
+  border-radius: 50px;
   font-size: 0.75rem;
-  padding: 2px 8px;
-  margin-left: 6px;
+  padding: 3px 10px;
+  margin-left: 8px;
   transition: all 0.3s ease;
+  min-width: 24px;
 }
 
 .tab-header.active .tab-counter {
   background-color: var(--primary-color);
   color: white;
+  box-shadow: 0 2px 5px rgba(223, 119, 59, 0.3);
+}
+
+/* 탭 내용 스타일 */
+.tab-pane h3 {
+  margin-bottom: 16px;
+  color: var(--secondary-color);
+  font-weight: 600;
+}
+
+.tab-pane p {
+  margin-bottom: 14px;
+  line-height: 1.6;
 }
 
 /* 반응형 디자인 */
 @media (max-width: 768px) {
   .tab-headers {
     flex-wrap: wrap;
+    padding: 0 5px;
   }
   
   .tab-header {
-    flex: 1;
+    flex: 1 1 calc(50% - 8px);
     min-width: 100px;
     text-align: center;
-    padding: 10px;
+    padding: 12px;
     font-size: 0.9rem;
+    margin: 0 2px 5px 2px;
+    border-radius: 12px;
   }
   
   .tab-counter {
     font-size: 0.7rem;
-    padding: 1px 6px;
+    padding: 2px 8px;
+  }
+  
+  .tab-content {
+    padding: 15px 10px;
   }
 }

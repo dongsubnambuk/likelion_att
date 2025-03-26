@@ -1,4 +1,4 @@
-// src/services/api.js 수정
+// src/services/api.js
 
 import axios from 'axios';
 
