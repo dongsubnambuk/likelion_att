@@ -126,36 +126,21 @@ const Dashboard = () => {
         <div className="stat-card">
           <div className="stat-title">총 부원 수</div>
           <div className="stat-value">{stats.totalMembers}</div>
-          <div className="stat-change positive">
-            <FaArrowUp />
-            <span>5명 증가</span>
-          </div>
         </div>
         
         <div className="stat-card">
           <div className="stat-title">총 팀 수</div>
           <div className="stat-value">{stats.totalTeams}</div>
-          <div className="stat-change">
-            <span>변동 없음</span>
-          </div>
         </div>
         
         <div className="stat-card">
           <div className="stat-title">총 스케줄 수</div>
           <div className="stat-value">{stats.totalSchedules}</div>
-          <div className="stat-change positive">
-            <FaArrowUp />
-            <span>2개 증가</span>
-          </div>
         </div>
         
         <div className="stat-card">
           <div className="stat-title">평균 출석률</div>
           <div className="stat-value">{stats.averageAttendance}%</div>
-          <div className="stat-change negative">
-            <FaArrowDown />
-            <span>2.5% 감소</span>
-          </div>
         </div>
       </div>
       
