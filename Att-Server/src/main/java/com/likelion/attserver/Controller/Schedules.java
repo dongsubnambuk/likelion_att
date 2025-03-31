@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/schedules")
 @CrossOrigin("http://127.0.0.1:3000")
@@ -19,7 +21,7 @@ public class Schedules {
 
     @Operation(summary = "스케쥴 생성", description = "teamId와 scheduleDTO로 스케쥴 생성")
     @PostMapping
-    public ResponseEntity<?> createSchedule(@RequestParam Long teamId, @RequestBody SchedulesDTO schedule) {
+    public ResponseEntity<?> createSchedule(@RequestParam Long teamId, @RequestBody List<SchedulesDTO> schedule) {
         schedulesService.createSchedule(teamId, schedule);
         return ResponseEntity.ok(StatusDTO.builder()
                 .content("Schedule created")

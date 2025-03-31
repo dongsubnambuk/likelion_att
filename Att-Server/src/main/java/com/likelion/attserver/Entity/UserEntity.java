@@ -22,7 +22,7 @@ public class UserEntity {
     private String name;
 
     @Column(nullable = false)
-    private Long phone;
+    private String phone;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -48,6 +48,7 @@ public class UserEntity {
         return UserDTO.builder()
                 .studentId(userEntity.getId())
                 .name(userEntity.getName())
+                .phone(userEntity.getPhone())
                 .track(userEntity.getTrack())
                 .role(userEntity.getRole())
                 .build();

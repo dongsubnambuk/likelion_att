@@ -6,7 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 public interface SchedulesService {
-    void createSchedule(Long teamId, SchedulesDTO schedule);
+    void createSchedule(Long teamId, List<SchedulesDTO> schedule);
     List<LinkedHashMap<String, Object>> getSchedules(Long teamId);
     LinkedHashMap<String, List<LinkedHashMap<String, Object>>> getAllSchedules();
     void deleteSchedule(Long teamId, Long id);
