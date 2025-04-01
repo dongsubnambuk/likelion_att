@@ -125,7 +125,7 @@ const StudentTeams = () => {
                       <tr key={`${team.id}-${member.studentId || index}`}>
                         <td>{member.name}</td>
                         <td>{member.studentId}</td>
-                        <td>{member.role === 'ADMIN' ? '운영진' : '학생'}</td>
+                        <td>{member.role === 'ADMIN' ? '운영진' : '아기사자'}</td>
                       </tr>
                     ))}
                   </tbody>

@@ -48,67 +48,70 @@ const RatingStars = ({ rating, onRatingChange }) => {
 
 // 출석체크 컴포넌트
 const AttendanceCheckItem = ({ member, attendance, onChange }) => {
-  const [status, setStatus] = useState(attendance.status || 'none');
-  const [rating, setRating] = useState(attendance.rating || 0);
+  // status 이름을 API와 일치시킴 (present → PRESENT, absent → ABSENT, late → LATE, none → NOT)
+  const [status, setStatus] = useState(attendance.status || 'NOT');
+  // score 이름을 API와 일치시킴 (rating → score)
+  const [score, setScore] = useState(attendance.score || 0);
   const [note, setNote] = useState(attendance.note || '');
 
   useEffect(() => {
-    setStatus(attendance.status || 'none');
-    setRating(attendance.rating || 0);
+    setStatus(attendance.status || 'NOT');
+    setScore(attendance.score || 0);
     setNote(attendance.note || '');
   }, [attendance]);
 
   const handleStatusChange = (newStatus) => {
     setStatus(newStatus);
-    onChange({ ...attendance, status: newStatus, rating, note });
+    onChange({ ...attendance, status: newStatus, score, note });
   };
 
-  const handleRatingChange = (newRating) => {
-    setRating(newRating);
-    onChange({ ...attendance, status, rating: newRating, note });
+  const handleScoreChange = (newScore) => {
+    setScore(newScore);
+    onChange({ ...attendance, status, score: newScore, note });
   };
 
   const handleNoteChange = (e) => {
     setNote(e.target.value);
-    onChange({ ...attendance, status, rating, note: e.target.value });
+    onChange({ ...attendance, status, score, note: e.target.value });
   };
 
   return (
     <tr>
       <td>
-        <Link to={`/members/${member.id}`}>{member.name}</Link>
+        <Link to={`/members/${member.studentId}`}>{member.name}</Link>
       </td>
       <td>{member.studentId}</td>
       <td>
         <div className="attendance-selector">
           <div
-            className={`attendance-option ${status === 'present' ? 'selected-present' : ''}`}
-            onClick={() => handleStatusChange('present')}
+            className={`attendance-option ${status === 'PRESENT' ? 'selected-present' : ''}`}
+            onClick={() => handleStatusChange('PRESENT')}
           >
             출석
           </div>
           <div
-            className={`attendance-option ${status === 'late' ? 'selected-late' : ''}`}
-            onClick={() => handleStatusChange('late')}
+            className={`attendance-option ${status === 'LATE' ? 'selected-late' : ''}`}
+            onClick={() => handleStatusChange('LATE')}
           >
             지각
           </div>
           <div
-            className={`attendance-option ${status === 'absent' ? 'selected-absent' : ''}`}
-            onClick={() => handleStatusChange('absent')}
+            className={`attendance-option ${status === 'ABSENT' ? 'selected-absent' : ''}`}
+            onClick={() => handleStatusChange('ABSENT')}
           >
             결석
           </div>
           <div
-            className={`attendance-option ${status === 'none' ? 'selected-none' : ''}`}
-            onClick={() => handleStatusChange('none')}
+            className={`attendance-option ${status === 'NOT' ? 'selected-none' : ''}`}
+            onClick={() => handleStatusChange('NOT')}
           >
             미처리
           </div>
         </div>
       </td>
       <td>
-        <RatingStars rating={rating} onRatingChange={handleRatingChange} />
+        {/* RatingStars 컴포넌트에 rating 대신 score 전달 */}
+        <RatingStars rating={score} onRatingChange={handleScoreChange} />
       </td>
       <td>
         <input
@@ -179,10 +182,11 @@ const ScheduleDetail = () => {
   // 출석 통계 계산
   const calculateStats = (attendanceData) => {
     const total = attendanceData.length;
-    const presentCount = attendanceData.filter(a => a.status === 'present').length;
-    const lateCount = attendanceData.filter(a => a.status === 'late').length;
-    const absentCount = attendanceData.filter(a => a.status === 'absent').length;
-    const noneCount = attendanceData.filter(a => a.status === 'none' || !a.status).length;
+    // 상태 값을 API와 일치시킴
+    const presentCount = attendanceData.filter(a => a.status === 'PRESENT').length;
+    const lateCount = attendanceData.filter(a => a.status === 'LATE').length;
+    const absentCount = attendanceData.filter(a => a.status === 'ABSENT').length;
+    const noneCount = attendanceData.filter(a => a.status === 'NOT' || !a.status).length;
     
     // 출석률 계산 (출석 + 지각의 비율)
     const attendanceRate = total > 0 ? Math.round(((presentCount + lateCount) / total) * 100) : 0;
@@ -209,7 +213,8 @@ const ScheduleDetail = () => {
     try {
       setSaving(true);
       
-      // 일괄 업데이트 API 호출
+      // API 요구 형식에 맞게 데이터 변환
+      // attendances 배열을 직접 전달 (키로 감싸지 않음)
       await attendanceApi.bulkUpdate(attendances);
       
       // 출석 통계 다시 계산
@@ -242,7 +247,8 @@ const ScheduleDetail = () => {
     }
     
     try {
-      await scheduleApi.delete(scheduleId);
+      // 스케줄 삭제 시 teamId도 함께 전달
+      await scheduleApi.delete(scheduleId, team.id);
       
       setNotification({
         type: 'success',

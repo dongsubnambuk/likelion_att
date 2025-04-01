@@ -119,7 +119,7 @@ const Dashboard = () => {
 
   return (
     <div>
-      <h1>대시보드</h1>
+      <h1 style={{marginBottom: '20px'}}>대시보드</h1>
       
       {/* 통계 카드 */}
       <div className="stats-grid">

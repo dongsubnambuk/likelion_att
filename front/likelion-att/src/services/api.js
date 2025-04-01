@@ -136,8 +136,8 @@ export const teamApi = {
   },
   
   // 팀 생성 또는 업데이트
-  create: async (teamId, studentIds) => {
-    console.log('팀 생성/수정 요청:', { teamId, studentIds });
+  create: async (teamId, studentIds, note = '') => {
+    console.log('팀 생성/수정 요청:', { teamId, studentIds, note });
     
     // studentIds가 배열인지 확인
     if (!Array.isArray(studentIds)) {
@@ -146,7 +146,9 @@ export const teamApi = {
     }
     
     try {
-      const response = await api.post(`/api/team?teamId=${teamId}`, studentIds);
+      // teamId와 note는 쿼리 파라미터로 전송
+      const url = `/api/team?teamId=${teamId}&note=${encodeURIComponent(note || '')}`;
+      const response = await api.post(url, studentIds);
       console.log('팀 생성/수정 응답:', response);
       return response;
     } catch (error) {
@@ -170,14 +172,25 @@ export const scheduleApi = {
   // 특정 팀의 스케줄 조회
   getByTeam: (teamId) => api.get(`/api/schedules?teamId=${teamId}`),
   
-  // 스케줄 생성
-  create: (scheduleData) => api.post('/api/schedules', scheduleData),
+  // 스케줄 생성 (여러 스케줄을 한 번에 생성)
+  create: async (schedules, teamId) => {
+    console.log('스케줄 생성 요청:', { teamId, schedules });
+    
+    try {
+      const response = await api.post(`/api/schedules?teamId=${teamId}`, schedules);
+      console.log('스케줄 생성 응답:', response);
+      return response;
+    } catch (error) {
+      console.error('스케줄 생성 API 오류:', error.response || error);
+      throw error;
+    }
+  },
   
   // 스케줄 정보 수정
   update: (id, scheduleData) => api.put(`/api/schedules/${id}`, scheduleData),
   
-  // 스케줄 삭제
-  delete: (id) => api.delete(`/api/schedules/${id}`),
+  // 스케줄 삭제 - 팀ID와 스케줄ID 모두 필요
+  delete: (scheduleId, teamId) => api.delete(`/api/schedules?teamId=${teamId}&id=${scheduleId}`),
 };
 
 // 출석 관련 API
@@ -190,14 +203,14 @@ export const attendanceApi = {
   
   // 특정 팀의 특정 스케줄에 대한 출석 정보 조회
   getByTeamAndSchedule: (teamId, scheduleId) => 
-    api.get(`/api/schedules/${scheduleId}?teamId=${teamId}`),
+    api.get(`/api/schedules?teamId=${teamId}`),
   
   // 출석 정보 업데이트 (개별)
-  update: (attendanceId, attendanceData) => 
-    api.put(`/api/pickup/update-location`, attendanceData),
+  update: (attendanceData) => 
+    api.put(`/api/pickup/update-location`, [attendanceData]),
   
   // 출석 정보 일괄 업데이트
-  bulkUpdate: (attendances) => api.put('/api/pickup/update-location', { attendances }),
+  bulkUpdate: (attendances) => api.put('/api/pickup/update-location', attendances),
   
   // 통계 정보 조회
   getStats: (userId) => api.get(`/api/user/${userId}/stats`),

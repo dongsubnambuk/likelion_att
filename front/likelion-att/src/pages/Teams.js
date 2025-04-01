@@ -84,63 +84,87 @@ const TeamCreateModal = ({ isOpen, onClose, onSubmit, existingTeams = [] }) => {
 
   // 제출 처리
   const handleSubmit = (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    console.log('폼 제출 시작', { teamId, selectedMembers, allMembers });
+  console.log('폼 제출 시작', { teamId, selectedMembers, allMembers });
 
-    if (!teamId && isCreating) {
-      // 새 팀 생성 시 팀 ID가 없으면 오류
-      setError('팀 ID를 입력해주세요.');
-      return;
-    }
+  if (!teamId && isCreating) {
+    // 새 팀 생성 시 팀 ID가 없으면 오류
+    setError('팀 ID를 입력해주세요.');
+    return;
+  }
 
-    if (!Array.isArray(selectedMembers) || selectedMembers.length === 0) {
-      setError('최소 한 명 이상의 멤버를 선택해주세요.');
-      return;
-    }
+  if (!Array.isArray(selectedMembers) || selectedMembers.length === 0) {
+    setError('최소 한 명 이상의 멤버를 선택해주세요.');
+    return;
+  }
 
-    // 팀 ID를 숫자로 변환
-    const numericTeamId = teamId ? parseInt(teamId) : null;
+  // 팀 ID를 숫자로 변환
+  const numericTeamId = teamId ? parseInt(teamId) : null;
 
-    // 선택된 멤버의 학번(studentId) 배열 생성 - 안전하게 처리
-    const studentIds = [];
-    
-    if (Array.isArray(allMembers)) {
-      for (const memberId of selectedMembers) {
-        // member.id 또는 member.studentId로 찾기 시도
-        const member = allMembers.find(m => 
-          (m.id !== undefined && m.id === memberId) || 
-          (m.studentId !== undefined && m.studentId === memberId)
-        );
-        
-        console.log('검색된 멤버:', member, '검색 ID:', memberId);
-        
-        if (member && member.studentId) {
-          studentIds.push(member.studentId);
-        } else if (member && member.id) {
-          // 학번이 없으면 ID를 사용
+  // 선택된 멤버의 학번(studentId) 배열 생성 - 안전하게 처리
+  // API 요구사항에 맞게 숫자 배열로 변환
+  const studentIds = [];
+  
+  if (Array.isArray(allMembers)) {
+    for (const memberId of selectedMembers) {
+      // member.id 또는 member.studentId로 찾기 시도
+      const member = allMembers.find(m => 
+        (m.id !== undefined && m.id === memberId) || 
+        (m.studentId !== undefined && m.studentId === memberId)
+      );
+      
+      console.log('검색된 멤버:', member, '검색 ID:', memberId);
+      
+      if (member && member.studentId) {
+        // 문자열로 된 학번을 숫자로 변환 (필요한 경우)
+        const studentIdNumber = parseInt(member.studentId);
+        if (!isNaN(studentIdNumber)) {
+          studentIds.push(studentIdNumber);
+        } else {
+          studentIds.push(member.studentId); // 숫자로 변환할 수 없는 경우 원래 값 사용
+        }
+      } else if (member && member.id) {
+        // 학번이 없으면 ID를 사용
+        if (typeof member.id === 'number') {
           studentIds.push(member.id);
-        } else if (typeof memberId === 'number') {
-          // 멤버를 찾지 못했지만 ID가 숫자면 그대로 사용
-          studentIds.push(memberId);
+        } else {
+          const idNumber = parseInt(member.id);
+          if (!isNaN(idNumber)) {
+            studentIds.push(idNumber);
+          } else {
+            studentIds.push(member.id);
+          }
+        }
+      } else if (typeof memberId === 'number') {
+        // 멤버를 찾지 못했지만 ID가 숫자면 그대로 사용
+        studentIds.push(memberId);
+      } else {
+        // 문자열인 경우 숫자로 변환 시도
+        const idNumber = parseInt(memberId);
+        if (!isNaN(idNumber)) {
+          studentIds.push(idNumber);
         }
       }
     }
-    
-    console.log('전송할 학번 배열:', studentIds);
-    
-    if (studentIds.length === 0) {
-      setError('유효한 멤버를 선택하지 않았습니다.');
-      return;
-    }
+  }
+  
+  console.log('전송할 학번 배열:', studentIds);
+  
+  if (studentIds.length === 0) {
+    setError('유효한 멤버를 선택하지 않았습니다.');
+    return;
+  }
 
-    try {
-      onSubmit(numericTeamId, studentIds, isCreating);
-    } catch (error) {
-      console.error('팀 생성/수정 중 오류 발생:', error);
-      setError('팀 생성/수정 중 오류가 발생했습니다. 다시 시도해주세요.');
-    }
-  };
+  try {
+    // 팀에 대한 추가 정보가 필요하면 note 파라미터 추가
+    const note = '';  // 필요한 경우 메모 추가 기능 구현
+    onSubmit(numericTeamId, studentIds, isCreating, note);
+  } catch (error) {
+    console.error('팀 생성/수정 중 오류 발생:', error);
+    setError('팀 생성/수정 중 오류가 발생했습니다. 다시 시도해주세요.');
+  }
+};
 
   // 필터링 부분 수정
   const filteredMembers = React.useMemo(() => {
@@ -149,6 +173,7 @@ const TeamCreateModal = ({ isOpen, onClose, onSubmit, existingTeams = [] }) => {
       return [];
     }
     
+    // 운영진(ADMIN) 포함 여부에 관계 없이 모든 사용자를 표시
     return allMembers.filter(member => 
       (member.name && member.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (member.studentId && member.studentId.toString().includes(searchTerm))
@@ -351,7 +376,7 @@ const TeamDeleteModal = ({ isOpen, team, onClose, onConfirm }) => {
 
 // 메인 Teams 컴포넌트
 const Teams = () => {
-  const [teams, setTeams] = useState([]); // useState 호출이 컴포넌트 내부로 이동함
+  const [teams, setTeams] = useState([]);
   const [filteredTeams, setFilteredTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -419,12 +444,22 @@ const Teams = () => {
     }
   }, [searchTerm, teams]);
 
-  // 팀 생성 처리
-  const handleCreateTeam = async (teamId, studentIds, isCreating) => {
+  // 팀 생성 처리 - 수정된 부분 (API 요청 형식에 맞게 변경)
+  const handleCreateTeam = async (teamId, studentIds, isCreating, note = '') => {
     try {
-      // API 호출 - 학번 배열을 그대로 전송
-      const response = await teamApi.create(teamId, studentIds);
-
+      console.log('팀 생성/수정 - 운영진을 포함한 모든 선택된 멤버:', studentIds);
+      
+      // 학번 배열이 숫자로 구성되어 있는지 확인하고 필요한 경우 변환
+      const numericStudentIds = studentIds.map(id => {
+        if (typeof id === 'string') {
+          return parseInt(id, 10);
+        }
+        return id;
+      });
+      
+      // API 호출 - 학번 배열을 그대로 전송하되, note 파라미터 추가
+      const response = await teamApi.create(teamId, numericStudentIds, note);
+  
       if (isCreating) {
         // 새 팀 생성 성공 시
         setNotification({
@@ -438,11 +473,11 @@ const Teams = () => {
           message: `팀(${response.data.Team}) 멤버가 성공적으로 업데이트되었습니다!`
         });
       }
-
+  
       // 팀 목록 새로고침
       fetchTeams();
       setIsCreateModalOpen(false);
-
+  
       // 3초 후 알림 자동 제거
       setTimeout(() => {
         setNotification(null);
@@ -503,7 +538,7 @@ const Teams = () => {
 
   return (
     <div>
-      <div className="card-header" style={{ marginBottom: '20px' }}>
+      <div className="card-header" style={{ marginBottom: '20px', marginRight: '60px' }}>
         <h1>팀 관리</h1>
         <button
           className="btn btn-primary"
@@ -521,14 +556,15 @@ const Teams = () => {
         </div>
       )}
 
-      {/* 검색 입력란 */}
-      <div className="search-container">
+      {/* 검색 입력란 - 반응형으로 수정 */}
+      <div className="search-container" style={{ width: '100%', display: 'flex' }}>
         <input
           type="text"
           className="search-input"
           placeholder="팀 검색..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          style={{ flex: 1 }}
         />
         <button className="search-button">
           <FaSearch />

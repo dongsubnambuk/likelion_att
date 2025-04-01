@@ -230,7 +230,7 @@ const StudentSchedules = () => {
                           <tr key={attendance.id}>
                             <td>{attendance.user.name}</td>
                             <td>{attendance.user.studentId}</td>
-                            <td>{attendance.user.role === 'ADMIN' ? '운영진' : '학생'}</td>
+                            <td>{attendance.user.role === 'ADMIN' ? '운영진' : '아기사자'}</td>
                             <td>
                               <AttendanceStatus status={attendance.status} />
                             </td>

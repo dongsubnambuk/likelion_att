@@ -1,56 +1,64 @@
 // src/pages/Schedules.js
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaCalendarPlus, FaSearch, FaEdit, FaTrash, FaUserFriends, FaCalendarAlt, FaExclamationTriangle, FaCheckCircle, FaFilter } from 'react-icons/fa';
+import { FaCalendarPlus, FaSearch, FaEdit, FaTrash, FaUserFriends, FaCalendarAlt, FaExclamationTriangle, FaCheckCircle, FaFilter, FaPlus, FaTimes } from 'react-icons/fa';
 import { scheduleApi, teamApi } from '../services/api';
 
-// 스케줄 생성 모달 컴포넌트
+// 스케줄 생성 모달 컴포넌트 (여러 날짜 추가 기능 포함)
 const ScheduleCreateModal = ({ isOpen, onClose, onSubmit, teams }) => {
-  const [scheduleData, setScheduleData] = useState({
-    title: '',
-    date: '',
-    description: '',
-    teamId: ''
-  });
+  const [selectedTeamId, setSelectedTeamId] = useState('');
+  const [schedules, setSchedules] = useState([
+    { date: '', time: '14:30:00' }
+  ]);
   const [error, setError] = useState('');
 
   useEffect(() => {
     // 모달이 열릴 때 폼 초기화
     if (isOpen) {
-      setScheduleData({
-        title: '',
-        date: '',
-        description: '',
-        teamId: teams.length > 0 ? teams[0].id : ''
-      });
+      setSelectedTeamId(teams.length > 0 ? teams[0].id : '');
+      setSchedules([{ date: '', time: '14:30:00' }]);
       setError('');
     }
   }, [isOpen, teams]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setScheduleData({ ...scheduleData, [name]: value });
+  const handleTeamChange = (e) => {
+    setSelectedTeamId(e.target.value);
+  };
+
+  const handleScheduleChange = (index, field, value) => {
+    const updatedSchedules = [...schedules];
+    updatedSchedules[index][field] = value;
+    setSchedules(updatedSchedules);
+  };
+
+  const addSchedule = () => {
+    setSchedules([...schedules, { date: '', time: '14:30:00' }]);
+  };
+
+  const removeSchedule = (index) => {
+    if (schedules.length > 1) {
+      const updatedSchedules = [...schedules];
+      updatedSchedules.splice(index, 1);
+      setSchedules(updatedSchedules);
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    if (!scheduleData.title.trim()) {
-      setError('스케줄 제목을 입력해주세요.');
-      return;
-    }
-    
-    if (!scheduleData.date) {
-      setError('날짜를 선택해주세요.');
-      return;
-    }
-    
-    if (!scheduleData.teamId) {
+    if (!selectedTeamId) {
       setError('팀을 선택해주세요.');
       return;
     }
     
-    onSubmit(scheduleData);
+    // 날짜가 비어있는 스케줄이 있는지 확인
+    const hasEmptyDate = schedules.some(schedule => !schedule.date);
+    if (hasEmptyDate) {
+      setError('모든 스케줄의 날짜를 입력해주세요.');
+      return;
+    }
+    
+    onSubmit(selectedTeamId, schedules);
   };
 
   if (!isOpen) return null;
@@ -59,7 +67,7 @@ const ScheduleCreateModal = ({ isOpen, onClose, onSubmit, teams }) => {
     <div className="modal-backdrop">
       <div className="modal">
         <div className="modal-header">
-          <h2 className="modal-title">새 스케줄 생성</h2>
+          <h2 className="modal-title">스케줄 생성</h2>
           <button className="modal-close" onClick={onClose}>&times;</button>
         </div>
         
@@ -73,38 +81,13 @@ const ScheduleCreateModal = ({ isOpen, onClose, onSubmit, teams }) => {
             )}
             
             <div className="form-group">
-              <label htmlFor="title" className="form-label">제목 *</label>
-              <input
-                type="text"
-                id="title"
-                name="title"
-                className="form-control"
-                value={scheduleData.title}
-                onChange={handleChange}
-                placeholder="스케줄 제목을 입력하세요"
-              />
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="date" className="form-label">날짜 *</label>
-              <input
-                type="date"
-                id="date"
-                name="date"
-                className="form-control"
-                value={scheduleData.date}
-                onChange={handleChange}
-              />
-            </div>
-            
-            <div className="form-group">
               <label htmlFor="teamId" className="form-label">팀 *</label>
               <select
                 id="teamId"
-                name="teamId"
                 className="form-control"
-                value={scheduleData.teamId}
-                onChange={handleChange}
+                value={selectedTeamId}
+                onChange={handleTeamChange}
+                required
               >
                 <option value="">팀 선택</option>
                 {teams.map(team => (
@@ -116,16 +99,49 @@ const ScheduleCreateModal = ({ isOpen, onClose, onSubmit, teams }) => {
             </div>
             
             <div className="form-group">
-              <label htmlFor="description" className="form-label">설명</label>
-              <textarea
-                id="description"
-                name="description"
-                className="form-control"
-                value={scheduleData.description}
-                onChange={handleChange}
-                placeholder="스케줄에 대한 설명을 입력하세요"
-                rows="3"
-              />
+              <label className="form-label">스케줄 일정 *</label>
+              <div className="schedules-container">
+                {schedules.map((schedule, index) => (
+                  <div key={index} className="schedule-item" style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                    <div style={{ flex: 2, marginRight: '10px' }}>
+                      <input
+                        type="date"
+                        className="form-control"
+                        value={schedule.date}
+                        onChange={(e) => handleScheduleChange(index, 'date', e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div style={{ flex: 1, marginRight: '10px' }}>
+                      <input
+                        type="time"
+                        className="form-control"
+                        value={schedule.time}
+                        onChange={(e) => handleScheduleChange(index, 'time', e.target.value)}
+                        required
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      className="btn btn-danger btn-sm"
+                      onClick={() => removeSchedule(index)}
+                      disabled={schedules.length <= 1}
+                      style={{ marginLeft: '5px' }}
+                    >
+                      <FaTimes />
+                    </button>
+                  </div>
+                ))}
+                
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={addSchedule}
+                  style={{ marginTop: '10px' }}
+                >
+                  <FaPlus /> 스케줄 추가
+                </button>
+              </div>
             </div>
           </div>
           
@@ -161,7 +177,7 @@ const ScheduleDeleteModal = ({ isOpen, schedule, onClose, onConfirm }) => {
             <span>이 작업은 되돌릴 수 없습니다.</span>
           </div>
           <p>
-            <strong>{schedule.title}</strong> 스케줄을 삭제하시겠습니까?<br />
+            <strong>{schedule.date} {schedule.time}</strong> 스케줄을 삭제하시겠습니까?<br />
             이 스케줄의 모든 출석 기록이 함께 삭제됩니다.
           </p>
         </div>
@@ -206,12 +222,63 @@ const Schedules = () => {
         
         // 팀 목록 가져오기
         const teamsResponse = await teamApi.getAll();
-        setTeams(teamsResponse.data);
+        
+        // API 응답 구조에 따라 팀 데이터 추출
+        let teamsData = [];
+        if (teamsResponse.data && typeof teamsResponse.data === 'object') {
+          // 팀 배열로 변환
+          teamsData = Object.entries(teamsResponse.data).map(([teamId, members]) => ({
+            id: parseInt(teamId),
+            name: `팀 ${teamId}`,
+            memberCount: members.length
+          }));
+        }
+        
+        setTeams(teamsData);
         
         // 스케줄 목록 가져오기
         const schedulesResponse = await scheduleApi.getAll();
-        setSchedules(schedulesResponse.data);
-        setFilteredSchedules(schedulesResponse.data);
+        console.log('스케줄 데이터 응답:', schedulesResponse.data);
+        
+        // 스케줄 데이터 처리 (API 응답에 맞춤)
+        let schedulesData = [];
+        if (schedulesResponse.data && typeof schedulesResponse.data === 'object') {
+          // 각 팀의 스케줄 통합
+          Object.entries(schedulesResponse.data).forEach(([teamId, teamSchedules]) => {
+            if (Array.isArray(teamSchedules)) {
+              const teamSchedulesWithTeamId = teamSchedules.map(schedule => ({
+                ...schedule,
+                teamId: parseInt(teamId)
+              }));
+              schedulesData = [...schedulesData, ...teamSchedulesWithTeamId];
+            }
+          });
+        }
+        
+        // 팀 정보와 함께 스케줄 데이터 구성
+        schedulesData = schedulesData.map(schedule => {
+          const team = teamsData.find(t => t.id === schedule.teamId);
+          
+          // 출석률 계산 (있는 경우)
+          let attendanceRate = 0;
+          if (schedule.attendances && Array.isArray(schedule.attendances)) {
+            const total = schedule.attendances.length;
+            const present = schedule.attendances.filter(a => a.status === 'PRESENT').length;
+            const late = schedule.attendances.filter(a => a.status === 'LATE').length;
+            attendanceRate = total > 0 ? Math.round(((present + late) / total) * 100) : 0;
+          }
+          
+          return {
+            ...schedule,
+            teamName: team ? team.name : `팀 ${schedule.teamId}`,
+            attendanceRate,
+            createdAt: schedule.createdAt || new Date().toISOString()
+          };
+        });
+        
+        console.log('변환된 스케줄 배열:', schedulesData);
+        setSchedules(schedulesData);
+        setFilteredSchedules(schedulesData);
         
       } catch (error) {
         console.error('데이터 로딩 실패:', error);
@@ -223,7 +290,7 @@ const Schedules = () => {
         setLoading(false);
       }
     };
-
+  
     fetchData();
   }, []);
   
@@ -239,46 +306,70 @@ const Schedules = () => {
     // 검색어 필터링
     if (searchTerm.trim() !== '') {
       filtered = filtered.filter(schedule => 
-        schedule.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (schedule.description && schedule.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        schedule.teamName.toLowerCase().includes(searchTerm.toLowerCase())
+        (schedule.date && schedule.date.includes(searchTerm)) ||
+        (schedule.time && schedule.time.includes(searchTerm)) ||
+        (schedule.teamName && schedule.teamName.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
     
     // 팀 필터링
     if (filterTeamId !== 'all') {
-      filtered = filtered.filter(schedule => schedule.teamId === filterTeamId);
+      filtered = filtered.filter(schedule => schedule.teamId === parseInt(filterTeamId));
     }
     
     // 날짜 필터링 - 시작일
     if (filterStartDate) {
-      filtered = filtered.filter(schedule => new Date(schedule.date) >= new Date(filterStartDate));
+      filtered = filtered.filter(schedule => schedule.date >= filterStartDate);
     }
     
     // 날짜 필터링 - 종료일
     if (filterEndDate) {
-      filtered = filtered.filter(schedule => new Date(schedule.date) <= new Date(filterEndDate));
+      filtered = filtered.filter(schedule => schedule.date <= filterEndDate);
     }
     
     setFilteredSchedules(filtered);
   };
 
   // 스케줄 생성 처리
-  const handleCreateSchedule = async (scheduleData) => {
+  const handleCreateSchedule = async (teamId, schedulesList) => {
     try {
-      const response = await scheduleApi.create(scheduleData);
+      // API 요구 형식에 맞게 데이터 변환
+      const formattedSchedules = schedulesList.map(schedule => ({
+        date: schedule.date,
+        time: schedule.time
+      }));
       
-      // 팀 이름 가져오기
-      const team = teams.find(t => t.id === scheduleData.teamId);
-      const newSchedule = { ...response.data, teamName: team ? team.name : '알 수 없음' };
+      // API 호출
+      const response = await scheduleApi.create(formattedSchedules, teamId);
+      console.log('스케줄 생성 응답:', response);
       
-      setSchedules([...schedules, newSchedule]);
-      setFilteredSchedules([...filteredSchedules, newSchedule]);
+      // 새로운 스케줄 정보 (실제 API 응답에 따라 생성)
+      const team = teams.find(t => t.id === parseInt(teamId));
+      
+      // 응답에서 생성된 스케줄 정보 추출 또는 임시 ID 생성
+      const newSchedules = schedulesList.map((schedule, index) => {
+        // 실제 API 응답에서 ID를 추출하거나, 임시 ID 생성
+        const id = response.data && response.data.id ? response.data.id + index : Date.now() + Math.random();
+        
+        return {
+          id,
+          teamId: parseInt(teamId),
+          teamName: team ? team.name : `팀 ${teamId}`,
+          date: schedule.date,
+          time: schedule.time,
+          attendances: [],
+          attendanceRate: 0,
+          createdAt: new Date().toISOString()
+        };
+      });
+      
+      setSchedules([...schedules, ...newSchedules]);
+      setFilteredSchedules([...filteredSchedules, ...newSchedules]);
       setIsCreateModalOpen(false);
       
       setNotification({
         type: 'success',
-        message: '스케줄이 성공적으로 생성되었습니다!'
+        message: `${schedulesList.length}개의 스케줄이 성공적으로 생성되었습니다!`
       });
       
       setTimeout(() => {
@@ -297,7 +388,14 @@ const Schedules = () => {
   // 스케줄 삭제 처리
   const handleDeleteSchedule = async (scheduleId) => {
     try {
-      await scheduleApi.delete(scheduleId);
+      // 해당 스케줄의 팀 ID 찾기
+      const schedule = schedules.find(s => s.id === scheduleId);
+      if (!schedule) {
+        throw new Error('스케줄 정보를 찾을 수 없습니다.');
+      }
+      
+      // teamId도 함께 전달
+      await scheduleApi.delete(scheduleId, schedule.teamId);
       
       setSchedules(schedules.filter(schedule => schedule.id !== scheduleId));
       setFilteredSchedules(filteredSchedules.filter(schedule => schedule.id !== scheduleId));
@@ -330,9 +428,23 @@ const Schedules = () => {
     setFilterEndDate('');
   };
 
-  const formatDate = (dateString) => {
+  // 날짜 포맷 함수
+  const formatDateTime = (date, time) => {
+    if (!date) return '날짜 없음';
+    
+    // 날짜 포맷팅
+    const dateObj = new Date(`${date}T${time || '00:00:00'}`);
     const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
-    return new Date(dateString).toLocaleDateString('ko-KR', options);
+    const formattedDate = dateObj.toLocaleDateString('ko-KR', options);
+    
+    // 시간이 있으면 시간도 포맷팅
+    if (time) {
+      const timeOptions = { hour: '2-digit', minute: '2-digit' };
+      const formattedTime = dateObj.toLocaleTimeString('ko-KR', timeOptions);
+      return `${formattedDate} ${formattedTime}`;
+    }
+    
+    return formattedDate;
   };
 
   if (loading) {
@@ -341,7 +453,7 @@ const Schedules = () => {
 
   return (
     <div>
-      <div className="card-header" style={{ marginBottom: '20px' }}>
+      <div className="card-header" style={{ marginBottom: '20px', marginRight: "60px" }}>
         <h1>스케줄 관리</h1>
         <button
           className="btn btn-primary"
@@ -361,68 +473,76 @@ const Schedules = () => {
 
       {/* 필터 영역 */}
       <div className="card" style={{ marginBottom: '20px' }}>
-        <div className="card-header">
-          <h2>스케줄 필터</h2>
-          <button className="btn btn-secondary btn-sm" onClick={resetFilters}>
-            필터 초기화
-          </button>
-        </div>
-        <div style={{ padding: '15px', display: 'flex', flexWrap: 'wrap', gap: '15px' }}>
-          <div className="form-group" style={{ flex: '1', minWidth: '200px' }}>
-            <label htmlFor="search-term" className="form-label">검색어</label>
-            <div className="search-container">
-              <input
-                type="text"
-                id="search-term"
-                className="search-input"
-                placeholder="제목, 설명 또는 팀 이름으로 검색..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <button className="search-button">
-                <FaSearch />
-              </button>
-            </div>
-          </div>
-          
-          <div className="form-group" style={{ flex: '1', minWidth: '200px' }}>
-            <label htmlFor="filter-team" className="form-label">팀 선택</label>
-            <select
-              id="filter-team"
-              className="form-control"
-              value={filterTeamId}
-              onChange={(e) => setFilterTeamId(e.target.value)}
-            >
-              <option value="all">모든 팀</option>
-              {teams.map(team => (
-                <option key={team.id} value={team.id}>{team.name}</option>
-              ))}
-            </select>
-          </div>
-          
-          <div className="form-group" style={{ flex: '1', minWidth: '200px' }}>
-            <label htmlFor="filter-start-date" className="form-label">시작 날짜</label>
-            <input
-              type="date"
-              id="filter-start-date"
-              className="form-control"
-              value={filterStartDate}
-              onChange={(e) => setFilterStartDate(e.target.value)}
-            />
-          </div>
-          
-          <div className="form-group" style={{ flex: '1', minWidth: '200px' }}>
-            <label htmlFor="filter-end-date" className="form-label">종료 날짜</label>
-            <input
-              type="date"
-              id="filter-end-date"
-              className="form-control"
-              value={filterEndDate}
-              onChange={(e) => setFilterEndDate(e.target.value)}
-            />
-          </div>
-        </div>
+  <div className="card-header">
+    <h2>스케줄 필터</h2>
+    <button className="btn btn-secondary btn-sm" onClick={resetFilters}>
+      필터 초기화
+    </button>
+  </div>
+  <div style={{ padding: '15px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+    {/* 검색어 필드 - 항상 전체 너비 차지 */}
+    <div className="form-group" style={{ width: '100%' }}>
+      <label htmlFor="search-term" className="form-label">검색어</label>
+      <div className="search-container" style={{ width: '100%', display: 'flex' }}>
+        <input
+          type="text"
+          id="search-term"
+          className="search-input"
+          placeholder="날짜, 시간 또는 팀 이름으로 검색..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{ flex: 1 }}
+        />
+        <button className="search-button">
+          <FaSearch />
+        </button>
       </div>
+    </div>
+    
+    {/* 나머지 필터 필드들을 한 행에 배치 */}
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px' }}>
+      {/* 팀 선택 필드 */}
+      <div className="form-group" style={{ flex: '1 1 200px', minWidth: '200px' }}>
+        <label htmlFor="filter-team" className="form-label">팀 선택</label>
+        <select
+          id="filter-team"
+          className="form-control"
+          value={filterTeamId}
+          onChange={(e) => setFilterTeamId(e.target.value)}
+        >
+          <option value="all">모든 팀</option>
+          {teams.map(team => (
+            <option key={team.id} value={team.id}>{team.name}</option>
+          ))}
+        </select>
+      </div>
+      
+      {/* 시작 날짜 필드 */}
+      <div className="form-group" style={{ flex: '1 1 200px', minWidth: '200px' }}>
+        <label htmlFor="filter-start-date" className="form-label">시작 날짜</label>
+        <input
+          type="date"
+          id="filter-start-date"
+          className="form-control"
+          value={filterStartDate}
+          onChange={(e) => setFilterStartDate(e.target.value)}
+        />
+      </div>
+      
+      {/* 종료 날짜 필드 */}
+      <div className="form-group" style={{ flex: '1 1 200px', minWidth: '200px' }}>
+        <label htmlFor="filter-end-date" className="form-label">종료 날짜</label>
+        <input
+          type="date"
+          id="filter-end-date"
+          className="form-control"
+          value={filterEndDate}
+          onChange={(e) => setFilterEndDate(e.target.value)}
+        />
+      </div>
+    </div>
+  </div>
+</div>
 
       {/* 스케줄 목록 */}
       {filteredSchedules.length > 0 ? (
@@ -431,20 +551,18 @@ const Schedules = () => {
             <thead>
               <tr>
                 <th>날짜</th>
-                <th>제목</th>
+                <th>시간</th>
                 <th>팀</th>
                 <th>참석률</th>
-                <th>작성일</th>
+                <th>생성일</th>
                 <th>관리</th>
               </tr>
             </thead>
             <tbody>
               {filteredSchedules.map((schedule) => (
                 <tr key={schedule.id}>
-                  <td>{formatDate(schedule.date)}</td>
-                  <td>
-                    <Link to={`/schedules/${schedule.id}`}>{schedule.title}</Link>
-                  </td>
+                  <td>{schedule.date}</td>
+                  <td>{schedule.time}</td>
                   <td>
                     <Link to={`/teams/${schedule.teamId}`}>{schedule.teamName}</Link>
                   </td>

@@ -358,12 +358,6 @@ const Members = () => {
         }}
         onConfirm={handleDeleteMember}
       />
-
-      <BulkImportModal
-        isOpen={isImportModalOpen}
-        onClose={() => setIsImportModalOpen(false)}
-        onSubmit={handleBulkImport}
-      />
     </div>
   );
 };

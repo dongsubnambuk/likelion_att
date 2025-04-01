@@ -98,7 +98,7 @@ const MemberTable = ({ members, sortConfig, requestSort, onEdit, onDelete }) => 
                 <td>
                   <span style={{ display: 'flex', alignItems: 'center' }}>
                     {getRoleIcon(member.role)}
-                    {member.role === 'ADMIN' ? '운영진' : '학생'}
+                    {member.role === 'ADMIN' ? '운영진' : '아기사자'}
                   </span>
                 </td>
               </tr>
