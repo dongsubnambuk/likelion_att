@@ -33,13 +33,13 @@ const StudentLayout = () => {
       {/* 사이드바 */}
       <div className={`sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-header">
-          <h2>동아리 출석체크</h2>
+          <h2>멋사 출석체크</h2>
           <div className="user-info">
             <p>{currentUser?.name || '사용자'}</p>
-            <span className="user-role">{currentUser?.role === 'STUDENT' ? '학생' : '사용자'}</span>
+            <span className="user-role">{currentUser?.role === 'STUDENT' ? '아기사자' : '사용자'}</span>
           </div>
         </div>
-        
+
         <nav className="sidebar-nav">
           <NavLink to="/student/teams" className={({ isActive }) => isActive ? 'active' : ''} onClick={closeMobileMenu}>
             <FaUserFriends /> 전체 팀 조회
@@ -48,7 +48,7 @@ const StudentLayout = () => {
             <FaCalendarAlt /> 전체 스케줄 조회
           </NavLink>
         </nav>
-        
+
         <div className="sidebar-footer">
           <button className="logout-button" onClick={handleLogout}>
             <FaSignOutAlt /> 로그아웃

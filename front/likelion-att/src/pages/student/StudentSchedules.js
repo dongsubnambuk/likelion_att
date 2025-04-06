@@ -1,6 +1,6 @@
 // src/pages/student/StudentSchedules.js
 import React, { useState, useEffect } from 'react';
-import { FaSearch, FaCalendarAlt, FaExclamationTriangle, FaUsers } from 'react-icons/fa';
+import { FaSearch, FaCalendarAlt, FaExclamationTriangle, FaUsers, FaHistory, FaFilter, FaSortAmountDown, FaUserCog, FaUser } from 'react-icons/fa';
 import api from '../../services/api';
 
 const StudentSchedules = () => {
@@ -11,6 +11,8 @@ const StudentSchedules = () => {
   const [error, setError] = useState(null);
   const [filterStartDate, setFilterStartDate] = useState('');
   const [filterEndDate, setFilterEndDate] = useState('');
+  const [showPastSchedules, setShowPastSchedules] = useState(false); // 지난 스케줄 표시 여부
+  const [sortDirection, setSortDirection] = useState('asc'); // 'asc' 또는 'desc'
 
   // 스케줄 목록 불러오기
   useEffect(() => {
@@ -19,20 +21,30 @@ const StudentSchedules = () => {
         setLoading(true);
         const response = await api.get('/api/schedules/all');
         setSchedulesByTeam(response.data);
-        
+
         // 모든 스케줄을 단일 배열로 변환
         const allSchedules = [];
         Object.entries(response.data).forEach(([teamId, schedules]) => {
-          schedules.forEach(schedule => {
-            allSchedules.push({
-              ...schedule,
-              teamId: teamId,
-              teamName: `팀 ${teamId}` // 팀 이름이 응답에 없으므로 임시로 생성
+          if (Array.isArray(schedules)) {
+            schedules.forEach(schedule => {
+              // 팀 이름과 스케줄 번호 포함
+              allSchedules.push({
+                ...schedule,
+                teamId: teamId,
+                teamName: `팀 ${teamId}` // 팀 이름이 응답에 없으므로 임시로 생성
+              });
             });
-          });
+          }
         });
-        
-        setFilteredSchedules(allSchedules);
+
+        // 날짜순으로 정렬 (기본: 날짜 오름차순)
+        const sortedSchedules = allSchedules.sort((a, b) => {
+          const dateA = new Date(`${a.date}T${a.time || '00:00:00'}`);
+          const dateB = new Date(`${b.date}T${b.time || '00:00:00'}`);
+          return dateA - dateB;
+        });
+
+        setFilteredSchedules(sortedSchedules);
       } catch (error) {
         console.error('스케줄 목록 로딩 실패:', error);
         setError('스케줄 목록을 불러오는데 실패했습니다.');
@@ -44,58 +56,103 @@ const StudentSchedules = () => {
     fetchSchedules();
   }, []);
 
-  // 검색어 및 날짜 필터링
+  // 검색어, 날짜 필터, 지난 스케줄 표시 여부 변경 시 스케줄 필터링 및 정렬
   useEffect(() => {
     // 모든 스케줄을 단일 배열로 변환
     const allSchedules = [];
     Object.entries(schedulesByTeam).forEach(([teamId, schedules]) => {
-      schedules.forEach(schedule => {
-        allSchedules.push({
-          ...schedule,
-          teamId: teamId,
-          teamName: `팀 ${teamId}`
+      if (Array.isArray(schedules)) {
+        schedules.forEach(schedule => {
+          allSchedules.push({
+            ...schedule,
+            teamId: teamId,
+            teamName: `팀 ${teamId}`
+          });
         });
-      });
+      }
     });
-    
+
     let filtered = [...allSchedules];
-    
+
+    // 현재 날짜 기준으로 필터링 (지난 스케줄 표시 옵션에 따라)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // 오늘 날짜의 시작 시간으로 설정
+
+    if (!showPastSchedules) {
+      filtered = filtered.filter(schedule => {
+        const scheduleDate = new Date(schedule.date);
+        scheduleDate.setHours(0, 0, 0, 0);
+        return scheduleDate >= today;
+      });
+    }
+
     // 검색어 필터링
     if (searchTerm.trim() !== '') {
-      filtered = filtered.filter(schedule => 
+      filtered = filtered.filter(schedule =>
         (schedule.title && schedule.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
         schedule.date.includes(searchTerm) ||
         schedule.time.includes(searchTerm) ||
         (`팀 ${schedule.teamId}`).includes(searchTerm) ||
-        schedule.attendances.some(att => 
-          att.user.name.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+        (Array.isArray(schedule.attendances) && schedule.attendances.some(att =>
+          att.user && att.user.name && att.user.name.toLowerCase().includes(searchTerm.toLowerCase())
+        ))
       );
     }
-    
+
     // 날짜 필터링 - 시작일
     if (filterStartDate) {
       filtered = filtered.filter(schedule => new Date(schedule.date) >= new Date(filterStartDate));
     }
-    
+
     // 날짜 필터링 - 종료일
     if (filterEndDate) {
       filtered = filtered.filter(schedule => new Date(schedule.date) <= new Date(filterEndDate));
     }
-    
+
+    // 날짜순으로 정렬
+    filtered.sort((a, b) => {
+      const dateA = new Date(`${a.date}T${a.time || '00:00:00'}`);
+      const dateB = new Date(`${b.date}T${b.time || '00:00:00'}`);
+      return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
+    });
+
     setFilteredSchedules(filtered);
-  }, [searchTerm, filterStartDate, filterEndDate, schedulesByTeam]);
+  }, [searchTerm, filterStartDate, filterEndDate, schedulesByTeam, showPastSchedules, sortDirection]);
 
   // 필터 초기화
   const resetFilters = () => {
     setSearchTerm('');
     setFilterStartDate('');
     setFilterEndDate('');
+    // 지난 스케줄 표시 여부는 유지
   };
 
+  // 날짜 포맷 함수
   const formatDate = (dateString) => {
+    if (!dateString) return '날짜 없음';
+
     const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
     return new Date(dateString).toLocaleDateString('ko-KR', options);
+  };
+
+  // 경과 시간 표시 함수
+  const getRelativeTime = (dateString) => {
+    if (!dateString) return '';
+
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = date - now;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) {
+      return `${Math.abs(diffDays)}일 전`;
+    } else if (diffDays === 0) {
+      return '오늘';
+    } else if (diffDays === 1) {
+      return '내일';
+    } else {
+      return `${diffDays}일 후`;
+    }
   };
 
   // 출석 상태 표시 컴포넌트
@@ -126,10 +183,26 @@ const StudentSchedules = () => {
     return <span className={`attendance-status ${statusClass}`}>{statusText}</span>;
   };
 
+  // 정렬 방향 토글 함수
+  const toggleSortDirection = () => {
+    setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+  };
+
+  // 스케줄이 과거인지 확인하는 함수
+  const isPastSchedule = (dateString) => {
+    const scheduleDate = new Date(dateString);
+    scheduleDate.setHours(0, 0, 0, 0);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return scheduleDate < today;
+  };
+
   return (
     <div>
       <h1>전체 스케줄 조회</h1>
-      
+
       {/* 에러 메시지 */}
       {error && (
         <div className="alert alert-error">
@@ -142,28 +215,49 @@ const StudentSchedules = () => {
       <div className="card" style={{ marginBottom: '20px' }}>
         <div className="card-header">
           <h2>스케줄 필터</h2>
-          <button className="btn btn-secondary btn-sm" onClick={resetFilters}>
-            필터 초기화
-          </button>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button
+              className={`btn btn-sm ${showPastSchedules ? 'btn-info' : 'btn-outline-info'}`}
+              onClick={() => setShowPastSchedules(!showPastSchedules)}
+              title={showPastSchedules ? '과거 스케줄 숨기기' : '과거 스케줄 표시하기'}
+            >
+              <FaHistory /> 지난 스케줄 {showPastSchedules ? '숨기기' : '표시'}
+            </button>
+            <button
+              className="btn btn-sm btn-outline-secondary"
+              onClick={toggleSortDirection}
+              title="정렬 방향 변경"
+            >
+              <FaSortAmountDown /> {sortDirection === 'asc' ? '과거 → 미래' : '미래 → 과거'}
+            </button>
+            <button
+              className="btn btn-sm btn-secondary"
+              onClick={resetFilters}
+              title="검색 필터 초기화"
+            >
+              <FaFilter /> 필터 초기화
+            </button>
+          </div>
         </div>
         <div style={{ padding: '15px', display: 'flex', flexWrap: 'wrap', gap: '15px' }}>
-          <div className="form-group" style={{ flex: '1', minWidth: '200px' }}>
+          <div className="form-group" style={{ width: '100%' }}>
             <label htmlFor="search-term" className="form-label">검색어</label>
-            <div className="search-container">
+            <div className="search-container" style={{ width: '100%', display: 'flex' }}>
               <input
                 type="text"
                 id="search-term"
                 className="search-input"
-                placeholder="날짜, 팀 또는 이름으로 검색..."
+                placeholder="날짜, 시간 또는 팀 이름으로 검색..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ flex: 1 }}
               />
               <button className="search-button">
                 <FaSearch />
               </button>
             </div>
           </div>
-          
+
           <div className="form-group" style={{ flex: '1', minWidth: '200px' }}>
             <label htmlFor="filter-start-date" className="form-label">시작 날짜</label>
             <input
@@ -174,7 +268,7 @@ const StudentSchedules = () => {
               onChange={(e) => setFilterStartDate(e.target.value)}
             />
           </div>
-          
+
           <div className="form-group" style={{ flex: '1', minWidth: '200px' }}>
             <label htmlFor="filter-end-date" className="form-label">종료 날짜</label>
             <input
@@ -188,31 +282,71 @@ const StudentSchedules = () => {
         </div>
       </div>
 
+      {/* 스케줄 개수 표시 */}
+      <div style={{ marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <p style={{ margin: 0 }}>
+          총 <strong>{filteredSchedules.length}</strong>개의 스케줄이 있습니다.
+          {!showPastSchedules && (
+            <span style={{ marginLeft: '10px', color: '#666' }}>
+              (과거 스케줄은 제외됨)
+            </span>
+          )}
+        </p>
+      </div>
+
       {/* 스케줄 목록 */}
       {loading ? (
         <div className="loading">로딩 중...</div>
       ) : filteredSchedules.length > 0 ? (
         <div>
           {filteredSchedules.map((schedule) => (
-            <div className="card" key={schedule.id} style={{ marginBottom: '20px' }}>
-              <div className="card-header">
-                <h3 style={{ display: 'flex', alignItems: 'center' }}>
+            <div
+              className="card"
+              key={schedule.id}
+              style={{
+                marginBottom: '20px',
+                opacity: isPastSchedule(schedule.date) ? 0.8 : 1,
+                backgroundColor: isPastSchedule(schedule.date) ? '#f8f9fa' : '#fff'
+              }}
+            >
+              <div className="card-header" style={{
+                borderLeft: isPastSchedule(schedule.date) ? '4px solid #6c757d' : '4px solid #007bff',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
                   <FaCalendarAlt style={{ marginRight: '10px' }} />
-                  {schedule.title || `스케줄 #${schedule.id}`}
-                </h3>
-                <span>팀 {schedule.teamId}</span>
+                  <div>
+                    <h3 style={{ margin: 0 }}>
+                      {schedule.title || `스케줄 #${schedule.id}`}
+                    </h3>
+                    <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '3px' }}>
+                      {schedule.teamName} - {getRelativeTime(schedule.date)}
+                    </div>
+                  </div>
+                </div>
+                <span style={{
+                  padding: '5px 10px',
+                  borderRadius: '4px',
+                  backgroundColor: isPastSchedule(schedule.date) ? '#6c757d' : '#007bff',
+                  color: 'white',
+                  fontSize: '0.85rem',
+                  display: 'inline-block'
+                }}>
+                  {isPastSchedule(schedule.date) ? '지난 일정' : '예정된 일정'}
+                </span>
               </div>
               <div style={{ padding: '15px' }}>
-                <div style={{ marginBottom: '15px' }}>
-                  <strong>날짜:</strong> {formatDate(schedule.date)}
-                </div>
-                <div style={{ marginBottom: '15px' }}>
-                  <strong>시간:</strong> {schedule.time}
+                <div style={{ marginBottom: '15px', display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+                  <div>
+                    <strong>날짜:</strong> {formatDate(schedule.date)}
+                  </div>
+                  <div>
+                    <strong>시간:</strong> {schedule.time}
+                  </div>
                 </div>
                 <div>
                   <h4 style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
                     <FaUsers style={{ marginRight: '10px' }} />
-                    참석자 명단 ({schedule.attendances.length}명)
+                    참석자 명단 ({Array.isArray(schedule.attendances) ? schedule.attendances.length : 0}명)
                   </h4>
                   <div className="table-container">
                     <table>
@@ -226,17 +360,51 @@ const StudentSchedules = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {schedule.attendances.map((attendance) => (
-                          <tr key={attendance.id}>
-                            <td>{attendance.user.name}</td>
-                            <td>{attendance.user.studentId}</td>
-                            <td>{attendance.user.role === 'ADMIN' ? '운영진' : '아기사자'}</td>
-                            <td>
-                              <AttendanceStatus status={attendance.status} />
-                            </td>
-                            <td>{attendance.note || '-'}</td>
+                        {Array.isArray(schedule.attendances) && schedule.attendances.length > 0 ? (
+                          // 운영진이 상단에 오도록 정렬
+                          [...schedule.attendances]
+                            .sort((a, b) => {
+                              // 운영진(ADMIN)을 먼저 표시
+                              if (a.user?.role === 'ADMIN' && b.user?.role !== 'ADMIN') return -1;
+                              if (a.user?.role !== 'ADMIN' && b.user?.role === 'ADMIN') return 1;
+                              // 같은 역할이면 이름순으로 정렬
+                              return (a.user?.name || '').localeCompare(b.user?.name || '');
+                            })
+                            .map((attendance) => (
+                              <tr key={attendance.id}>
+                                <td>
+                                  <span style={{ display: 'flex', alignItems: 'center' }}>
+                                    {attendance.user?.role === 'ADMIN'
+                                      ? <FaUserCog style={{ color: '#DF773B', marginRight: '5px' }} />
+                                      : <FaUser style={{ color: '#373737', marginRight: '5px' }} />
+                                    }
+                                    {attendance.user?.name || '-'}
+                                  </span>
+                                </td>
+                                <td>{attendance.user?.studentId || '-'}</td>
+                                <td>
+                                  <span style={{
+                                    display: 'inline-block',
+                                    padding: '2px 8px',
+                                    backgroundColor: attendance.user?.role === 'ADMIN' ? '#FEF0E6' : '#F5F5F5',
+                                    color: attendance.user?.role === 'ADMIN' ? '#DF773B' : '#373737',
+                                    borderRadius: '4px',
+                                    fontSize: '0.9em'
+                                  }}>
+                                    {attendance.user?.role === 'ADMIN' ? '운영진' : '아기사자'}
+                                  </span>
+                                </td>
+                                <td>
+                                  <AttendanceStatus status={attendance.status} />
+                                </td>
+                                <td>{attendance.note || '-'}</td>
+                              </tr>
+                            ))
+                        ) : (
+                          <tr>
+                            <td colSpan="5" style={{ textAlign: 'center' }}>참석자 정보가 없습니다.</td>
                           </tr>
-                        ))}
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -248,14 +416,25 @@ const StudentSchedules = () => {
       ) : (
         <div className="card" style={{ padding: '30px', textAlign: 'center' }}>
           <p>검색 결과가 없습니다.</p>
-          {(searchTerm || filterStartDate || filterEndDate) && (
-            <button
-              className="btn btn-secondary"
-              style={{ marginTop: '10px' }}
-              onClick={resetFilters}
-            >
-              필터 초기화
-            </button>
+          {(searchTerm || filterStartDate || filterEndDate || !showPastSchedules) && (
+            <div style={{ marginTop: '15px', display: 'flex', gap: '10px', justifyContent: 'center' }}>
+              {!showPastSchedules && (
+                <button
+                  className="btn btn-info"
+                  onClick={() => setShowPastSchedules(true)}
+                >
+                  <FaHistory /> 지난 스케줄 표시하기
+                </button>
+              )}
+              {(searchTerm || filterStartDate || filterEndDate) && (
+                <button
+                  className="btn btn-secondary"
+                  onClick={resetFilters}
+                >
+                  <FaFilter /> 필터 초기화
+                </button>
+              )}
+            </div>
           )}
         </div>
       )}

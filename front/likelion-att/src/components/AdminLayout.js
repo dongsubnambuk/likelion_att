@@ -33,13 +33,13 @@ const AdminLayout = () => {
       {/* 사이드바 */}
       <div className={`sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-header">
-          <h2>동아리 출석체크</h2>
+          <h2>멋사 출석체크</h2>
           <div className="user-info">
             <p>{currentUser?.name || '사용자'}</p>
             <span className="user-role">{currentUser?.role === 'ADMIN' ? '운영진' : '관리자'}</span>
           </div>
         </div>
-        
+
         <nav className="sidebar-nav">
           <NavLink to="/" className={({ isActive }) => isActive ? 'active' : ''} onClick={closeMobileMenu}>
             <FaChartBar /> 대시보드
@@ -48,7 +48,7 @@ const AdminLayout = () => {
             <FaUserFriends /> 팀 관리
           </NavLink>
           <NavLink to="/members" className={({ isActive }) => isActive ? 'active' : ''} onClick={closeMobileMenu}>
-            <FaUsers /> 부원 관리
+            <FaUsers /> 아기사자 관리
           </NavLink>
           <NavLink to="/schedules" className={({ isActive }) => isActive ? 'active' : ''} onClick={closeMobileMenu}>
             <FaCalendarAlt /> 스케줄 관리
@@ -57,7 +57,7 @@ const AdminLayout = () => {
             <FaChartBar /> 출석 통계
           </NavLink>
         </nav>
-        
+
         <div className="sidebar-footer">
           <button className="logout-button" onClick={handleLogout}>
             <FaSignOutAlt /> 로그아웃

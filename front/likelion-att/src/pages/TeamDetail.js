@@ -142,7 +142,22 @@ const MembersTab = ({ team, members, onAddMember, onRemoveMember }) => {
                                         </td>
                                         <td>{member.studentId}</td>
                                         <td>{member.phone || '-'}</td>
-                                        <td>{member.attendanceRate || '0'}%</td>
+                                        <td>
+                                            <div className="progress-container">
+                                                <div
+                                                    className="progress-bar"
+                                                    style={{
+                                                        width: `${member.attendanceRate || 0}%`,
+                                                        backgroundColor: member.attendanceRate > 70
+                                                            ? '#4caf50' // 높은 출석률은 녹색
+                                                            : member.attendanceRate > 40
+                                                                ? '#ff9800' // 중간 출석률은 주황색
+                                                                : '#f44336' // 낮은 출석률은 빨간색
+                                                    }}
+                                                ></div>
+                                                <span className="progress-text">{member.attendanceRate || 0}%</span>
+                                            </div>
+                                        </td>
                                         <td>
                                             <button
                                                 className="btn btn-danger btn-sm"
@@ -360,92 +375,221 @@ const TeamDetail = () => {
     useEffect(() => {
         const fetchTeamData = async () => {
             try {
-              setLoading(true);
-              // 전체 팀 목록 가져오기
-              const teamsResponse = await teamApi.getAll();
-              
-              // 팀 ID에 해당하는 데이터 찾기
-              if (teamsResponse.data && typeof teamsResponse.data === 'object') {
-                const teamMembers = teamsResponse.data[teamId];
-                
-                if (teamMembers) {
-                  // 팀 정보 설정
-                  setTeam({
-                    id: parseInt(teamId),
-                    name: `팀 ${teamId}`,
-                    memberCount: teamMembers.length,
-                    description: '',
-                    createdAt: new Date().toISOString()
-                  });
-                  
-                  // 팀원 정보 설정
-                  const formattedMembers = teamMembers.map(member => ({
-                    id: member.studentId,
-                    name: member.name,
-                    studentId: member.studentId,
-                    role: member.role,
-                    attendanceRate: 0,
-                    phone: '',
-                    email: ''
-                  }));
-                  
-                  setMembers(formattedMembers);
-                } else {
-                  // 팀이 존재하지 않음
-                  setError('팀 정보를 찾을 수 없습니다.');
-                  // setNotification도 설정 가능
-                  setNotification({
-                    type: 'error',
-                    message: '팀 정보를 찾을 수 없습니다.'
-                  });
-                }
-              } else {
-                // 예상치 못한 응답 형식
-                setError('서버에서 올바른 팀 정보를 반환하지 않았습니다.');
-                setNotification({
-                  type: 'error',
-                  message: '서버에서 올바른 팀 정보를 반환하지 않았습니다.'
+                setLoading(true);
+
+                // 특정 팀 정보 가져오기
+                const teamResponse = await teamApi.getById(teamId);
+                const teamData = teamResponse.data;
+
+                // 전체 유저 정보 가져오기 (전화번호 정보 포함)
+                const allUsersResponse = await userApi.getAll();
+                const allUsersData = allUsersResponse.data;
+
+                // 운영진과 일반 부원 목록 병합
+                const allUsers = [
+                    ...(allUsersData.admin || []),
+                    ...(allUsersData.users || [])
+                ];
+
+                // 학번을 키로 하는 유저 맵 생성 (조회 최적화)
+                const userMap = {};
+                allUsers.forEach(user => {
+                    userMap[user.studentId] = user;
                 });
-              }
-              
-              // 팀 스케줄 가져오기 (API가 있는 경우)
-              try {
-                const schedulesResponse = await scheduleApi.getByTeam(teamId);
-                setSchedules(schedulesResponse.data || []);
-              } catch (scheduleError) {
-                console.error('스케줄 데이터 로딩 실패:', scheduleError);
-                setSchedules([]);
-              }
+
+                if (teamData) {
+                    // 팀 정보 설정
+                    setTeam({
+                        id: teamData.id,
+                        name: teamData.name,
+                        description: teamData.description,
+                        memberCount: teamData.members?.length || 0,
+                        createdAt: new Date().toISOString() // API에서 제공하지 않으므로 현재 시간 사용
+                    });
+
+                    // 팀원 정보 설정
+                    if (Array.isArray(teamData.members)) {
+                        // 팀의 모든 스케줄 가져오기 (출석률 계산용)
+                        const schedulesResponse = await scheduleApi.getByTeam(teamId);
+                        let scheduleData = [];
+
+                        if (schedulesResponse.data && Array.isArray(schedulesResponse.data)) {
+                            scheduleData = schedulesResponse.data;
+                        }
+
+                        // 팀원 출석률 계산 및 전화번호 정보 병합
+                        const formattedMembers = teamData.members.map((member) => {
+                            // 전체 유저 목록에서 해당 팀원 찾기
+                            const userDetails = userMap[member.studentId] || {};
+
+                            // 각 멤버별 출석률 계산
+                            let attendanceCount = 0;
+                            let totalSchedules = 0;
+
+                            // 각 스케줄에서 해당 멤버의 출석 여부 확인
+                            scheduleData.forEach(schedule => {
+                                if (schedule.attendances && Array.isArray(schedule.attendances)) {
+                                    // 멤버의 학번으로 출석 기록 찾기
+                                    const attendance = schedule.attendances.find(att =>
+                                        att.user && att.user.studentId === member.studentId
+                                    );
+
+                                    if (attendance) {
+                                        totalSchedules++;
+                                        // 출석 또는 지각인 경우 출석으로 간주
+                                        if (attendance.status === 'PRESENT' || attendance.status === 'present' ||
+                                            attendance.status === 'LATE' || attendance.status === 'late') {
+                                            attendanceCount++;
+                                        }
+                                    }
+                                }
+                            });
+
+                            // 출석률 계산
+                            const attendanceRate = totalSchedules > 0
+                                ? Math.round((attendanceCount / totalSchedules) * 100)
+                                : 0;
+
+                            return {
+                                id: member.studentId,
+                                name: member.name,
+                                studentId: member.studentId,
+                                role: member.role,
+                                attendanceRate: attendanceRate,
+                                // 전화번호 정보: 전체 유저 목록의 phone 정보 > 팀 데이터의 phone 정보 > 기본값 '-'
+                                phone: userDetails.phone || member.phone || '-',
+                                email: userDetails.email || member.email || '',
+                                track: userDetails.track || member.track || ''
+                            };
+                        });
+
+                        setMembers(formattedMembers);
+
+                        // 팀 전체 평균 출석률 계산
+                        const totalAttendanceRate = formattedMembers.reduce((sum, member) => sum + member.attendanceRate, 0);
+                        const averageAttendance = formattedMembers.length > 0
+                            ? Math.round(totalAttendanceRate / formattedMembers.length)
+                            : 0;
+
+                        // 팀 정보에 평균 출석률 추가
+                        setTeam(prevTeam => ({
+                            ...prevTeam,
+                            averageAttendance: averageAttendance
+                        }));
+
+                    } else {
+                        setMembers([]);
+                        console.warn('팀원 데이터가 배열이 아닙니다:', teamData.members);
+                    }
+
+                    // 팀 스케줄 가져오기
+                    try {
+                        const schedulesResponse = await scheduleApi.getByTeam(teamId);
+
+                        // 스케줄 데이터가 배열인지 확인 및 변환
+                        if (schedulesResponse.data && Array.isArray(schedulesResponse.data)) {
+                            // 기존 UI에 맞게 데이터 변환
+                            const formattedSchedules = schedulesResponse.data.map(schedule => ({
+                                id: schedule.id,
+                                title: schedule.title || `일정 ${schedule.id}`, // title이 없으면 기본값 사용
+                                date: schedule.date,
+                                time: schedule.time,
+                                description: schedule.description || '',
+                                attendanceRate: calculateAttendanceRate(schedule.attendances || []), // 출석률 계산
+                                teamId: parseInt(teamId)
+                            }));
+
+                            setSchedules(formattedSchedules);
+                        } else {
+                            setSchedules([]);
+                            console.warn('스케줄 데이터가 배열이 아닙니다:', schedulesResponse.data);
+                        }
+                    } catch (scheduleError) {
+                        console.error('스케줄 데이터 로딩 실패:', scheduleError);
+                        setSchedules([]);
+                    }
+                } else {
+                    setError('팀 정보를 찾을 수 없습니다.');
+                    setNotification({
+                        type: 'error',
+                        message: '팀 정보를 찾을 수 없습니다.'
+                    });
+                }
             } catch (error) {
-              console.error('팀 데이터 로딩 실패:', error);
-              setError('팀 정보를 불러오는데 실패했습니다.');
-              setNotification({
-                type: 'error',
-                message: '팀 정보를 불러오는데 실패했습니다.'
-              });
+                console.error('팀 데이터 로딩 실패:', error);
+                setError('팀 정보를 불러오는데 실패했습니다.');
+                setNotification({
+                    type: 'error',
+                    message: '팀 정보를 불러오는데 실패했습니다.'
+                });
             } finally {
-              setLoading(false);
+                setLoading(false);
             }
-          };
+        };
+
+        // 출석률 계산 유틸리티 함수
+        const calculateAttendanceRate = (attendances) => {
+            if (!Array.isArray(attendances) || attendances.length === 0) {
+                return 0;
+            }
+
+            const presentCount = attendances.filter(
+                a => a.status === 'PRESENT' || a.status === 'present' ||
+                    a.status === 'LATE' || a.status === 'late'
+            ).length;
+
+            return Math.round((presentCount / attendances.length) * 100);
+        };
 
         fetchTeamData();
     }, [teamId]);
 
-    // 팀원 추가
+    // 팀원 추가 메서드 구현
     const handleAddMember = async (userId) => {
         try {
             const response = await teamApi.addMember(teamId, userId);
-            setMembers([...members, response.data]);
 
-            setNotification({
-                type: 'success',
-                message: '팀원이 성공적으로 추가되었습니다!'
-            });
+            if (response.data) {
+                // 전체 유저 정보 목록에서 추가된 멤버 정보 찾기
+                const userResponse = await userApi.getAll();
+                const userData = userResponse.data;
 
-            setTimeout(() => {
-                setNotification(null);
-            }, 3000);
+                // 운영진과 일반 부원 목록 병합
+                const allUsers = [
+                    ...(userData.admin || []),
+                    ...(userData.users || [])
+                ];
 
+                // 추가된 유저 찾기
+                const addedUser = allUsers.find(user =>
+                    user.studentId.toString() === userId.toString() ||
+                    user.id === userId
+                );
+
+                // 새 팀원을 목록에 추가
+                const newMember = {
+                    id: response.data.studentId,
+                    name: response.data.name,
+                    studentId: response.data.studentId,
+                    role: response.data.role,
+                    attendanceRate: 0,
+                    // 전화번호 정보 추가 (전체 유저 목록의 정보 > 응답 데이터 > 기본값)
+                    phone: (addedUser && addedUser.phone) || response.data.phone || '-',
+                    email: (addedUser && addedUser.email) || response.data.email || '',
+                    track: (addedUser && addedUser.track) || response.data.track || ''
+                };
+
+                setMembers([...members, newMember]);
+
+                setNotification({
+                    type: 'success',
+                    message: '팀원이 성공적으로 추가되었습니다!'
+                });
+
+                setTimeout(() => {
+                    setNotification(null);
+                }, 3000);
+            }
         } catch (error) {
             console.error('팀원 추가 실패:', error);
             setNotification({
@@ -456,7 +600,7 @@ const TeamDetail = () => {
         }
     };
 
-    // 팀원 제거
+    // 팀원 제거 메서드 구현
     const handleRemoveMember = async (userId) => {
         if (!window.confirm('정말 이 팀원을 제거하시겠습니까?')) {
             return;
@@ -464,6 +608,8 @@ const TeamDetail = () => {
 
         try {
             await teamApi.removeMember(teamId, userId);
+
+            // UI에서 제거된 팀원 필터링
             setMembers(members.filter(member => member.id !== userId));
 
             setNotification({
@@ -474,7 +620,6 @@ const TeamDetail = () => {
             setTimeout(() => {
                 setNotification(null);
             }, 3000);
-
         } catch (error) {
             console.error('팀원 제거 실패:', error);
             setNotification({
@@ -484,21 +629,29 @@ const TeamDetail = () => {
         }
     };
 
-    // 스케줄 생성
+    // 스케줄 생성 메서드 구현
     const handleCreateSchedule = async (scheduleData) => {
         try {
-            const response = await scheduleApi.create(scheduleData);
-            setSchedules([...schedules, response.data]);
+            // 현재 팀 ID 설정 (로컬 스토리지 대신 상태에서 가져오기)
+            localStorage.setItem('currentTeamId', teamId);
 
-            setNotification({
-                type: 'success',
-                message: '스케줄이 성공적으로 생성되었습니다!'
+            const response = await scheduleApi.create({
+                ...scheduleData,
+                teamId: parseInt(teamId)
             });
 
-            setTimeout(() => {
-                setNotification(null);
-            }, 3000);
+            if (response.data) {
+                setSchedules([...schedules, response.data]);
 
+                setNotification({
+                    type: 'success',
+                    message: '스케줄이 성공적으로 생성되었습니다!'
+                });
+
+                setTimeout(() => {
+                    setNotification(null);
+                }, 3000);
+            }
         } catch (error) {
             console.error('스케줄 생성 실패:', error);
             setNotification({
@@ -509,14 +662,16 @@ const TeamDetail = () => {
         }
     };
 
-    // 스케줄 삭제
+    // 스케줄 삭제 메서드 구현
     const handleDeleteSchedule = async (scheduleId) => {
         if (!window.confirm('정말 이 스케줄을 삭제하시겠습니까?')) {
             return;
         }
 
         try {
-            await scheduleApi.delete(scheduleId);
+            await scheduleApi.delete(scheduleId, teamId);
+
+            // UI에서 제거된 스케줄 필터링
             setSchedules(schedules.filter(schedule => schedule.id !== scheduleId));
 
             setNotification({
@@ -527,7 +682,6 @@ const TeamDetail = () => {
             setTimeout(() => {
                 setNotification(null);
             }, 3000);
-
         } catch (error) {
             console.error('스케줄 삭제 실패:', error);
             setNotification({

@@ -13,7 +13,7 @@ const MemberFilters = ({ searchTerm, setSearchTerm, activeTab, setActiveTab, adm
         <input
           type="text"
           className="search-input"
-          placeholder="이름, 학번, 전화번호, 트랙으로 검색..."
+          placeholder="이름, 학번으로 검색..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
@@ -21,10 +21,10 @@ const MemberFilters = ({ searchTerm, setSearchTerm, activeTab, setActiveTab, adm
           <FaSearch />
         </button>
       </div>
-      
+
       <div className="tabs" style={{ flex: '0 0 auto', display: 'flex', borderBottom: '1px solid #e0e0e0' }}>
         {TAB_OPTIONS.map(tab => (
-          <button 
+          <button
             key={tab.value}
             className={`tab-btn ${activeTab === tab.value ? 'active' : ''}`}
             onClick={() => setActiveTab(tab.value)}
@@ -38,10 +38,10 @@ const MemberFilters = ({ searchTerm, setSearchTerm, activeTab, setActiveTab, adm
               marginRight: '5px'
             }}
           >
-            {tab.label} ({tab.value === 'all' 
-              ? (adminCount + userCount) 
-              : tab.value === 'admin' 
-                ? adminCount 
+            {tab.label} ({tab.value === 'all'
+              ? (adminCount + userCount)
+              : tab.value === 'admin'
+                ? adminCount
                 : userCount
             })
           </button>

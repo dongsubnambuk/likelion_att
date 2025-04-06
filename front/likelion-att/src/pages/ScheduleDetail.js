@@ -7,22 +7,25 @@ import { scheduleApi, teamApi, attendanceApi } from '../services/api';
 // 출석 상태 컴포넌트
 const AttendanceStatus = ({ status }) => {
   let statusClass = 'status-none';
-  let statusText = '미처리';
+  let statusText = '미출결';
 
   switch (status) {
-    case 'present':
+    case 'PRESENT':
       statusClass = 'status-present';
       statusText = '출석';
       break;
-    case 'late':
+    case 'LATE':
       statusClass = 'status-late';
       statusText = '지각';
       break;
-    case 'absent':
+    case 'ABSENT':
       statusClass = 'status-absent';
       statusText = '결석';
       break;
+    case 'NOT':
     default:
+      statusClass = 'status-none';
+      statusText = '미출결';
       break;
   }
 
@@ -48,9 +51,8 @@ const RatingStars = ({ rating, onRatingChange }) => {
 
 // 출석체크 컴포넌트
 const AttendanceCheckItem = ({ member, attendance, onChange }) => {
-  // status 이름을 API와 일치시킴 (present → PRESENT, absent → ABSENT, late → LATE, none → NOT)
+  // status 이름을 API와 일치시킴 (모두 대문자로 사용)
   const [status, setStatus] = useState(attendance.status || 'NOT');
-  // score 이름을 API와 일치시킴 (rating → score)
   const [score, setScore] = useState(attendance.score || 0);
   const [note, setNote] = useState(attendance.note || '');
 
@@ -62,17 +64,36 @@ const AttendanceCheckItem = ({ member, attendance, onChange }) => {
 
   const handleStatusChange = (newStatus) => {
     setStatus(newStatus);
-    onChange({ ...attendance, status: newStatus, score, note });
+    onChange({
+      ...attendance,
+      status: newStatus,
+      score,
+      note,
+      // user 필드 확인 및 설정
+      user: attendance.user || member
+    });
   };
 
   const handleScoreChange = (newScore) => {
     setScore(newScore);
-    onChange({ ...attendance, status, score: newScore, note });
+    onChange({
+      ...attendance,
+      status,
+      score: newScore,
+      note,
+      user: attendance.user || member
+    });
   };
 
   const handleNoteChange = (e) => {
     setNote(e.target.value);
-    onChange({ ...attendance, status, score, note: e.target.value });
+    onChange({
+      ...attendance,
+      status,
+      score,
+      note: e.target.value,
+      user: attendance.user || member
+    });
   };
 
   return (
@@ -105,12 +126,11 @@ const AttendanceCheckItem = ({ member, attendance, onChange }) => {
             className={`attendance-option ${status === 'NOT' ? 'selected-none' : ''}`}
             onClick={() => handleStatusChange('NOT')}
           >
-            미처리
+            미출결
           </div>
         </div>
       </td>
       <td>
-        {/* RatingStars 컴포넌트에 rating 대신 score 전달 */}
         <RatingStars rating={score} onRatingChange={handleScoreChange} />
       </td>
       <td>
@@ -150,21 +170,69 @@ const ScheduleDetail = () => {
     const fetchScheduleData = async () => {
       try {
         setLoading(true);
-        // 스케줄 정보 가져오기
-        const scheduleResponse = await scheduleApi.getById(scheduleId);
-        const scheduleData = scheduleResponse.data;
-        setSchedule(scheduleData);
+
+        // 전체 스케줄 데이터 조회
+        const allSchedulesResponse = await scheduleApi.getAll();
+
+        // 스케줄 ID로 특정 스케줄 찾기
+        let foundSchedule = null;
+        let teamId = null;
+
+        // allSchedulesResponse.data는 { "1": [ ... ], "2": [ ... ] } 형태
+        if (allSchedulesResponse.data && typeof allSchedulesResponse.data === 'object') {
+          // 각 팀의 스케줄에서 검색
+          Object.entries(allSchedulesResponse.data).forEach(([currentTeamId, teamSchedules]) => {
+            if (Array.isArray(teamSchedules)) {
+              const schedule = teamSchedules.find(s => s.id === parseInt(scheduleId));
+              if (schedule) {
+                foundSchedule = { ...schedule, teamId: parseInt(currentTeamId) };
+                teamId = parseInt(currentTeamId);
+              }
+            }
+          });
+        }
+
+        if (!foundSchedule) {
+          setNotification({
+            type: 'error',
+            message: '스케줄 정보를 찾을 수 없습니다.'
+          });
+          setLoading(false);
+          return;
+        }
+
+        setSchedule(foundSchedule);
+        console.log('불러온 스케줄 정보:', foundSchedule);
 
         // 팀 정보 가져오기
-        const teamResponse = await teamApi.getById(scheduleData.teamId);
+        const teamResponse = await teamApi.getById(teamId);
         setTeam(teamResponse.data);
+        console.log('불러온 팀 정보:', teamResponse.data);
 
-        // 출석 정보 가져오기
-        const attendanceResponse = await attendanceApi.getBySchedule(scheduleId);
-        setAttendances(attendanceResponse.data);
+        // 출석 정보 처리
+        if (foundSchedule.attendances && Array.isArray(foundSchedule.attendances)) {
+          // 출석 상태 대문자로 통일
+          const formattedAttendances = foundSchedule.attendances.map(attendance => {
+            let status = attendance.status || 'NOT';
+            if (status === 'not') status = 'NOT';
+            else if (status === 'present') status = 'PRESENT';
+            else if (status === 'late') status = 'LATE';
+            else if (status === 'absent') status = 'ABSENT';
 
-        // 출석 통계 계산
-        calculateStats(attendanceResponse.data);
+            return {
+              ...attendance,
+              status: status,
+              member: attendance.user || null // user 필드를 member로 복사
+            };
+          });
+
+          setAttendances(formattedAttendances);
+          calculateStats(formattedAttendances);
+          console.log('처리된 출석 정보:', formattedAttendances);
+        } else {
+          setAttendances([]);
+          calculateStats([]);
+        }
       } catch (error) {
         console.error('스케줄 데이터 로딩 실패:', error);
         setNotification({
@@ -182,15 +250,16 @@ const ScheduleDetail = () => {
   // 출석 통계 계산
   const calculateStats = (attendanceData) => {
     const total = attendanceData.length;
-    // 상태 값을 API와 일치시킴
+
+    // 상태 값을 대문자로 사용
     const presentCount = attendanceData.filter(a => a.status === 'PRESENT').length;
     const lateCount = attendanceData.filter(a => a.status === 'LATE').length;
     const absentCount = attendanceData.filter(a => a.status === 'ABSENT').length;
     const noneCount = attendanceData.filter(a => a.status === 'NOT' || !a.status).length;
-    
+
     // 출석률 계산 (출석 + 지각의 비율)
     const attendanceRate = total > 0 ? Math.round(((presentCount + lateCount) / total) * 100) : 0;
-    
+
     setStats({
       present: presentCount,
       late: lateCount,
@@ -203,7 +272,7 @@ const ScheduleDetail = () => {
 
   // 출석 정보 변경
   const handleAttendanceChange = (updatedAttendance) => {
-    setAttendances(attendances.map(attendance => 
+    setAttendances(attendances.map(attendance =>
       attendance.id === updatedAttendance.id ? updatedAttendance : attendance
     ));
   };
@@ -212,23 +281,45 @@ const ScheduleDetail = () => {
   const handleSave = async () => {
     try {
       setSaving(true);
-      
+
       // API 요구 형식에 맞게 데이터 변환
-      // attendances 배열을 직접 전달 (키로 감싸지 않음)
-      await attendanceApi.bulkUpdate(attendances);
-      
+      const formattedAttendances = attendances.map(attendance => {
+        // user 필드 확인
+        const user = attendance.user || attendance.member;
+
+        // 상태값 확인 및 변환
+        let status = attendance.status || 'NOT';
+        if (status === 'not') status = 'NOT';
+        else if (status === 'present') status = 'PRESENT';
+        else if (status === 'late') status = 'LATE';
+        else if (status === 'absent') status = 'ABSENT';
+
+        return {
+          id: attendance.id,
+          user: user,
+          status: status,
+          note: attendance.note || '',
+          score: attendance.score || 0
+        };
+      });
+
+      console.log('저장할 출석 데이터:', formattedAttendances);
+
+      // /api/pickup/update-location API 호출
+      await attendanceApi.bulkUpdate(formattedAttendances);
+
       // 출석 통계 다시 계산
       calculateStats(attendances);
-      
+
       setNotification({
         type: 'success',
         message: '출석 정보가 성공적으로 저장되었습니다!'
       });
-      
+
       setTimeout(() => {
         setNotification(null);
       }, 3000);
-      
+
     } catch (error) {
       console.error('출석 정보 저장 실패:', error);
       setNotification({
@@ -245,21 +336,21 @@ const ScheduleDetail = () => {
     if (!window.confirm('정말 이 스케줄을 삭제하시겠습니까? 모든 출석 정보가 함께 삭제됩니다.')) {
       return;
     }
-    
+
     try {
-      // 스케줄 삭제 시 teamId도 함께 전달
+      // scheduleApi.delete 호출 (teamId와 scheduleId 모두 전달)
       await scheduleApi.delete(scheduleId, team.id);
-      
+
       setNotification({
         type: 'success',
         message: '스케줄이 성공적으로 삭제되었습니다!'
       });
-      
+
       // 팀 상세 페이지로 리다이렉트
       setTimeout(() => {
         navigate(`/teams/${team.id}`);
       }, 1500);
-      
+
     } catch (error) {
       console.error('스케줄 삭제 실패:', error);
       setNotification({
@@ -360,7 +451,7 @@ const ScheduleDetail = () => {
                 {Math.round((stats.present / stats.total) * 100) || 0}%
               </div>
             </div>
-            
+
             <div className="stat-card">
               <div className="stat-title">지각</div>
               <div className="stat-value">{stats.late}</div>
@@ -368,7 +459,7 @@ const ScheduleDetail = () => {
                 {Math.round((stats.late / stats.total) * 100) || 0}%
               </div>
             </div>
-            
+
             <div className="stat-card">
               <div className="stat-title">결석</div>
               <div className="stat-value">{stats.absent}</div>
@@ -376,15 +467,15 @@ const ScheduleDetail = () => {
                 {Math.round((stats.absent / stats.total) * 100) || 0}%
               </div>
             </div>
-            
+
             <div className="stat-card">
-              <div className="stat-title">미처리</div>
+              <div className="stat-title">미출결</div>
               <div className="stat-value">{stats.none}</div>
               <div className="stat-change">
                 {Math.round((stats.none / stats.total) * 100) || 0}%
               </div>
             </div>
-            
+
             <div className="stat-card">
               <div className="stat-title">출석률</div>
               <div className="stat-value">{stats.rate}%</div>

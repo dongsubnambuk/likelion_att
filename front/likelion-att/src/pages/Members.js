@@ -4,11 +4,11 @@ import { FaPlus, FaFileExcel } from 'react-icons/fa';
 import { userApi } from '../services/api';
 
 // 컴포넌트 가져오기
-import {  
-  BulkImportModal, 
-  DeleteConfirmModal, 
-  MemberTable, 
-  MemberFilters 
+import {
+  BulkImportModal,
+  DeleteConfirmModal,
+  MemberTable,
+  MemberFilters
 } from '../components/members';
 
 // Loading 컴포넌트를 직접 가져옴
@@ -18,11 +18,11 @@ import Loading from '../components/common/Loading';
 // 나중에 Notification.js 파일이 생성되면 import로 대체할 수 있습니다
 const Notification = ({ notification, onClose }) => {
   if (!notification) return null;
-  
+
   return (
     <div className={`alert alert-${notification.type}`}>
-      {notification.type === 'success' 
-        ? <span>✅</span> 
+      {notification.type === 'success'
+        ? <span>✅</span>
         : <span>⚠️</span>}
       <span>{notification.message}</span>
     </div>
@@ -52,18 +52,18 @@ const Members = () => {
       setLoading(true);
       const response = await userApi.getAll();
       console.log('부원 목록 응답:', response.data);
-      
+
       if (response.data && typeof response.data === 'object') {
         // API 응답 구조에 맞게 데이터 설정
         const adminMembers = response.data.admin || [];
         const studentMembers = response.data.users || [];
-        
-        setMembers({ 
+
+        setMembers({
           admin: adminMembers,
           users: studentMembers
         });
-        
-        setFilteredMembers({ 
+
+        setFilteredMembers({
           admin: adminMembers,
           users: studentMembers
         });
@@ -96,7 +96,7 @@ const Members = () => {
       setFilteredMembers(members);
     } else {
       const searchLower = searchTerm.toLowerCase();
-      
+
       // 필터링 함수
       const filterMember = (member) => {
         return (
@@ -106,11 +106,11 @@ const Members = () => {
           (member.track && member.track.toLowerCase().includes(searchLower))
         );
       };
-      
+
       // 관리자와 일반 부원 필터링
       const filteredAdmin = members.admin.filter(filterMember);
       const filteredUsers = members.users.filter(filterMember);
-      
+
       setFilteredMembers({
         admin: filteredAdmin,
         users: filteredUsers
@@ -121,12 +121,31 @@ const Members = () => {
   // 정렬 처리 함수
   const sortMembers = (memberList) => {
     if (!sortConfig.key) return memberList;
-    
+
     return [...memberList].sort((a, b) => {
-      if (a[sortConfig.key] < b[sortConfig.key]) {
+      // null 값 처리 - null 값은 항상 마지막에 위치
+      if (a[sortConfig.key] === null || a[sortConfig.key] === undefined) return sortConfig.direction === 'asc' ? 1 : -1;
+      if (b[sortConfig.key] === null || b[sortConfig.key] === undefined) return sortConfig.direction === 'asc' ? -1 : 1;
+
+      // 일반적인 비교 로직
+      let valueA = a[sortConfig.key];
+      let valueB = b[sortConfig.key];
+
+      // 학번과 전화번호는 숫자로 변환하여 비교
+      if (sortConfig.key === 'studentId' || sortConfig.key === 'phone') {
+        valueA = Number(valueA) || 0;
+        valueB = Number(valueB) || 0;
+      }
+      // 문자열은 소문자로 변환하여 비교
+      else if (typeof valueA === 'string' && typeof valueB === 'string') {
+        valueA = valueA.toLowerCase();
+        valueB = valueB.toLowerCase();
+      }
+
+      if (valueA < valueB) {
         return sortConfig.direction === 'asc' ? -1 : 1;
       }
-      if (a[sortConfig.key] > b[sortConfig.key]) {
+      if (valueA > valueB) {
         return sortConfig.direction === 'asc' ? 1 : -1;
       }
       return 0;
@@ -146,7 +165,7 @@ const Members = () => {
   const getCurrentMembers = () => {
     const sortedAdmin = sortMembers(filteredMembers.admin);
     const sortedUsers = sortMembers(filteredMembers.users);
-    
+
     switch (activeTab) {
       case 'admin':
         return sortedAdmin;
@@ -167,11 +186,11 @@ const Members = () => {
         studentId: parseInt(memberData.studentId),
         phone: memberData.phone
       });
-      
+
       // 부원 목록 새로고침
       fetchMembers();
       setIsCreateModalOpen(false);
-      
+
       setNotification({
         type: 'success',
         message: '부원이 성공적으로 등록되었습니다!'
@@ -199,12 +218,12 @@ const Members = () => {
         studentId: parseInt(memberData.studentId),
         phone: memberData.phone
       });
-      
+
       // 부원 목록 새로고침
       fetchMembers();
       setIsEditModalOpen(false);
       setSelectedMember(null);
-      
+
       setNotification({
         type: 'success',
         message: '부원 정보가 성공적으로 수정되었습니다!'
@@ -228,12 +247,12 @@ const Members = () => {
     try {
       // API 호출
       await userApi.delete(studentId);
-      
+
       // 부원 목록 새로고침
       fetchMembers();
       setIsDeleteModalOpen(false);
       setSelectedMember(null);
-      
+
       setNotification({
         type: 'success',
         message: '부원이 성공적으로 삭제되었습니다!'
@@ -258,17 +277,17 @@ const Members = () => {
       // FormData 생성하여 파일 업로드
       const formData = new FormData();
       formData.append('file', file);
-      
+
       // API 호출
       await userApi.bulkCreate(formData);
-      
+
       setNotification({
         type: 'success',
         message: `파일이 성공적으로 업로드되었습니다. 부원 목록이 업데이트됩니다.`
       });
-      
+
       setIsImportModalOpen(false);
-      
+
       // 파일 업로드 후 부원 목록 새로고침
       fetchMembers();
 
@@ -300,9 +319,9 @@ const Members = () => {
       </div>
 
       {/* 알림 메시지 */}
-      <Notification 
-        notification={notification} 
-        onClose={handleCloseNotification} 
+      <Notification
+        notification={notification}
+        onClose={handleCloseNotification}
       />
 
       {/* 검색 및 필터 영역 */}
