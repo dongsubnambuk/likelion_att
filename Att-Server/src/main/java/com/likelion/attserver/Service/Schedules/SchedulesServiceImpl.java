@@ -16,7 +16,7 @@ public class SchedulesServiceImpl implements SchedulesService {
     private final SchedulesDAO schedulesDAO;
 
     @Override
-    public void createSchedule(Long teamId, SchedulesDTO schedule) {
+    public void createSchedule(Long teamId, List<SchedulesDTO> schedule) {
         try {
             schedulesDAO.addSchedule(teamId, schedule);
         } catch (Exception e) {

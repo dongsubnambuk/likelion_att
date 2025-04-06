@@ -22,35 +22,42 @@ public class SchedulesDAOImpl implements SchedulesDAO {
     private final TeamRepository teamRepository;
     private final AttendanceDAO attendanceDAO;
 
-    public boolean existSchedule(List<SchedulesEntity> schedules, SchedulesDTO schedulesDTO) {
-        for(SchedulesEntity schedule : schedules) {
-            if (schedule.getDate().equals(schedulesDTO.getDate()) &&
-                    schedule.getTime().equals(schedulesDTO.getTime()))
-                return true;
-        }
-        return false;
-    }
-
-    // 왜 처음 한개는 되는데 그 다음 부터는 안돼지? 흠..
     @Override
-    public void addSchedule(Long teamId, SchedulesDTO schedule) {
-        if(!existSchedule(teamRepository.getSchedulesById(teamId), schedule)) {
-            log.info("Completed checking for schedule presence");
-            TeamEntity team = teamRepository.findById(teamId)
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid team id"));
+    public void addSchedule(Long teamId, List<SchedulesDTO> scheduleDTOs) {
+        TeamEntity team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid team id"));
 
+        // 기존 스케줄 목록을 메모리에서 한 번 조회
+        List<SchedulesEntity> existingSchedules = team.getSchedules();
+
+        // 요청된 스케줄 중 중복 체크
+        for(SchedulesDTO dto : scheduleDTOs) {
+            if (existSchedule(existingSchedules, dto)) {
+                log.info("Fail add schedule");
+                throw new IllegalStateException(
+                        String.format("Schedule already exists: %s %s", dto.getDate(), dto.getTime())
+                );
+            }
+
+            // 중복 없으면 새 엔티티 추가
             SchedulesEntity schedulesEntity = new SchedulesEntity();
-            schedulesEntity.setDate(schedule.getDate());
-            schedulesEntity.setTime(schedule.getTime());
-            // 개헷갈리네 슈밤바
+            schedulesEntity.setDate(dto.getDate());
+            schedulesEntity.setTime(dto.getTime());
             schedulesEntity.setAttendances(attendanceDAO.addAttendances(team.getUsers()));
 
-            team.getSchedules().add(schedulesEntity);
-            teamRepository.save(team);
-        } else {
-            log.info("Fail add schedule");
-            throw new IllegalStateException("Schedule already exists");
+            existingSchedules.add(schedulesEntity);
         }
+
+        // 모든 작업 후 한 번에 DB 저장
+        teamRepository.save(team);
+    }
+
+    private boolean existSchedule(List<SchedulesEntity> schedules, SchedulesDTO dto) {
+        return schedules.stream()
+                .anyMatch(schedule ->
+                        schedule.getDate().equals(dto.getDate()) &&
+                                schedule.getTime().equals(dto.getTime())
+                );
     }
 
     @Override
