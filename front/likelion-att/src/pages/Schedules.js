@@ -584,60 +584,62 @@ const Schedules = () => {
 
       {/* 스케줄 목록 */}
       {filteredSchedules.length > 0 ? (
-        <div className="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>날짜</th>
-                <th>시간</th>
-                <th>팀</th>
-                <th>참석률</th>
-                <th>생성일</th>
-                <th>관리</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredSchedules.map((schedule) => (
-                <tr key={schedule.id}>
-                  <td>{schedule.date}</td>
-                  <td>{schedule.time}</td>
-                  <td>
-                    <Link to={`/teams/${schedule.teamId}`}>{schedule.teamName}</Link>
-                  </td>
-                  <td>{schedule.attendanceRate || '0'}%</td>
-                  <td>{new Date(schedule.createdAt).toLocaleDateString()}</td>
-                  <td>
-                    <div style={{ display: 'flex', gap: '5px' }}>
-                      <Link
-                        to={`/schedules/${schedule.id}`}
-                        className="btn btn-primary btn-sm"
-                        title="출석체크"
-                      >
-                        <FaCalendarAlt />
-                      </Link>
-                      <Link
-                        to={`/teams/${schedule.teamId}`}
-                        className="btn btn-secondary btn-sm"
-                        title="팀 보기"
-                      >
-                        <FaUserFriends />
-                      </Link>
-                      <button
-                        className="btn btn-danger btn-sm"
-                        title="삭제"
-                        onClick={() => {
-                          setSelectedSchedule(schedule);
-                          setIsDeleteModalOpen(true);
-                        }}
-                      >
-                        <FaTrash />
-                      </button>
-                    </div>
-                  </td>
+        <div className="card">
+          <div className="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>날짜</th>
+                  <th>시간</th>
+                  <th>팀</th>
+                  <th>참석률</th>
+                  <th>생성일</th>
+                  <th>관리</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredSchedules.map((schedule) => (
+                  <tr key={schedule.id}>
+                    <td>{schedule.date}</td>
+                    <td>{schedule.time}</td>
+                    <td>
+                      <Link to={`/teams/${schedule.teamId}`}>{schedule.teamName}</Link>
+                    </td>
+                    <td>{schedule.attendanceRate || '0'}%</td>
+                    <td>{new Date(schedule.createdAt).toLocaleDateString()}</td>
+                    <td>
+                      <div style={{ display: 'flex', gap: '5px' }}>
+                        <Link
+                          to={`/schedules/${schedule.id}`}
+                          className="btn btn-primary btn-sm"
+                          title="출석체크"
+                        >
+                          <FaCalendarAlt />
+                        </Link>
+                        <Link
+                          to={`/teams/${schedule.teamId}`}
+                          className="btn btn-secondary btn-sm"
+                          title="팀 보기"
+                        >
+                          <FaUserFriends />
+                        </Link>
+                        <button
+                          className="btn btn-danger btn-sm"
+                          title="삭제"
+                          onClick={() => {
+                            setSelectedSchedule(schedule);
+                            setIsDeleteModalOpen(true);
+                          }}
+                        >
+                          <FaTrash />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       ) : (
         <div className="card" style={{ padding: '30px', textAlign: 'center' }}>

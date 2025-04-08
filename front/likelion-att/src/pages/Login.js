@@ -275,7 +275,7 @@ const Login = () => {
     <div className="login-container">
       <div className="login-card">
         <div className="login-header">
-          <h1 className="login-title">동아리 출석체크 시스템</h1>
+          <h1 className="login-title">계명대 멋사 13기</h1>
           {/* <p className="login-subtitle">로그인</p> */}
         </div>
 

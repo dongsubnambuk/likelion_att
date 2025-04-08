@@ -299,7 +299,7 @@ const TeamCreateModal = ({ isOpen, onClose, onSubmit, existingTeams = [] }) => {
               <label className="form-label">팀원 선택</label>
 
               {/* 운영진 표시/숨김 토글 버튼 추가 */}
-              <div style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ marginBottom: '10px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div className="search-container" style={{ flex: 1, marginRight: '10px' }}>
                   <input
                     type="text"
@@ -379,8 +379,8 @@ const TeamCreateModal = ({ isOpen, onClose, onSubmit, existingTeams = [] }) => {
                 </div>
               )}
 
-              <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between' }}>
-                <p>선택된 멤버: <strong>{selectedMembers.length}명</strong></p>
+              <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between', flexDirection: 'column'}}>
+                
 
                 {/* 전체 선택/해제 버튼 추가 */}
                 <div>
@@ -403,6 +403,7 @@ const TeamCreateModal = ({ isOpen, onClose, onSubmit, existingTeams = [] }) => {
                   >
                     모두 해제
                   </button>
+                  <p>선택된 멤버: <strong>{selectedMembers.length}명</strong></p>
                 </div>
               </div>
             </div>
@@ -718,13 +719,13 @@ const Teams = () => {
                       >
                         <FaUsers />
                       </Link>
-                      <Link
+                      {/* <Link
                         to={`/teams/${team.id}/schedules`}
                         className="btn btn-secondary btn-sm"
                         title="스케줄 보기"
                       >
                         <FaCalendarAlt />
-                      </Link>
+                      </Link> */}
                       <button
                         className="btn btn-danger btn-sm"
                         title="삭제"

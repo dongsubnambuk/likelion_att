@@ -225,6 +225,24 @@ const Documents = () => {
         setFilterEndDate('');
     };
 
+    // 팀 이름 가져오기
+    const getTeamName = (teamId) => {
+        const team = teams.find(t => t.id === parseInt(teamId));
+        return team ? team.name : `팀 ${teamId}`;
+    };
+
+    // 팀 설명 가져오기 함수
+    const getTeamDescription = (teamId) => {
+        const team = teams.find(t => t.id === parseInt(teamId));
+        return team && team.description ? team.description : '';
+    };
+
+    // 팀 ID에 따라 CSS 클래스 이름 가져오는 함수
+    const getTeamColorClass = (teamId) => {
+        const colorIndex = (parseInt(teamId) % 4) - 1;
+        return colorIndex;
+    };
+
     // 교육자료 생성 모달
     const DocumentCreateModal = ({ isOpen, onClose }) => {
         const [formData, setFormData] = useState({
@@ -270,7 +288,7 @@ const Documents = () => {
 
         return (
             <div className="modal-backdrop">
-                <div className="modal">
+                <div className="modal" style={{ height: 'auto' }}>
                     <div className="modal-header">
                         <h2>교육자료 등록</h2>
                         <button className="modal-close" onClick={onClose}>&times;</button>
@@ -393,7 +411,7 @@ const Documents = () => {
 
         return (
             <div className="modal-backdrop">
-                <div className="modal">
+                <div className="modal" style={{ height: 'auto' }}>
                     <div className="modal-header">
                         <h2>교육자료 수정</h2>
                         <button className="modal-close" onClick={onClose}>&times;</button>
@@ -501,12 +519,6 @@ const Documents = () => {
         );
     };
 
-    // 팀 이름 가져오기
-    const getTeamName = (teamId) => {
-        const team = teams.find(t => t.id === parseInt(teamId));
-        return team ? team.name : `팀 ${teamId}`;
-    };
-
     if (loading) {
         return <div className="loading">로딩 중...</div>;
     }
@@ -537,7 +549,7 @@ const Documents = () => {
 
             {/* 필터 영역 */}
             <div className="card" style={{ marginBottom: '20px' }}>
-                <div className="card-header">
+                <div className="card-header" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <h2>교육자료 필터</h2>
                     <div style={{ display: 'flex', gap: '10px' }}>
                         <button
@@ -625,32 +637,17 @@ const Documents = () => {
 
             {/* 교육자료 목록 */}
             {hasDocuments ? (
-                <div className="developer-grid" style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(560px, 1fr))', // 크기를 2배로 키움
-                    gap: '24px',
-                    marginBottom: '36px'
-                }}>
-                    {Object.entries(filteredDocuments).flatMap(([teamId, docs]) =>
-                        docs.map((doc) => (
-                            <div
-                                key={doc.id}
-                                className="card"
-                                style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    height: '100%',
-                                    padding: 0,
-                                    overflow: 'hidden'
-                                }}
-                            >
-                                <div style={{
-                                    backgroundColor: '#f8f9fa',
-                                    padding: '24px',
-                                    borderBottom: '4px solid #DF773B',
-                                    textAlign: 'center',
-                                    position: 'relative'
-                                }}>
+                <div className="document-grid">
+                    {Object.entries(filteredDocuments).flatMap(([teamId, docs]) => {
+                        // 팀 ID에 해당하는 색상 클래스 가져오기
+                        const teamColorIndex = getTeamColorClass(teamId);
+                        // 팀 설명 가져오기
+                        const teamDescription = getTeamDescription(teamId);
+
+                        return docs.map((doc) => (
+                            <div key={doc.id} className="document-card">
+                                <div className={`document-card-header document-card-header-${teamColorIndex}`}>
+                                    {/* 수정/삭제 버튼 */}
                                     <div style={{
                                         position: 'absolute',
                                         top: '10px',
@@ -693,47 +690,42 @@ const Documents = () => {
                                             <FaTrash style={{ margin: 0 }} />
                                         </button>
                                     </div>
-                                    <h3 style={{ marginBottom: '8px', fontSize: '1.5rem' }}>{doc.title}</h3>
-                                    <p style={{
-                                        backgroundColor: '#FEF0E6',
-                                        color: '#DF773B',
-                                        padding: '6px 16px',
-                                        borderRadius: '20px',
-                                        display: 'inline-block',
-                                        fontSize: '1rem'
-                                    }}>
-                                        {getTeamName(teamId)}
-                                    </p>
+
+                                    <h3 style={{ marginBottom: '8px', fontSize: '1.3rem' }}>{doc.title}</h3>
+                                    <span className={`team-tag team-tag-${teamColorIndex}`}>
+                                        {getTeamName(teamId)} - {teamDescription}
+                                    </span>
                                 </div>
 
-                                <div style={{ padding: '30px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                                    <p style={{ marginBottom: '16px', color: '#666', fontSize: '1.1rem' }}>
+                                <div className="document-card-content">
+                                    <p className="document-date">
                                         <strong>교육 날짜:</strong> {formatDate(doc.created)}
                                     </p>
-                                    <p style={{ marginBottom: '30px', flex: 1, fontSize: '1.1rem', lineHeight: '1.6' }}>
+                                    <p className="document-description">
                                         {doc.description}
                                     </p>
-                                    <a
-                                        href={doc.content}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="btn btn-primary"
-                                        style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            gap: '8px',
-                                            marginTop: 'auto',
-                                            padding: '12px 24px',
-                                            fontSize: '1.1rem'
-                                        }}
-                                    >
-                                        <FaGithub /> 교육자료 확인하기
-                                    </a>
+                                    <div className="button-container">
+                                        <a
+                                            href={doc.content}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className={`btn btn-primary-${teamColorIndex + 1}`}
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: '8px',
+                                                width: '100%',
+                                                color: '#fff',
+                                            }}
+                                        >
+                                            <FaGithub /> 교육자료 확인하기
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
-                        ))
-                    )}
+                        ));
+                    })}
                 </div>
             ) : (
                 <div className="card" style={{ padding: '30px', textAlign: 'center' }}>

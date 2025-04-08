@@ -201,7 +201,7 @@ const StudentSchedules = () => {
 
   return (
     <div>
-      <h1>전체 스케줄 조회</h1>
+      <h1 style={{marginBottom: '20px', borderBottom: '1px solid var(--gray)', paddingBottom: '20px'}}>전체 스케줄 조회</h1>
 
       {/* 에러 메시지 */}
       {error && (
@@ -213,7 +213,7 @@ const StudentSchedules = () => {
 
       {/* 필터 영역 */}
       <div className="card" style={{ marginBottom: '20px' }}>
-        <div className="card-header">
+        <div className="card-header" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <h2>스케줄 필터</h2>
           <div style={{ display: 'flex', gap: '10px' }}>
             <button
@@ -310,7 +310,7 @@ const StudentSchedules = () => {
               }}
             >
               <div className="card-header" style={{
-                borderLeft: isPastSchedule(schedule.date) ? '4px solid #6c757d' : '4px solid #007bff',
+                borderBottom: isPastSchedule(schedule.date) ? '4px solid #6c757d' : '4px solid #007bff',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   <FaCalendarAlt style={{ marginRight: '10px' }} />

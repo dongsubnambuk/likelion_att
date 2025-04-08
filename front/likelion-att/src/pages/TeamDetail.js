@@ -49,14 +49,14 @@ const MembersTab = ({ team, members, onAddMember, onRemoveMember }) => {
         <div>
             <div className="card-header" style={{ marginBottom: '20px' }}>
                 <h2>팀원 관리</h2>
-                <div>
+                {/* <div>
                     <button
                         className="btn btn-primary"
                         onClick={() => setIsSearching(!isSearching)}
                     >
                         <FaUserPlus /> 팀원 추가
                     </button>
-                </div>
+                </div> */}
             </div>
 
             {/* 팀원 검색 섹션 */}
@@ -224,12 +224,12 @@ const SchedulesTab = ({ team, schedules, onCreateSchedule, onDeleteSchedule }) =
         <div>
             <div className="card-header" style={{ marginBottom: '20px' }}>
                 <h2>스케줄 관리</h2>
-                <button
+                {/* <button
                     className="btn btn-primary"
                     onClick={() => setIsCreateModalOpen(true)}
                 >
                     <FaCalendarPlus /> 새 스케줄 생성
-                </button>
+                </button> */}
             </div>
 
             {/* 스케줄 목록 */}
@@ -259,7 +259,7 @@ const SchedulesTab = ({ team, schedules, onCreateSchedule, onDeleteSchedule }) =
                                                 className="btn btn-primary btn-sm"
                                                 title="출석체크"
                                             >
-                                                <FaUser />
+                                                <FaCalendarAlt />
                                             </Link>
                                             <button
                                                 className="btn btn-danger btn-sm"
@@ -718,9 +718,9 @@ const TeamDetail = () => {
                     onClick={() => navigate('/teams')}
                     style={{ marginRight: '10px' }}
                 >
-                    <FaArrowLeft /> 목록으로
+                    <FaArrowLeft /> 팀 목록으로
                 </button>
-                <h1>{team.name}</h1>
+                <h1 style={{marginRight: '60px'}}>{team.name}</h1>
             </div>
 
             {/* 알림 메시지 */}
@@ -735,9 +735,9 @@ const TeamDetail = () => {
             <div className="card" style={{ marginBottom: '20px' }}>
                 <div className="card-header">
                     <h2>팀 정보</h2>
-                    <button className="btn btn-primary btn-sm">
+                    {/* <button className="btn btn-primary btn-sm">
                         <FaEdit /> 수정
-                    </button>
+                    </button> */}
                 </div>
                 <div style={{ padding: '0 15px' }}>
                     <p>

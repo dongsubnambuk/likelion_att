@@ -389,10 +389,10 @@ const ScheduleDetail = () => {
       <div className="card-header">
         <button
           className="btn btn-secondary"
-          onClick={() => navigate(`/teams/${team.id}`)}
+          onClick={() => navigate(`/schedules`)}
           style={{ marginRight: '10px' }}
         >
-          <FaArrowLeft /> 팀으로 돌아가기
+          <FaArrowLeft /> 스케줄로 돌아가기
         </button>
         <h1>{schedule.title}</h1>
       </div>
@@ -410,9 +410,9 @@ const ScheduleDetail = () => {
         <div className="card-header">
           <h2>스케줄 정보</h2>
           <div style={{ display: 'flex', gap: '10px' }}>
-            <button className="btn btn-primary btn-sm">
+            {/* <button className="btn btn-primary btn-sm">
               <FaEdit /> 수정
-            </button>
+            </button> */}
             <button
               className="btn btn-danger btn-sm"
               onClick={handleDelete}

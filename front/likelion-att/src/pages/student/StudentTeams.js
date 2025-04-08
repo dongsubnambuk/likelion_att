@@ -125,7 +125,7 @@ const StudentTeams = () => {
 
   return (
     <div>
-      <h1>전체 팀 조회</h1>
+      <h1 style={{marginBottom: '20px', borderBottom: '1px solid var(--gray)', paddingBottom: '20px'}}>전체 팀 조회</h1>
 
       {/* 에러 메시지 */}
       {error && (
