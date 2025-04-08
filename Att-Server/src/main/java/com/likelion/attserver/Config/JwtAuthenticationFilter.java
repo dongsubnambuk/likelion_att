@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Set;
 
 @Component  // ✅ Spring 빈으로 등록
 @RequiredArgsConstructor
@@ -25,14 +26,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
         String method = request.getMethod();
+        String key = method + ":" + path;
+        String route = path;
+
+        Set<String> jwtPassRoute = Set.of(
+                "/api/auth",
+                "/api/auth/signin",
+                "/api/swagger-ui",
+                "/api/v3/api-docs",
+                "/swagger-resources",
+                "/webjars"
+        );
 
         // JWT 검증을 생략할 경로 설정
-        if (path.equals("/api/auth") ||
-                path.equals("/api/auth/signin") ||
-                path.startsWith("/swagger-ui") ||
-                path.startsWith("/v3/api-docs") ||
-                path.startsWith("/swagger-resources") ||
-                path.startsWith("/webjars")) {
+        if (jwtPassRoute.contains(route)) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -57,11 +64,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        if((path.equals("/api/schedules") && method.equals("POST")) ||
-                (path.equals("/api/team") && method.equals("POST")) ||
-                (path.equals("/api/schedules") && method.equals("DELETE")) ||
-                (path.equals("/api/att") && method.equals("PUT")) ||
-                (path.equals("/api/team") && method.equals("DELETE"))) {
+        Set<String> adminOnlyRoutes = Set.of(
+                "POST:/api/schedules",
+                "POST:/api/team",
+                "DELETE:/api/schedules",
+                "PUT:/api/att",
+                "DELETE:/api/team",
+                "POST:/api/docs",
+                "DELETE:/api/docs",
+                "DELETE:/api/docs/team",
+                "PUT:/api/docs"
+        );
+
+        if(adminOnlyRoutes.contains(key)) {
             // JWT에서 ROLE 정보 가져오기
             UserEntity.Role role = jwtUtil.getRoleFromToken(token);
             if (role != UserEntity.Role.ADMIN) { // ADMIN이 아니면 차단
