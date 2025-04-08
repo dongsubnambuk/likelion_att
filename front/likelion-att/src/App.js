@@ -1,4 +1,4 @@
-// src/App.js - 수정된 버전
+// src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -15,6 +15,7 @@ import AdminLayout from './components/AdminLayout';
 import StudentLayout from './components/StudentLayout';
 import StudentTeams from './pages/student/StudentTeams';
 import StudentSchedules from './pages/student/StudentSchedules';
+import StudentDevelopers from './pages/student/StudentDevelopers';
 import './App.css';
 
 // 인증된 사용자만 접근 가능한 라우트 컴포넌트
@@ -91,6 +92,7 @@ function App() {
             <Route index element={<StudentTeams />} />
             <Route path="teams" element={<StudentTeams />} />
             <Route path="schedules" element={<StudentSchedules />} />
+            <Route path="developers" element={<StudentDevelopers />} />
           </Route>
           
           {/* 기본 리디렉션 */}
