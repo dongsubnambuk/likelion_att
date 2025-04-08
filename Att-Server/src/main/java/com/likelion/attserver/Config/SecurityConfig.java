@@ -42,17 +42,22 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth",
                                 "/api/auth/signin",
                                 "/api/team",
-                                "/api/schedules").permitAll()
+                                "/api/schedules",
+                                "/api/docs").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/user/all",
                                 "/api/user",
                                 "/api/team",
                                 "/api/team/all",
                                 "/api/schedules",
-                                "/api/schedules/all").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/api/att").permitAll()
+                                "/api/schedules/all",
+                                "/api/docs").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/att",
+                                "/api/docs").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/schedules",
                                 "/api/team",
-                                "/api/user").permitAll()
+                                "/api/user",
+                                "/api/docs",
+                                "/api/docs/team").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // JWT 필터 추가
