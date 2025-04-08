@@ -89,11 +89,11 @@ public class TeamDAOImpl implements TeamDAO {
 
     @Override
     public LinkedHashMap<Long, LinkedHashMap<String, List<UserDTO>>> getTeams() {
-        LinkedHashMap<String, List<UserDTO>> teamMap = new LinkedHashMap<>();
         LinkedHashMap<Long, LinkedHashMap<String, List<UserDTO>>> result = new LinkedHashMap<>();
         List<TeamEntity> teams = teamRepository.findAll();
 
         for(TeamEntity team : teams) {
+            LinkedHashMap<String, List<UserDTO>> teamMap = new LinkedHashMap<>();
             List<UserDTO> users = team.getUsers().stream()
                     .map(user -> UserDTO.builder()
                             .studentId(user.getId())
