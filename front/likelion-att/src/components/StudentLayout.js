@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { FaUserFriends, FaCalendarAlt, FaSignOutAlt, FaBars, FaTimes, FaUserCog } from 'react-icons/fa';
+import { FaUserFriends, FaCalendarAlt, FaSignOutAlt, FaBars, FaTimes, FaUserCog, FaBook } from 'react-icons/fa';
 import './Layout.css';
 
 const StudentLayout = () => {
@@ -46,6 +46,9 @@ const StudentLayout = () => {
           </NavLink>
           <NavLink to="/student/schedules" className={({ isActive }) => isActive ? 'active' : ''} onClick={closeMobileMenu}>
             <FaCalendarAlt /> 전체 스케줄 조회
+          </NavLink>
+          <NavLink to="/student/documents" className={({ isActive }) => isActive ? 'active' : ''} onClick={closeMobileMenu}>
+            <FaBook /> 교육자료 확인
           </NavLink>
           <NavLink to="/student/developers" className={({ isActive }) => isActive ? 'active' : ''} onClick={closeMobileMenu}>
             <FaUserCog /> 운영진 정보

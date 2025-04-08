@@ -11,51 +11,53 @@ import MemberDetail from './pages/MemberDetail';
 import Schedules from './pages/Schedules';
 import ScheduleDetail from './pages/ScheduleDetail';
 import AttendanceReport from './pages/AttendanceReport';
+import Documents from './pages/Documents';
 import AdminLayout from './components/AdminLayout';
 import StudentLayout from './components/StudentLayout';
 import StudentTeams from './pages/student/StudentTeams';
 import StudentSchedules from './pages/student/StudentSchedules';
 import StudentDevelopers from './pages/student/StudentDevelopers';
+import StudentDocuments from './pages/student/StudentDocuments';
 import './App.css';
 
 // 인증된 사용자만 접근 가능한 라우트 컴포넌트
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useAuth();
-  
+
   if (!currentUser) {
     return <Navigate to="/login" replace />;
   }
-  
+
   return children;
 };
 
 // 관리자(ADMIN)만 접근 가능한 라우트 컴포넌트
 const AdminRoute = ({ children }) => {
   const { currentUser } = useAuth();
-  
+
   if (!currentUser) {
     return <Navigate to="/login" replace />;
   }
-  
+
   if (currentUser.role !== 'ADMIN') {
     return <Navigate to="/student" replace />;
   }
-  
+
   return children;
 };
 
 // 학생(STUDENT)만 접근 가능한 라우트 컴포넌트
 const StudentRoute = ({ children }) => {
   const { currentUser } = useAuth();
-  
+
   if (!currentUser) {
     return <Navigate to="/login" replace />;
   }
-  
+
   if (currentUser.role !== 'STUDENT') {
     return <Navigate to="/" replace />;
   }
-  
+
   return children;
 };
 
@@ -66,7 +68,7 @@ function App() {
         <Routes>
           {/* 로그인 페이지 */}
           <Route path="/login" element={<Login />} />
-          
+
           {/* 관리자 라우트 */}
           <Route path="/" element={
             <AdminRoute>
@@ -81,8 +83,9 @@ function App() {
             <Route path="schedules" element={<Schedules />} />
             <Route path="schedules/:scheduleId" element={<ScheduleDetail />} />
             <Route path="reports" element={<AttendanceReport />} />
+            <Route path="documents" element={<Documents />} />
           </Route>
-          
+
           {/* 학생 라우트 */}
           <Route path="/student" element={
             <StudentRoute>
@@ -93,8 +96,9 @@ function App() {
             <Route path="teams" element={<StudentTeams />} />
             <Route path="schedules" element={<StudentSchedules />} />
             <Route path="developers" element={<StudentDevelopers />} />
+            <Route path="documents" element={<StudentDocuments />} />
           </Route>
-          
+
           {/* 기본 리디렉션 */}
           <Route path="*" element={
             <ProtectedRoute>

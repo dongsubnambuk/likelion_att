@@ -99,7 +99,7 @@ const StudentDevelopers = () => {
     <div>
       <h1>운영진 정보</h1>
       <p className="subtitle" style={{ marginBottom: '24px', color: '#6c757d' }}>
-        멋쟁이사자처럼 출석 관리 시스템을 개발한 8명의 운영진을 소개합니다.
+        계명대학교 멋쟁이사자처럼 13기 운영진을 소개합니다.
       </p>
 
       <div className="developer-grid" style={{ 

@@ -456,9 +456,9 @@ const AttendanceReport = () => {
     <div>
       <div className="card-header" style={{ marginBottom: '20px' }}>
         <h1>출석 통계 리포트</h1>
-        <button className="btn btn-primary" onClick={handleDownload}>
+        {/* <button className="btn btn-primary" onClick={handleDownload}>
           <FaDownload /> 리포트 다운로드
-        </button>
+        </button> */}
       </div>
 
       {/* 필터 섹션 */}
