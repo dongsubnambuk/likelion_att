@@ -133,8 +133,8 @@
 
 ### 로그인 페이지
 
-<img src="./READMEImgs/login1.png" width="300px" alt="로그인 페이지1"/>
-<img src="./READMEImgs/login2.png" width="300px" alt="로그인 페이지2"/>
+<img src="./READMEImgs/login1.png" width="600px" alt="로그인 페이지1"/>
+<img src="./READMEImgs/login2.png" width="600px" alt="로그인 페이지2"/>
 
 - 학번과 비밀번호를 이용한 로그인
 - 회원가입 기능
@@ -143,58 +143,58 @@
 
 ### 학생 페이지
 
-<img src="./READMEImgs/stuTeam1.png" width="300px" alt="학생 팀 조회"/>
-<img src="./READMEImgs/stuSche1.png" width="300px" alt="학생 스케줄 조회1"/>
-<img src="./READMEImgs/stuSche2.png" width="300px" alt="학생 스케줄 조회2"/>
-<img src="./READMEImgs/stuSche3.png" width="300px" alt="학생 스케줄 조회3"/>
-<img src="./READMEImgs/stuDocs1.png" width="300px" alt="학생 교육자료"/>
-<img src="./READMEImgs/stuDev1.png" width="300px" alt="운영진 정보"/>
+<img src="./READMEImgs/stuTeam1.png" width="600px" alt="학생 팀 조회"/>
+<img src="./READMEImgs/stuSche1.png" width="600px" alt="학생 스케줄 조회1"/>
+<img src="./READMEImgs/stuSche2.png" width="600px" alt="학생 스케줄 조회2"/>
+<img src="./READMEImgs/stuSche3.png" width="600px" alt="학생 스케줄 조회3"/>
+<img src="./READMEImgs/stuDocs1.png" width="600px" alt="학생 교육자료"/>
+<img src="./READMEImgs/stuDev1.png" width="600px" alt="운영진 정보"/>
 
 ---
 
 ### 운영진 대시보드
 
-<img src="./READMEImgs/admDash1.png" width="300px" alt="대시보드"/>
+<img src="./READMEImgs/admDash1.png" width="600px" alt="대시보드"/>
 
 ---
 
 ### 통계 리포트 페이지
 
-<img src="./READMEImgs/admChart1.png" width="300px" alt="통계 리포트1"/>
-<img src="./READMEImgs/admChart2.png" width="300px" alt="통계 리포트2"/>
-<img src="./READMEImgs/admChart3.png" width="300px" alt="통계 리포트3"/>
-<img src="./READMEImgs/admChart4.png" width="300px" alt="통계 리포트4"/>
+<img src="./READMEImgs/admChart1.png" width="600px" alt="통계 리포트1"/>
+<img src="./READMEImgs/admChart2.png" width="600px" alt="통계 리포트2"/>
+<img src="./READMEImgs/admChart3.png" width="600px" alt="통계 리포트3"/>
+<img src="./READMEImgs/admChart4.png" width="600px" alt="통계 리포트4"/>
 
 ---
 
 ### 팀 관리 페이지
 
-<img src="./READMEImgs/admTeam1.png" width="300px" alt="팀1"/>
-<img src="./READMEImgs/admTeam2.png" width="300px" alt="팀2"/>
-<img src="./READMEImgs/admTeam3.png" width="300px" alt="팀3"/>
-<img src="./READMEImgs/admTeam4.png" width="300px" alt="팀4"/>
+<img src="./READMEImgs/admTeam1.png" width="600px" alt="팀1"/>
+<img src="./READMEImgs/admTeam2.png" width="600px" alt="팀2"/>
+<img src="./READMEImgs/admTeam3.png" width="600px" alt="팀3"/>
+<img src="./READMEImgs/admTeam4.png" width="600px" alt="팀4"/>
 
 ---
 
 ### 부원 관리 페이지
 
-<img src="./READMEImgs/admMem1.png" width="300px" alt="부원 목록"/>
+<img src="./READMEImgs/admMem1.png" width="600px" alt="부원 목록"/>
 
 ---
 
 ### 스케줄 관리 페이지
 
-<img src="./READMEImgs/admSche1.png" width="300px" alt="스케줄1"/>
-<img src="./READMEImgs/admSche2.png" width="300px" alt="스케줄2"/>
-<img src="./READMEImgs/admSche3.png" width="300px" alt="스케줄3"/>
-<img src="./READMEImgs/admSche4.png" width="300px" alt="스케줄4"/>
+<img src="./READMEImgs/admSche1.png" width="600px" alt="스케줄1"/>
+<img src="./READMEImgs/admSche2.png" width="600px" alt="스케줄2"/>
+<img src="./READMEImgs/admSche3.png" width="600px" alt="스케줄3"/>
+<img src="./READMEImgs/admSche4.png" width="600px" alt="스케줄4"/>
 
 ---
 
 ### 교육자료 관리 페이지
 
-<img src="./READMEImgs/admDocs1.png" width="300px" alt="교육자료1"/>
-<img src="./READMEImgs/admDocs2.png" width="300px" alt="교육자료2"/>
+<img src="./READMEImgs/admDocs1.png" width="600px" alt="교육자료1"/>
+<img src="./READMEImgs/admDocs2.png" width="600px" alt="교육자료2"/>
 
 ## 💻 시스템 요구사항
 
