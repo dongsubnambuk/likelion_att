@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/docs")
-@CrossOrigin("http://127.0.0.1:3000")
+@CrossOrigin("https://likelion-13th-att.netlify.app")
 @RequiredArgsConstructor
 public class Docs {
     private final DocsService docsService;

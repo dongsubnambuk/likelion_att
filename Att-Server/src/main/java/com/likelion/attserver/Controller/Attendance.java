@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/att")
-@CrossOrigin("http://127.0.0.1:3000")
+@CrossOrigin("https://likelion-13th-att.netlify.app")
 @Tag(name = "출석 API", description = "출석 관련 API")
 @RequiredArgsConstructor
 public class Attendance {
