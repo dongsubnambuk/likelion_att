@@ -77,6 +77,7 @@ public class DocsDAOImpl implements DocsDAO {
                 .orElseThrow(() -> new CustomException("Docs not found", HttpStatus.NOT_FOUND));
         docsEntity.setTitle(responseDocsDTO.getTitle());
         docsEntity.setDescription(responseDocsDTO.getDescription());
+        docsEntity.setContent(responseDocsDTO.getContent());
         docsEntity.setCreated(responseDocsDTO.getCreated());
         docsRepository.save(docsEntity);
         return responseDocsDTO;

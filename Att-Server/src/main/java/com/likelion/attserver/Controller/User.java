@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/user")
-@CrossOrigin("http://127.0.0.1:3000")
+@CrossOrigin("https://likelion-13th-att.netlify.app")
 @Tag(name = "유저 API", description = "유저 정보, 권한 조회 관련 API")
 @RequiredArgsConstructor
 public class User {

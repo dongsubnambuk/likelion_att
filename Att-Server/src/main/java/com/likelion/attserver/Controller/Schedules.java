@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/schedules")
-@CrossOrigin("http://127.0.0.1:3000")
+@CrossOrigin("https://likelion-13th-att.netlify.app")
 @Tag(name = "스케쥴 API", description = "스케쥴 생성, 삭제 등 스케쥴 관련 API")
 @RequiredArgsConstructor
 public class Schedules {

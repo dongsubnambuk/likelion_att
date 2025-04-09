@@ -13,7 +13,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin("http://127.0.0.1:3000")
+@CrossOrigin("https://likelion-13th-att.netlify.app")
 @Tag(name = "인증 API", description = "회원가입, 로그인 등 인증 관련 API")
 @RequiredArgsConstructor
 public class Auth {
