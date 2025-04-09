@@ -428,12 +428,12 @@ const ScheduleDetail = () => {
           <p>
             <strong>날짜:</strong> {formatDate(schedule.date)}
           </p>
-          <p>
+          {/* <p>
             <strong>설명:</strong> {schedule.description || '설명 없음'}
           </p>
           <p>
             <strong>생성일:</strong> {new Date(schedule.createdAt).toLocaleDateString()}
-          </p>
+          </p> */}
         </div>
       </div>
 
