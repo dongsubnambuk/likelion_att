@@ -1,4 +1,4 @@
-# 🦁 멋쟁이사자처럼 13기 출석 관리 시스템 🦁
+# 🦁 멋쟁이사자처럼 13기 출석 관리 시스템
 
 <div align="center">
   <img src="./READMEImgs/logo.png" width="200" alt="멋쟁이사자처럼 로고">
