@@ -1,19 +1,16 @@
 package com.likelion.attserver.Controller;
 
 import com.likelion.attserver.DTO.StatusDTO;
-import com.likelion.attserver.Exception.CustomException;
 import com.likelion.attserver.Service.Mail.MailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-
 @RestController
 @RequestMapping("/api/mail")
 @CrossOrigin("https://likelion-13th-att.netlify.app")
 @RequiredArgsConstructor
-public class MailController {
+public class Mail {
     private final MailService mailService;
 
     // 인증 이메일 전송
