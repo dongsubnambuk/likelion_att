@@ -169,7 +169,7 @@ const Dashboard = () => {
         setTeamAttendance(teamAttendanceData);
 
       } catch (error) {
-        console.error('대시보드 데이터 로딩 실패:', error);
+        // console.error('대시보드 데이터 로딩 실패:', error);
         // 에러 발생 시 기본값 설정
         setStats({
           totalMembers: 0,

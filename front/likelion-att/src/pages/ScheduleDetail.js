@@ -134,13 +134,13 @@ const AttendanceCheckItem = ({ member, attendance, onChange }) => {
         <RatingStars rating={score} onRatingChange={handleScoreChange} />
       </td>
       <td>
-        <input
-          type="text"
+        <textarea
           className="form-control"
           placeholder="메모"
           value={note}
           onChange={handleNoteChange}
-        />
+          rows="3"
+        ></textarea>
       </td>
     </tr>
   );
@@ -202,12 +202,12 @@ const ScheduleDetail = () => {
         }
 
         setSchedule(foundSchedule);
-        console.log('불러온 스케줄 정보:', foundSchedule);
+        // console.log('불러온 스케줄 정보:', foundSchedule);
 
         // 팀 정보 가져오기
         const teamResponse = await teamApi.getById(teamId);
         setTeam(teamResponse.data);
-        console.log('불러온 팀 정보:', teamResponse.data);
+        // console.log('불러온 팀 정보:', teamResponse.data);
 
         // 출석 정보 처리
         if (foundSchedule.attendances && Array.isArray(foundSchedule.attendances)) {
@@ -228,13 +228,13 @@ const ScheduleDetail = () => {
 
           setAttendances(formattedAttendances);
           calculateStats(formattedAttendances);
-          console.log('처리된 출석 정보:', formattedAttendances);
+          // console.log('처리된 출석 정보:', formattedAttendances);
         } else {
           setAttendances([]);
           calculateStats([]);
         }
       } catch (error) {
-        console.error('스케줄 데이터 로딩 실패:', error);
+        // console.error('스케줄 데이터 로딩 실패:', error);
         setNotification({
           type: 'error',
           message: '스케줄 정보를 불러오는데 실패했습니다.'
@@ -303,7 +303,7 @@ const ScheduleDetail = () => {
         };
       });
 
-      console.log('저장할 출석 데이터:', formattedAttendances);
+      // console.log('저장할 출석 데이터:', formattedAttendances);
 
       // /api/pickup/update-location API 호출
       await attendanceApi.bulkUpdate(formattedAttendances);
@@ -321,7 +321,7 @@ const ScheduleDetail = () => {
       }, 3000);
 
     } catch (error) {
-      console.error('출석 정보 저장 실패:', error);
+      // console.error('출석 정보 저장 실패:', error);
       setNotification({
         type: 'error',
         message: '출석 정보 저장에 실패했습니다. 다시 시도해주세요.'
@@ -352,7 +352,7 @@ const ScheduleDetail = () => {
       }, 1500);
 
     } catch (error) {
-      console.error('스케줄 삭제 실패:', error);
+      // console.error('스케줄 삭제 실패:', error);
       setNotification({
         type: 'error',
         message: '스케줄 삭제에 실패했습니다. 다시 시도해주세요.'
@@ -508,7 +508,7 @@ const ScheduleDetail = () => {
                   <th style={{ width: '15%' }}>학번</th>
                   <th style={{ width: '30%' }}>출석 상태</th>
                   <th style={{ width: '15%' }}>평가</th>
-                  <th style={{ width: '25%' }}>메모</th>
+                  <th style={{ width: '25%', minWidth: '150px' }}>메모</th>
                 </tr>
               </thead>
               <tbody>

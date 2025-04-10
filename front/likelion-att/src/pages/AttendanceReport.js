@@ -56,7 +56,7 @@ const AttendanceReport = () => {
         setScheduleStats(stats.scheduleStats);
 
       } catch (error) {
-        console.error('리포트 데이터 로딩 실패:', error);
+        // console.error('리포트 데이터 로딩 실패:', error);
         setError('데이터를 불러오는데 실패했습니다.');
       } finally {
         setLoading(false);

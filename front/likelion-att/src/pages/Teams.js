@@ -23,10 +23,10 @@ const TeamCreateModal = ({ isOpen, onClose, onSubmit, existingTeams = [] }) => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        console.log('사용자 목록 불러오기 시작');
+        // console.log('사용자 목록 불러오기 시작');
         setLoading(true);
         const response = await userApi.getAll();
-        console.log('사용자 목록 응답:', response);
+        // console.log('사용자 목록 응답:', response);
 
         // API 응답 구조에 따라 사용자 데이터 추출
         let usersData = [];
@@ -43,11 +43,11 @@ const TeamCreateModal = ({ isOpen, onClose, onSubmit, existingTeams = [] }) => {
         if (Array.isArray(usersData)) {
           setAllMembers(usersData);
         } else {
-          console.error('유효한 사용자 데이터가 아닙니다:', usersData);
+          // console.error('유효한 사용자 데이터가 아닙니다:', usersData);
           setAllMembers([]);
         }
       } catch (err) {
-        console.error('사용자 목록 불러오기 실패:', err);
+        // console.error('사용자 목록 불러오기 실패:', err);
         setError('사용자 목록을 불러오는데 실패했습니다.');
         setAllMembers([]);
       } finally {
@@ -98,7 +98,7 @@ const TeamCreateModal = ({ isOpen, onClose, onSubmit, existingTeams = [] }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    console.log('폼 제출 시작', { teamId, teamNote, selectedMembers, allMembers });
+    // console.log('폼 제출 시작', { teamId, teamNote, selectedMembers, allMembers });
 
     if (!teamId && isCreating) {
       // 새 팀 생성 시 팀 ID가 없으면 오류
@@ -126,7 +126,7 @@ const TeamCreateModal = ({ isOpen, onClose, onSubmit, existingTeams = [] }) => {
           (m.studentId !== undefined && m.studentId === memberId)
         );
 
-        console.log('검색된 멤버:', member, '검색 ID:', memberId);
+        // console.log('검색된 멤버:', member, '검색 ID:', memberId);
 
         if (member && member.studentId) {
           // 문자열로 된 학번을 숫자로 변환 (필요한 경우)
@@ -161,7 +161,7 @@ const TeamCreateModal = ({ isOpen, onClose, onSubmit, existingTeams = [] }) => {
       }
     }
 
-    console.log('전송할 학번 배열:', studentIds);
+    // console.log('전송할 학번 배열:', studentIds);
 
     if (studentIds.length === 0) {
       setError('유효한 멤버를 선택하지 않았습니다.');
@@ -172,7 +172,7 @@ const TeamCreateModal = ({ isOpen, onClose, onSubmit, existingTeams = [] }) => {
       // 팀 설명을 note 파라미터로 전달
       onSubmit(numericTeamId, studentIds, isCreating, teamNote);
     } catch (error) {
-      console.error('팀 생성/수정 중 오류 발생:', error);
+      // console.error('팀 생성/수정 중 오류 발생:', error);
       setError('팀 생성/수정 중 오류가 발생했습니다. 다시 시도해주세요.');
     }
   };
@@ -180,7 +180,7 @@ const TeamCreateModal = ({ isOpen, onClose, onSubmit, existingTeams = [] }) => {
   // 필터링 부분 수정 - 운영진 표시 여부 추가
   const filteredMembers = React.useMemo(() => {
     if (!Array.isArray(allMembers)) {
-      console.error('allMembers가 배열이 아닙니다:', allMembers);
+      // console.error('allMembers가 배열이 아닙니다:', allMembers);
       return [];
     }
 
@@ -481,7 +481,7 @@ const Teams = () => {
       setLoading(true);
       // 전체 팀 목록 가져오기
       const response = await teamApi.getAll();
-      console.log('팀 데이터 응답:', response.data);
+      // console.log('팀 데이터 응답:', response.data);
 
       if (response.data && typeof response.data === 'object') {
         // 각 팀 ID에 대해 개별적으로 상세 정보 조회
@@ -500,7 +500,7 @@ const Teams = () => {
               createdAt: new Date().toISOString()
             };
           } catch (teamError) {
-            console.error(`팀 ${teamId} 상세 정보 로딩 실패:`, teamError);
+            // console.error(`팀 ${teamId} 상세 정보 로딩 실패:`, teamError);
             return null;
           }
         });
@@ -509,16 +509,16 @@ const Teams = () => {
         const validTeams = (await Promise.all(teamsPromises))
           .filter(team => team !== null);
 
-        console.log('상세 정보로 변환된 팀 배열:', validTeams);
+        // console.log('상세 정보로 변환된 팀 배열:', validTeams);
         setTeams(validTeams);
         setFilteredTeams(validTeams);
       } else {
-        console.error('예상치 못한 팀 데이터 형식:', response.data);
+        // console.error('예상치 못한 팀 데이터 형식:', response.data);
         setTeams([]);
         setFilteredTeams([]);
       }
     } catch (error) {
-      console.error('팀 목록 로딩 실패:', error);
+      // console.error('팀 목록 로딩 실패:', error);
       setNotification({
         type: 'error',
         message: '팀 목록을 불러오는데 실패했습니다.'
@@ -551,8 +551,8 @@ const Teams = () => {
   // 팀 생성 처리
   const handleCreateTeam = async (teamId, studentIds, isCreating, note = '') => {
     try {
-      console.log('팀 생성/수정 - 운영진을 포함한 모든 선택된 멤버:', studentIds);
-      console.log('팀 설명:', note);
+      // console.log('팀 생성/수정 - 운영진을 포함한 모든 선택된 멤버:', studentIds);
+      // console.log('팀 설명:', note);
 
       // 학번 배열이 숫자로 구성되어 있는지 확인하고 필요한 경우 변환
       const numericStudentIds = studentIds.map(id => {
@@ -596,7 +596,7 @@ const Teams = () => {
       }, 3000);
 
     } catch (error) {
-      console.error('팀 생성/수정 실패:', error);
+      // console.error('팀 생성/수정 실패:', error);
 
       // 중복 오류 확인
       if (error.response?.data?.content && error.response.data.content.includes('Duplicate entry')) {
@@ -615,7 +615,7 @@ const Teams = () => {
 
   // 팀 삭제 처리
   const handleDeleteTeam = async (teamId) => {
-    console.log(teamId);
+    // console.log(teamId);
     try {
       await teamApi.delete(teamId);
 
@@ -635,7 +635,7 @@ const Teams = () => {
       }, 3000);
 
     } catch (error) {
-      console.error('팀 삭제 실패:', error);
+      // console.error('팀 삭제 실패:', error);
       setNotification({
         type: 'error',
         message: '팀 삭제에 실패했습니다. 다시 시도해주세요.'
@@ -657,7 +657,7 @@ const Teams = () => {
           className="btn btn-primary"
           onClick={() => setIsCreateModalOpen(true)}
         >
-          <FaPlus /> 새 팀 생성
+          <FaPlus /> 팀 생성 및 수정
         </button>
       </div>
 

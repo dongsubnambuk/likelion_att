@@ -43,12 +43,12 @@ export const userApi = {
   // 모든 사용자 조회
   getAll: async () => {
     try {
-      console.log('사용자 목록 요청 시작');
+      // console.log('사용자 목록 요청 시작');
       const response = await api.get('/api/user/all');
-      console.log('사용자 목록 응답:', response.data);
+      // console.log('사용자 목록 응답:', response.data);
       return response;
     } catch (error) {
-      console.error('사용자 목록 API 오류:', error.response || error);
+      // console.error('사용자 목록 API 오류:', error.response || error);
       throw error;
     }
   },
@@ -68,6 +68,13 @@ export const userApi = {
   // 사용자 삭제
   delete: (id) => api.delete(`/api/user/${id}`),
 
+  deleteAccount: (id, password) => api.delete('/api/user', {
+    params: {
+      id,
+      password
+    }
+  }),
+
   // 대량 사용자 등록
   bulkCreate: (formData) => api.post('/api/user/bulk', formData),
 };
@@ -77,12 +84,12 @@ export const teamApi = {
   // 모든 팀 조회 - /api/team/all
   getAll: async () => {
     try {
-      console.log('전체 팀 목록 요청 시작');
+      // console.log('전체 팀 목록 요청 시작');
       const response = await api.get('/api/team/all');
-      console.log('전체 팀 목록 응답:', response.data);
+      // console.log('전체 팀 목록 응답:', response.data);
       return response;
     } catch (error) {
-      console.error('전체 팀 목록 API 오류:', error.response || error);
+      // console.error('전체 팀 목록 API 오류:', error.response || error);
       throw error;
     }
   },
@@ -90,9 +97,9 @@ export const teamApi = {
   // 특정 팀 조회 - /api/team?teamId=
   getById: async (id) => {
     try {
-      console.log(`팀 ${id} 조회 요청 시작`);
+      // console.log(`팀 ${id} 조회 요청 시작`);
       const response = await api.get(`/api/team?teamId=${id}`);
-      console.log(`팀 ${id} 응답:`, response.data);
+      // console.log(`팀 ${id} 응답:`, response.data);
 
       // API 응답을 프론트엔드에서 사용하기 좋은 형태로 변환
       const teamEntries = Object.entries(response.data);
@@ -112,17 +119,17 @@ export const teamApi = {
         }
       };
     } catch (error) {
-      console.error(`팀 ${id} 조회 API 오류:`, error);
+      // console.error(`팀 ${id} 조회 API 오류:`, error);
       throw error;
     }
   },
 
   // 팀 생성 또는 업데이트 - /api/team
   create: async (teamId, studentIds, note = '') => {
-    console.log('팀 생성/수정 요청:', { teamId, studentIds, note });
+    // console.log('팀 생성/수정 요청:', { teamId, studentIds, note });
 
     if (!Array.isArray(studentIds)) {
-      console.error('studentIds가 배열이 아닙니다:', studentIds);
+      // console.error('studentIds가 배열이 아닙니다:', studentIds);
       throw new Error('학번 배열이 유효하지 않습니다');
     }
 
@@ -130,10 +137,10 @@ export const teamApi = {
       // teamId와 note는 쿼리 파라미터로 전송, 학생 ID 배열은 body로 전송
       const url = `/api/team?teamId=${teamId}&note=${encodeURIComponent(note || '')}`;
       const response = await api.post(url, studentIds);
-      console.log('팀 생성/수정 응답:', response.data);
+      // console.log('팀 생성/수정 응답:', response.data);
       return response;
     } catch (error) {
-      console.error('팀 생성/수정 API 오류:', error.response || error);
+      // console.error('팀 생성/수정 API 오류:', error.response || error);
       throw error;
     }
   },
@@ -170,7 +177,7 @@ export const teamApi = {
       // 6. 추가된 사용자 정보 반환
       return { data: userToAdd };
     } catch (error) {
-      console.error('팀원 추가 실패:', error);
+      // console.error('팀원 추가 실패:', error);
       throw error;
     }
   },
@@ -197,7 +204,7 @@ export const teamApi = {
 
       return { success: true };
     } catch (error) {
-      console.error('팀원 제거 실패:', error);
+      // console.error('팀원 제거 실패:', error);
       throw error;
     }
   }
@@ -208,12 +215,12 @@ export const scheduleApi = {
   // 전체 스케줄 조회 - /api/schedules/all
   getAll: async () => {
     try {
-      console.log('전체 스케줄 목록 요청 시작');
+      // console.log('전체 스케줄 목록 요청 시작');
       const response = await api.get('/api/schedules/all');
-      console.log('전체 스케줄 목록 응답:', response.data);
+      // console.log('전체 스케줄 목록 응답:', response.data);
       return response;
     } catch (error) {
-      console.error('전체 스케줄 목록 API 오류:', error.response || error);
+      // console.error('전체 스케줄 목록 API 오류:', error.response || error);
       throw error;
     }
   },
@@ -221,12 +228,12 @@ export const scheduleApi = {
   // 특정 팀의 스케줄 조회 - /api/schedules?teamId=
   getByTeam: async (teamId) => {
     try {
-      console.log(`팀 ${teamId} 스케줄 조회 요청 시작`);
+      // console.log(`팀 ${teamId} 스케줄 조회 요청 시작`);
       const response = await api.get(`/api/schedules?teamId=${teamId}`);
-      console.log(`팀 ${teamId} 스케줄 응답:`, response.data);
+      // console.log(`팀 ${teamId} 스케줄 응답:`, response.data);
       return response;
     } catch (error) {
-      console.error(`팀 ${teamId} 스케줄 API 오류:`, error.response || error);
+      // console.error(`팀 ${teamId} 스케줄 API 오류:`, error.response || error);
       throw error;
     }
   },
@@ -234,7 +241,7 @@ export const scheduleApi = {
   // 스케줄 생성 (여러 스케줄을 한 번에 생성) - /api/schedules?teamId=
   create: async (schedules, teamId) => {
     try {
-      console.log('스케줄 생성 요청:', { teamId, schedules });
+      // console.log('스케줄 생성 요청:', { teamId, schedules });
 
       // API 명세에 따른 형식으로 변환
       // schedules 배열의 각 항목은 date와 time을 포함
@@ -244,10 +251,10 @@ export const scheduleApi = {
       }));
 
       const response = await api.post(`/api/schedules?teamId=${teamId}`, formattedSchedules);
-      console.log('스케줄 생성 응답:', response.data);
+      // console.log('스케줄 생성 응답:', response.data);
       return response;
     } catch (error) {
-      console.error('스케줄 생성 API 오류:', error.response || error);
+      // console.error('스케줄 생성 API 오류:', error.response || error);
       throw error;
     }
   },
@@ -255,12 +262,12 @@ export const scheduleApi = {
   // 스케줄 삭제 - /api/schedules?teamId=&id=
   delete: async (scheduleId, teamId) => {
     try {
-      console.log(`스케줄 ${scheduleId} 삭제 요청 (팀 ${teamId})`);
+      // console.log(`스케줄 ${scheduleId} 삭제 요청 (팀 ${teamId})`);
       const response = await api.delete(`/api/schedules?teamId=${teamId}&id=${scheduleId}`);
-      console.log(`스케줄 ${scheduleId} 삭제 응답:`, response.data);
+      // console.log(`스케줄 ${scheduleId} 삭제 응답:`, response.data);
       return response;
     } catch (error) {
-      console.error(`스케줄 ${scheduleId} 삭제 API 오류:`, error.response || error);
+      // console.error(`스케줄 ${scheduleId} 삭제 API 오류:`, error.response || error);
       throw error;
     }
   },
@@ -268,7 +275,7 @@ export const scheduleApi = {
   // 특정 스케줄 조회 (전체 스케줄에서 검색)
   getById: async (id) => {
     try {
-      console.log('특정 스케줄 조회:', id);
+      // console.log('특정 스케줄 조회:', id);
 
       // 전체 스케줄 조회
       const allSchedulesResponse = await scheduleApi.getAll();
@@ -293,7 +300,7 @@ export const scheduleApi = {
         throw new Error(`스케줄 ID(${id})를 찾을 수 없습니다.`);
       }
 
-      console.log('찾은 스케줄:', foundSchedule);
+      // console.log('찾은 스케줄:', foundSchedule);
 
       // 로컬 스토리지에 팀 ID 저장 (다른 API에서 사용하기 위해)
       if (teamId) {
@@ -302,7 +309,7 @@ export const scheduleApi = {
 
       return { data: foundSchedule };
     } catch (error) {
-      console.error(`스케줄 ${id} 조회 실패:`, error);
+      // console.error(`스케줄 ${id} 조회 실패:`, error);
       throw error;
     }
   }
@@ -313,7 +320,7 @@ export const attendanceApi = {
   // 특정 스케줄의 출석 정보 조회
   getBySchedule: async (scheduleId) => {
     try {
-      console.log('출석 정보 조회:', scheduleId);
+      // console.log('출석 정보 조회:', scheduleId);
 
       // 특정 스케줄 정보 가져오기
       const scheduleResponse = await scheduleApi.getById(scheduleId);
@@ -344,7 +351,7 @@ export const attendanceApi = {
       // 출석 정보가 없는 경우 빈 배열 반환
       return { data: [] };
     } catch (error) {
-      console.error(`스케줄 ${scheduleId}의 출석 정보 조회 실패:`, error);
+      // console.error(`스케줄 ${scheduleId}의 출석 정보 조회 실패:`, error);
       throw error;
     }
   },
@@ -352,7 +359,7 @@ export const attendanceApi = {
   // 출석 정보 업데이트 - 변경된 엔드포인트 적용: /api/att
   bulkUpdate: async (attendances) => {
     try {
-      console.log('출석 정보 업데이트 요청:', attendances);
+      // console.log('출석 정보 업데이트 요청:', attendances);
 
       // API가 요구하는 형식으로 데이터 변환
       const formattedAttendances = attendances.map(attendance => {
@@ -372,14 +379,14 @@ export const attendanceApi = {
         };
       });
 
-      console.log('변환된 출석 데이터:', formattedAttendances);
+      // console.log('변환된 출석 데이터:', formattedAttendances);
 
       // 변경된 엔드포인트로 API 호출
       const response = await api.put('/api/att', formattedAttendances);
-      console.log('출석 정보 업데이트 응답:', response);
+      // console.log('출석 정보 업데이트 응답:', response);
       return response;
     } catch (error) {
-      console.error('출석 정보 업데이트 실패:', error.response || error);
+      // console.error('출석 정보 업데이트 실패:', error.response || error);
       throw error;
     }
   },

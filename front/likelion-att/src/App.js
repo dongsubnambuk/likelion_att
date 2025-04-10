@@ -6,10 +6,12 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Teams from './pages/Teams';
 import TeamDetail from './pages/TeamDetail';
+import AllTeams from './pages/AllTeams';
 import Members from './pages/Members';
 import MemberDetail from './pages/MemberDetail';
 import Schedules from './pages/Schedules';
 import ScheduleDetail from './pages/ScheduleDetail';
+import AllSchedules from './pages/AllSchedules';
 import AttendanceReport from './pages/AttendanceReport';
 import Documents from './pages/Documents';
 import AdminLayout from './components/AdminLayout';
@@ -78,10 +80,12 @@ function App() {
             <Route index element={<Dashboard />} />
             <Route path="teams" element={<Teams />} />
             <Route path="teams/:teamId" element={<TeamDetail />} />
+            <Route path="allTeams" element={<AllTeams />} />
             <Route path="members" element={<Members />} />
             <Route path="members/:memberId" element={<MemberDetail />} />
             <Route path="schedules" element={<Schedules />} />
             <Route path="schedules/:scheduleId" element={<ScheduleDetail />} />
+            <Route path="allSchedules" element={<AllSchedules />} />
             <Route path="reports" element={<AttendanceReport />} />
             <Route path="documents" element={<Documents />} />
           </Route>

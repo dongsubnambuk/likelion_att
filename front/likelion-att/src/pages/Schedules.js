@@ -258,7 +258,7 @@ const Schedules = () => {
 
       // 전체 스케줄 가져오기 - API 명세에 맞게 수정
       const schedulesResponse = await scheduleApi.getAll();
-      console.log('스케줄 데이터 응답:', schedulesResponse.data);
+      // console.log('스케줄 데이터 응답:', schedulesResponse.data);
 
       // 스케줄 데이터 처리 (API 응답에 맞춤)
       let schedulesData = [];
@@ -298,7 +298,7 @@ const Schedules = () => {
         };
       });
 
-      console.log('변환된 스케줄 배열:', schedulesData);
+      // console.log('변환된 스케줄 배열:', schedulesData);
 
       // 날짜 오름차순으로 정렬
       schedulesData.sort((a, b) => {
@@ -311,7 +311,7 @@ const Schedules = () => {
       setFilteredSchedules(schedulesData);
 
     } catch (error) {
-      console.error('데이터 로딩 실패:', error);
+      // console.error('데이터 로딩 실패:', error);
       setNotification({
         type: 'error',
         message: '데이터를 불러오는데 실패했습니다.'
@@ -378,7 +378,7 @@ const Schedules = () => {
   // 스케줄 생성 처리
   const handleCreateSchedule = async (teamId, schedulesList) => {
     try {
-      console.log('스케줄 생성 요청:', { teamId, schedulesList });
+      // console.log('스케줄 생성 요청:', { teamId, schedulesList });
 
       // 요청할 스케줄 목록 구성
       const formattedSchedules = schedulesList.map(schedule => ({
@@ -388,7 +388,7 @@ const Schedules = () => {
 
       // scheduleApi.create 호출 (API 명세에 맞게 수정)
       const response = await scheduleApi.create(formattedSchedules, teamId);
-      console.log('스케줄 생성 응답:', response);
+      // console.log('스케줄 생성 응답:', response);
 
       // 생성된 스케줄에 대한 정보가 없으므로, 전체 데이터를 다시 불러옴
       await fetchData();
@@ -405,7 +405,7 @@ const Schedules = () => {
       }, 3000);
 
     } catch (error) {
-      console.error('스케줄 생성 실패:', error);
+      // console.error('스케줄 생성 실패:', error);
       setNotification({
         type: 'error',
         message: '스케줄 생성에 실패했습니다. 다시 시도해주세요.'
@@ -441,7 +441,7 @@ const Schedules = () => {
       }, 3000);
 
     } catch (error) {
-      console.error('스케줄 삭제 실패:', error);
+      // console.error('스케줄 삭제 실패:', error);
       setNotification({
         type: 'error',
         message: '스케줄 삭제에 실패했습니다. 다시 시도해주세요.'

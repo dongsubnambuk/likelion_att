@@ -51,7 +51,7 @@ const Members = () => {
     try {
       setLoading(true);
       const response = await userApi.getAll();
-      console.log('부원 목록 응답:', response.data);
+      // console.log('부원 목록 응답:', response.data);
 
       if (response.data && typeof response.data === 'object') {
         // API 응답 구조에 맞게 데이터 설정
@@ -68,12 +68,12 @@ const Members = () => {
           users: studentMembers
         });
       } else {
-        console.error('예상치 못한 부원 데이터 형식:', response.data);
+        // console.error('예상치 못한 부원 데이터 형식:', response.data);
         setMembers({ admin: [], users: [] });
         setFilteredMembers({ admin: [], users: [] });
       }
     } catch (error) {
-      console.error('부원 목록 로딩 실패:', error);
+      // console.error('부원 목록 로딩 실패:', error);
       setNotification({
         type: 'error',
         message: '부원 목록을 불러오는데 실패했습니다.'
@@ -201,7 +201,7 @@ const Members = () => {
         setNotification(null);
       }, 3000);
     } catch (error) {
-      console.error('부원 등록 실패:', error);
+      // console.error('부원 등록 실패:', error);
       setNotification({
         type: 'error',
         message: '부원 등록에 실패했습니다. 다시 시도해주세요.'
@@ -234,7 +234,7 @@ const Members = () => {
         setNotification(null);
       }, 3000);
     } catch (error) {
-      console.error('부원 수정 실패:', error);
+      // console.error('부원 수정 실패:', error);
       setNotification({
         type: 'error',
         message: '부원 정보 수정에 실패했습니다. 다시 시도해주세요.'
@@ -263,7 +263,7 @@ const Members = () => {
         setNotification(null);
       }, 3000);
     } catch (error) {
-      console.error('부원 삭제 실패:', error);
+      // console.error('부원 삭제 실패:', error);
       setNotification({
         type: 'error',
         message: '부원 삭제에 실패했습니다. 다시 시도해주세요.'
@@ -296,7 +296,7 @@ const Members = () => {
         setNotification(null);
       }, 3000);
     } catch (error) {
-      console.error('부원 대량 등록 실패:', error);
+      // console.error('부원 대량 등록 실패:', error);
       setNotification({
         type: 'error',
         message: '부원 대량 등록에 실패했습니다. 파일 형식을 확인해주세요.'

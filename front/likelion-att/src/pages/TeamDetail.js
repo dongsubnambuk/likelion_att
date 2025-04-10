@@ -28,7 +28,7 @@ const MembersTab = ({ team, members, onAddMember, onRemoveMember }) => {
             setSearchResults(filteredResults);
             setIsSearching(true);
         } catch (error) {
-            console.error('사용자 검색 실패:', error);
+            // console.error('사용자 검색 실패:', error);
         } finally {
             setSearchLoading(false);
         }
@@ -41,7 +41,7 @@ const MembersTab = ({ team, members, onAddMember, onRemoveMember }) => {
             // 검색 결과에서 추가된 사용자 제거
             setSearchResults(searchResults.filter(user => user.id !== userId));
         } catch (error) {
-            console.error('팀원 추가 실패:', error);
+            // console.error('팀원 추가 실패:', error);
         }
     };
 
@@ -210,7 +210,7 @@ const SchedulesTab = ({ team, schedules, onCreateSchedule, onDeleteSchedule }) =
             });
             setError('');
         } catch (error) {
-            console.error('스케줄 생성 실패:', error);
+            // console.error('스케줄 생성 실패:', error);
             setError('스케줄 생성에 실패했습니다. 다시 시도해주세요.');
         }
     };
@@ -479,7 +479,7 @@ const TeamDetail = () => {
 
                     } else {
                         setMembers([]);
-                        console.warn('팀원 데이터가 배열이 아닙니다:', teamData.members);
+                        // console.warn('팀원 데이터가 배열이 아닙니다:', teamData.members);
                     }
 
                     // 팀 스케줄 가져오기
@@ -502,10 +502,10 @@ const TeamDetail = () => {
                             setSchedules(formattedSchedules);
                         } else {
                             setSchedules([]);
-                            console.warn('스케줄 데이터가 배열이 아닙니다:', schedulesResponse.data);
+                            // console.warn('스케줄 데이터가 배열이 아닙니다:', schedulesResponse.data);
                         }
                     } catch (scheduleError) {
-                        console.error('스케줄 데이터 로딩 실패:', scheduleError);
+                        // console.error('스케줄 데이터 로딩 실패:', scheduleError);
                         setSchedules([]);
                     }
                 } else {
@@ -516,7 +516,7 @@ const TeamDetail = () => {
                     });
                 }
             } catch (error) {
-                console.error('팀 데이터 로딩 실패:', error);
+                // console.error('팀 데이터 로딩 실패:', error);
                 setError('팀 정보를 불러오는데 실패했습니다.');
                 setNotification({
                     type: 'error',
@@ -591,7 +591,7 @@ const TeamDetail = () => {
                 }, 3000);
             }
         } catch (error) {
-            console.error('팀원 추가 실패:', error);
+            // console.error('팀원 추가 실패:', error);
             setNotification({
                 type: 'error',
                 message: '팀원 추가에 실패했습니다. 다시 시도해주세요.'
@@ -621,7 +621,7 @@ const TeamDetail = () => {
                 setNotification(null);
             }, 3000);
         } catch (error) {
-            console.error('팀원 제거 실패:', error);
+            // console.error('팀원 제거 실패:', error);
             setNotification({
                 type: 'error',
                 message: '팀원 제거에 실패했습니다. 다시 시도해주세요.'
@@ -653,7 +653,7 @@ const TeamDetail = () => {
                 }, 3000);
             }
         } catch (error) {
-            console.error('스케줄 생성 실패:', error);
+            // console.error('스케줄 생성 실패:', error);
             setNotification({
                 type: 'error',
                 message: '스케줄 생성에 실패했습니다. 다시 시도해주세요.'
@@ -683,7 +683,7 @@ const TeamDetail = () => {
                 setNotification(null);
             }, 3000);
         } catch (error) {
-            console.error('스케줄 삭제 실패:', error);
+            // console.error('스케줄 삭제 실패:', error);
             setNotification({
                 type: 'error',
                 message: '스케줄 삭제에 실패했습니다. 다시 시도해주세요.'

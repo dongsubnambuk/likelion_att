@@ -46,7 +46,7 @@ const Documents = () => {
                     setTeams(processedTeams);
                 }
             } catch (error) {
-                console.error('데이터 로딩 실패:', error);
+                // console.error('데이터 로딩 실패:', error);
                 setNotification({
                     type: 'error',
                     message: '데이터를 불러오는데 실패했습니다.'
@@ -76,7 +76,7 @@ const Documents = () => {
 
             setTimeout(() => setNotification(null), 3000);
         } catch (error) {
-            console.error('교육자료 등록 실패:', error);
+            // console.error('교육자료 등록 실패:', error);
             setNotification({
                 type: 'error',
                 message: '교육자료 등록에 실패했습니다.'
@@ -102,7 +102,7 @@ const Documents = () => {
 
             setTimeout(() => setNotification(null), 3000);
         } catch (error) {
-            console.error('교육자료 수정 실패:', error);
+            // console.error('교육자료 수정 실패:', error);
             setNotification({
                 type: 'error',
                 message: '교육자료 수정에 실패했습니다.'
@@ -128,7 +128,7 @@ const Documents = () => {
 
             setTimeout(() => setNotification(null), 3000);
         } catch (error) {
-            console.error('교육자료 삭제 실패:', error);
+            // console.error('교육자료 삭제 실패:', error);
             setNotification({
                 type: 'error',
                 message: '교육자료 삭제에 실패했습니다.'

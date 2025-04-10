@@ -1,9 +1,9 @@
-// src/pages/student/StudentTeams.js
+// src/pages/AllTeams.js
 import React, { useState, useEffect } from 'react';
 import { FaSearch, FaExclamationTriangle, FaUsers, FaUserCog, FaUser, FaLaptopCode } from 'react-icons/fa';
-import api from '../../services/api';
+import api from '../services/api';
 
-const StudentTeams = () => {
+const AllTeams = () => {
   const [teams, setTeams] = useState([]);
   const [filteredTeams, setFilteredTeams] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -62,19 +62,19 @@ const StudentTeams = () => {
               }
               return null;
             } catch (teamError) {
-              // console.error(`팀 ${teamId} 상세 정보 로딩 실패:`, teamError);
+            //   console.error(`팀 ${teamId} 상세 정보 로딩 실패:`, teamError);
               return null;
             }
           });
 
           // 모든 팀 정보를 처리한 후 유효한 팀만 필터링하여 상태 업데이트
           const validTeams = (await Promise.all(teamPromises)).filter(team => team !== null);
-          // console.log('상세 정보로 가져온 팀 배열:', validTeams);
+        //   console.log('상세 정보로 가져온 팀 배열:', validTeams);
 
           setTeams(validTeams);
           setFilteredTeams(validTeams);
         } else {
-          // console.error('예상치 못한 팀 데이터 형식:', response.data);
+        //   console.error('예상치 못한 팀 데이터 형식:', response.data);
           setTeams([]);
           setFilteredTeams([]);
         }
@@ -251,4 +251,4 @@ const StudentTeams = () => {
   );
 };
 
-export default StudentTeams;
+export default AllTeams;

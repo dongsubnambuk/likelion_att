@@ -46,7 +46,7 @@ export function AuthProvider({ children }) {
       
       return user;
     } catch (err) {
-      console.error('로그인 실패:', err);
+      // console.error('로그인 실패:', err);
       setError('로그인 실패. 아이디와 비밀번호를 확인하세요.');
       throw err;
     }

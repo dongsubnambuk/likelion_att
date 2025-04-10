@@ -1,9 +1,9 @@
 // src/pages/student/StudentSchedules.js
 import React, { useState, useEffect } from 'react';
 import { FaSearch, FaCalendarAlt, FaExclamationTriangle, FaUsers, FaHistory, FaFilter, FaSortAmountDown, FaUserCog, FaUser, FaUserFriends } from 'react-icons/fa';
-import api, { teamApi } from '../../services/api';
+import api, { teamApi } from '../services/api';
 
-const StudentSchedules = () => {
+const AllSchedules = () => {
   const [schedulesByTeam, setSchedulesByTeam] = useState({});
   const [filteredSchedules, setFilteredSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -494,4 +494,4 @@ const StudentSchedules = () => {
   );
 };
 
-export default StudentSchedules;
+export default AllSchedules;

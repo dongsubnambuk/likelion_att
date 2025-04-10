@@ -32,7 +32,7 @@ const MemberDetail = () => {
         setRecentAttendances(attendanceResponse.data);
         
       } catch (error) {
-        console.error('부원 데이터 로딩 실패:', error);
+        // console.error('부원 데이터 로딩 실패:', error);
       } finally {
         setLoading(false);
       }
