@@ -35,4 +35,18 @@ public class Auth {
     public ResponseEntity<?> signin(@RequestParam Long id, @RequestParam String password) {
         return ResponseEntity.ok(authService.signin(id, password));
     }
+
+    @Operation(summary = "유저 수정", description = "수정입니다.")
+    @PutMapping("/detail")
+    public ResponseEntity<?> updateUser(@RequestBody AuthDTO user) {
+        return ResponseEntity.ok(authService.updateUser(user));
+    }
+
+    @PutMapping
+    public ResponseEntity<?> changePassword(@RequestParam Long id, @RequestParam String password) {
+        authService.changePassword(id, password);
+        return ResponseEntity.ok(StatusDTO.builder()
+                        .content("변경 성공")
+                        .build());
+    }
 }

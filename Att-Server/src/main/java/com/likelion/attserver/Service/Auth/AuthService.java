@@ -8,4 +8,6 @@ import java.util.Map;
 public interface AuthService {
     UserDTO signup(AuthDTO user);
     Map<String, Object> signin(Long id, String password);
+    UserDTO updateUser(AuthDTO user);
+    void changePassword(Long id, String password);
 }

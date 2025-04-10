@@ -14,6 +14,7 @@ public class AuthDTO {
     private String name;
     private String password;
     private String phone;
+    private String email;
     private UserEntity.Track track;
     private UserEntity.Role role;
 }
