@@ -1,6 +1,5 @@
 package com.likelion.attserver.Controller;
 
-import com.likelion.attserver.DTO.StatusDTO;
 import com.likelion.attserver.Service.User.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

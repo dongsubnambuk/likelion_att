@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Service
@@ -29,6 +28,24 @@ public class AuthServiceImpl implements AuthService {
     public Map<String, Object> signin(Long id, String password) {
         try {
             return userDAO.signin(id, password);
+        } catch (Exception e) {
+            throw new CustomException(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @Override
+    public UserDTO updateUser(AuthDTO user) {
+        try {
+            return userDAO.update(user);
+        } catch (Exception e) {
+            throw new CustomException(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @Override
+    public void changePassword(Long id, String password) {
+        try {
+            userDAO.changePassword(id, password);
         } catch (Exception e) {
             throw new CustomException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }

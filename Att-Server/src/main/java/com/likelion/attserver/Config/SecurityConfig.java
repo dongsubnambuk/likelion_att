@@ -44,16 +44,20 @@ public class SecurityConfig {
                                 "/api/auth/signin",
                                 "/api/team",
                                 "/api/schedules",
-                                "/api/docs").permitAll()
+                                "/api/docs",
+                                "/api/mail/mail-send").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/user/all",
                                 "/api/user",
                                 "/api/team",
                                 "/api/team/all",
                                 "/api/schedules",
                                 "/api/schedules/all",
-                                "/api/docs").permitAll()
+                                "/api/docs",
+                                "/api/mail/mail-check").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/att",
-                                "/api/docs").permitAll()
+                                "/api/docs",
+                                "/api/auth/detail",
+                                "/api/auth").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/schedules",
                                 "/api/team",
                                 "/api/user",

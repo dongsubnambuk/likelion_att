@@ -35,7 +35,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 "/api/swagger-ui",
                 "/api/v3/api-docs",
                 "/swagger-resources",
-                "/webjars"
+                "/webjars",
+                "/api/mail/mail-send",
+                "/api/mail/mail-check"
         );
 
         // JWT 검증을 생략할 경로 설정

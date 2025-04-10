@@ -13,4 +13,7 @@ public interface UserDAO {
     List<UserDTO> getUserByRole(String role);
     Map<String, Object> userMap();
     void deleteUser(Long id, String password);
+    UserDTO update(AuthDTO user);
+    void changePassword(Long id, String password);
+    boolean existsEmail(String mail);
 }
