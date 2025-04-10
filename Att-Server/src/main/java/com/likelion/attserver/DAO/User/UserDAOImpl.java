@@ -1,6 +1,5 @@
 package com.likelion.attserver.DAO.User;
 
-import com.likelion.attserver.DAO.Attendance.AttendanceDAO;
 import com.likelion.attserver.DAO.Team.TeamDAO;
 import com.likelion.attserver.DTO.AuthDTO;
 import com.likelion.attserver.DTO.UserDTO;
@@ -39,6 +38,7 @@ public class UserDAOImpl implements UserDAO {
                 .id(user.getId())
                 .name(user.getName())
                 .phone(user.getPhone())
+                .email(user.getEmail())
                 .password(passwordEncoder.encode(user.getPassword()))
                 .track(user.getTrack())
                 .role(user.getRole())
@@ -57,6 +57,7 @@ public class UserDAOImpl implements UserDAO {
         response.put("id", id);
         response.put("name", user.getName());
         response.put("phone", user.getPhone());
+        response.put("email", user.getEmail());
         response.put("Track", user.getTrack());
         response.put("role", user.getRole());
 
@@ -86,5 +87,36 @@ public class UserDAOImpl implements UserDAO {
                 .orElseThrow(() -> new IllegalArgumentException("잘못된 유저 ID"));
         teamDAO.deleteUserTeam(user);
         userRepository.deleteById(id);
+    }
+
+    @Override
+    public UserDTO update(AuthDTO user) {
+        if(userRepository.existsById(user.getId())) {
+            UserEntity userEntity = UserEntity.builder()
+                    .id(user.getId())
+                    .name(user.getName())
+                    .phone(user.getPhone())
+                    .email(user.getEmail())
+                    .password(passwordEncoder.encode(user.getPassword()))
+                    .track(user.getTrack())
+                    .role(user.getRole())
+                    .build();
+            return UserEntity.toDTO(userRepository.save(userEntity));
+        } else {
+            throw new IllegalArgumentException("수정 실패");
+        }
+    }
+
+    @Override
+    public void changePassword(Long id, String password) {
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("잘못된 아이디"));
+        user.setPassword(passwordEncoder.encode(password));
+        userRepository.save(user);
+    }
+
+    @Override
+    public boolean existsEmail(String mail) {
+        return userRepository.existsByEmail(mail);
     }
 }

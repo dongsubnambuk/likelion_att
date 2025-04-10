@@ -24,6 +24,9 @@ public class UserEntity {
     @Column(nullable = false)
     private String phone;
 
+    @Column
+    private String email;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Track track;
@@ -49,6 +52,7 @@ public class UserEntity {
                 .studentId(userEntity.getId())
                 .name(userEntity.getName())
                 .phone(userEntity.getPhone())
+                .email(userEntity.getEmail())
                 .track(userEntity.getTrack())
                 .role(userEntity.getRole())
                 .build();
