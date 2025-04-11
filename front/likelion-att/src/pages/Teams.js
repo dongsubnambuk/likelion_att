@@ -268,14 +268,14 @@ const TeamCreateModal = ({ isOpen, onClose, onSubmit, existingTeams = [] }) => {
                   onClick={() => setIsCreating(!isCreating)}
                   style={{ fontSize: '0.8rem' }}
                 >
-                  {isCreating ? '기존 팀 선택하기' : '새 팀 생성하기'}
+                  {isCreating ? '기존 팀 수정하기' : '새 팀 생성하기'}
                 </button>
               </div>
 
               <p className="form-text" style={{ fontSize: '0.85rem', color: '#666', marginTop: '5px' }}>
                 {isCreating
                   ? '새 팀을 생성하기 위한 팀 ID를 입력하세요.'
-                  : '⚠️ 주의: 선택한 멤버만 팀에 포함됩니다. 선택하지 않은 기존 멤버는 모두 제거됩니다.'}
+                  : '⚠️ 주의: 선택한 멤버에 대해서만 상태 수정이 됩니다. 기존 인원 선택 시 해당 인원 삭제, 신규 멤버 선택 시 해당 인원 추가 => 인원 추가 시 기존 인원은 선택 안해도 됨.'}
               </p>
             </div>
 

@@ -1,6 +1,6 @@
 // src/pages/student/StudentSchedules.js
 import React, { useState, useEffect } from 'react';
-import { FaSearch, FaCalendarAlt, FaExclamationTriangle, FaUsers, FaHistory, FaFilter, FaSortAmountDown, FaUserCog, FaUser, FaUserFriends } from 'react-icons/fa';
+import { FaSearch, FaCalendarAlt, FaExclamationTriangle, FaUsers, FaHistory, FaFilter, FaSortAmountDown, FaUserCog, FaUser, FaUserFriends, FaLock } from 'react-icons/fa';
 import api, { teamApi } from '../../services/api';
 
 const StudentSchedules = () => {
@@ -11,10 +11,10 @@ const StudentSchedules = () => {
   const [error, setError] = useState(null);
   const [filterStartDate, setFilterStartDate] = useState('');
   const [filterEndDate, setFilterEndDate] = useState('');
-  const [showPastSchedules, setShowPastSchedules] = useState(false); // 지난 스케줄 표시 여부
-  const [sortDirection, setSortDirection] = useState('asc'); // 'asc' 또는 'desc'
-  const [teams, setTeams] = useState([]); // 팀 목록 상태 추가
-  const [filterTeamId, setFilterTeamId] = useState('all'); // 팀 필터링 상태 추가
+  const [showPastSchedules, setShowPastSchedules] = useState(false);
+  const [sortDirection, setSortDirection] = useState('asc');
+  const [teams, setTeams] = useState([]);
+  const [filterTeamId, setFilterTeamId] = useState('all');
 
   // 팀 목록과 스케줄 목록 불러오기
   useEffect(() => {
@@ -47,11 +47,10 @@ const StudentSchedules = () => {
         Object.entries(response.data).forEach(([teamId, schedules]) => {
           if (Array.isArray(schedules)) {
             schedules.forEach(schedule => {
-              // 팀 이름과 스케줄 번호 포함
               allSchedules.push({
                 ...schedule,
                 teamId: teamId,
-                teamName: `팀 ${teamId}` // 팀 이름이 응답에 없으므로 임시로 생성
+                teamName: `팀 ${teamId}`
               });
             });
           }
@@ -66,7 +65,6 @@ const StudentSchedules = () => {
 
         setFilteredSchedules(sortedSchedules);
       } catch (error) {
-        // console.error('스케줄 목록 로딩 실패:', error);
         setError('스케줄 목록을 불러오는데 실패했습니다.');
       } finally {
         setLoading(false);
@@ -181,11 +179,21 @@ const StudentSchedules = () => {
     }
   };
 
-  // 출석 상태 표시 컴포넌트
-  const AttendanceStatus = ({ status }) => {
+  // 출석 상태 표시 컴포넌트 - 팀 멤버십에 따라 표시/비공개 구분
+  const AttendanceStatus = ({ status, isUserTeam }) => {
+    // 사용자가 속한 팀이 아니면 비공개 처리
+    if (!isUserTeam) {
+      return (
+        <span className="attendance-status status-private">
+          <FaLock style={{ marginRight: '5px', fontSize: '0.8em' }} />
+          비공개
+        </span>
+      );
+    }
+  
     let statusClass = 'status-none';
     let statusText = '미처리';
-
+  
     switch (status) {
       case 'PRESENT':
         statusClass = 'status-present';
@@ -205,7 +213,7 @@ const StudentSchedules = () => {
         statusText = '미처리';
         break;
     }
-
+  
     return <span className={`attendance-status ${statusClass}`}>{statusText}</span>;
   };
 
@@ -225,9 +233,124 @@ const StudentSchedules = () => {
     return scheduleDate < today;
   };
 
+   // 스케줄 카드 내의 출석 명단 렌더링 부분 수정
+   const renderAttendanceList = (schedule) => {
+    // 현재 로그인한 사용자 정보 가져오기
+    const currentUser = JSON.parse(localStorage.getItem('user')) || {};
+    
+    // 스케줄의 참석자 목록에 현재 사용자가 있는지 확인
+    const isUserInSchedule = Array.isArray(schedule.attendances) && 
+      schedule.attendances.some(attendance => 
+        attendance.user && (
+          (currentUser.name && attendance.user.name === currentUser.name) ||
+          (currentUser.studentId && attendance.user.studentId === currentUser.studentId) ||
+          (currentUser.email && attendance.user.email === currentUser.email) ||
+          (currentUser.id && attendance.user.id === currentUser.id)
+        )
+      );
+    
+    return (
+      <div className="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>이름</th>
+              <th>학번</th>
+              <th>역할</th>
+              <th>출석 상태</th>
+              <th>비고</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Array.isArray(schedule.attendances) && schedule.attendances.length > 0 ? (
+              [...schedule.attendances]
+                .sort((a, b) => {
+                  // 운영진(ADMIN)을 먼저 표시
+                  if (a.user?.role === 'ADMIN' && b.user?.role !== 'ADMIN') return -1;
+                  if (a.user?.role !== 'ADMIN' && b.user?.role === 'ADMIN') return 1;
+                  // 같은 역할이면 이름순으로 정렬
+                  return (a.user?.name || '').localeCompare(b.user?.name || '');
+                })
+                .map((attendance) => {
+                  // 현재 사용자의 출석 정보인지 확인
+                  const isCurrentUser = attendance.user && (
+                    (currentUser.name && attendance.user.name === currentUser.name) ||
+                    (currentUser.studentId && attendance.user.studentId === currentUser.studentId) ||
+                    (currentUser.email && attendance.user.email === currentUser.email) ||
+                    (currentUser.id && attendance.user.id === currentUser.id)
+                  );
+  
+                  // 사용자 이름 하이라이트 스타일
+                  const userNameStyle = isCurrentUser ? {
+                    fontWeight: 'bold',
+                    color: '#007bff',
+                    backgroundColor: '#e6f2ff',
+                    padding: '2px 8px',
+                    borderRadius: '4px'
+                  } : {};
+  
+                  return (
+                    <tr key={attendance.id} style={isCurrentUser ? { backgroundColor: '#f8f9fa' } : {}}>
+                      <td>
+                        <span style={{ display: 'flex', alignItems: 'center' }}>
+                          {attendance.user?.role === 'ADMIN'
+                            ? <FaUserCog style={{ color: '#DF773B', marginRight: '5px' }} />
+                            : <FaUser style={{ color: '#373737', marginRight: '5px' }} />
+                          }
+                          <span style={userNameStyle}>
+                            {attendance.user?.name || '-'} 
+                            {isCurrentUser && ' (나)'}
+                          </span>
+                        </span>
+                      </td>
+                      <td>{attendance.user?.studentId || '-'}</td>
+                      <td>
+                        <span style={{
+                          display: 'inline-block',
+                          padding: '2px 8px',
+                          backgroundColor: attendance.user?.role === 'ADMIN' ? '#FEF0E6' : '#F5F5F5',
+                          color: attendance.user?.role === 'ADMIN' ? '#DF773B' : '#373737',
+                          borderRadius: '4px',
+                          fontSize: '0.9em'
+                        }}>
+                          {attendance.user?.role === 'ADMIN' ? '운영진' : '아기사자'}
+                        </span>
+                      </td>
+                      <td>
+                        {/* 수정된 부분: 사용자가 포함된 스케줄이면 모든 출석 상태 표시, 아니면 본인만 */}
+                        <AttendanceStatus 
+                          status={attendance.status} 
+                          isUserTeam={isUserInSchedule || isCurrentUser} 
+                        />
+                      </td>
+                      <td>
+                        {/* 비고도 사용자 참여 여부에 따라 표시/비공개 처리 */}
+                        {isUserInSchedule || isCurrentUser
+                          ? (attendance.note || '-') 
+                          : <span style={{ fontSize: '0.75rem', 
+                            fontWeight: 'bold'  }}>
+                              <FaLock style={{ marginRight: '5px' }} />
+                              비공개
+                            </span>
+                        }
+                      </td>
+                    </tr>
+                  );
+                })
+            ) : (
+              <tr>
+                <td colSpan="5" style={{ textAlign: 'center' }}>참석자 정보가 없습니다.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
   return (
     <div>
-      <h1 style={{marginBottom: '20px', borderBottom: '1px solid var(--gray)', paddingBottom: '20px'}}>전체 스케줄 조회</h1>
+      <h1 style={{ marginBottom: '20px', borderBottom: '1px solid var(--gray)', paddingBottom: '20px' }}>전체 스케줄 조회</h1>
 
       {/* 에러 메시지 */}
       {error && (
@@ -344,13 +467,12 @@ const StudentSchedules = () => {
         </p>
       </div>
 
-      {/* 스케줄 목록 - 변경 없음 */}
+      {/* 스케줄 목록 */}
       {loading ? (
         <div className="loading">로딩 중...</div>
       ) : filteredSchedules.length > 0 ? (
         <div>
           {filteredSchedules.map((schedule) => (
-            // 기존 스케줄 카드 렌더링 코드 유지
             <div
               className="card"
               key={schedule.id}
@@ -362,6 +484,9 @@ const StudentSchedules = () => {
             >
               <div className="card-header" style={{
                 borderBottom: isPastSchedule(schedule.date) ? '4px solid #6c757d' : '4px solid #007bff',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   <FaCalendarAlt style={{ marginRight: '10px' }} />
@@ -371,6 +496,39 @@ const StudentSchedules = () => {
                     </h3>
                     <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '3px' }}>
                       {schedule.teamName} - {getRelativeTime(schedule.date)}
+                      {/* 사용자 참여 표시 추가 (실제 참여 여부는 renderAttendanceList 내에서 확인) */}
+                      {(() => {
+                        // 현재 사용자 정보
+                        const currentUser = JSON.parse(localStorage.getItem('user')) || {};
+                        
+                        // 스케줄의 참석자 목록에 현재 사용자가 있는지 확인
+                        const isUserSchedule = Array.isArray(schedule.attendances) && 
+                          schedule.attendances.some(attendance => 
+                            attendance.user && (
+                              (currentUser.name && attendance.user.name === currentUser.name) ||
+                              (currentUser.studentId && attendance.user.studentId === currentUser.studentId) ||
+                              (currentUser.email && attendance.user.email === currentUser.email) ||
+                              (currentUser.id && attendance.user.id === currentUser.id)
+                            )
+                          );
+                          
+                        if (isUserSchedule) {
+                          return (
+                            <span style={{ 
+                              marginLeft: '10px', 
+                              backgroundColor: '#e3fcef', 
+                              color: '#0ca678', 
+                              padding: '2px 8px', 
+                              borderRadius: '10px', 
+                              fontSize: '0.75rem', 
+                              fontWeight: 'bold' 
+                            }}>
+                              내 스케줄
+                            </span>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
                   </div>
                 </div>
@@ -398,67 +556,20 @@ const StudentSchedules = () => {
                   <h4 style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
                     <FaUsers style={{ marginRight: '10px' }} />
                     참석자 명단 ({Array.isArray(schedule.attendances) ? schedule.attendances.length : 0}명)
+                    
                   </h4>
-                  <div className="table-container">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>이름</th>
-                          <th>학번</th>
-                          <th>역할</th>
-                          <th>출석 상태</th>
-                          <th>비고</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {Array.isArray(schedule.attendances) && schedule.attendances.length > 0 ? (
-                          // 운영진이 상단에 오도록 정렬
-                          [...schedule.attendances]
-                            .sort((a, b) => {
-                              // 운영진(ADMIN)을 먼저 표시
-                              if (a.user?.role === 'ADMIN' && b.user?.role !== 'ADMIN') return -1;
-                              if (a.user?.role !== 'ADMIN' && b.user?.role === 'ADMIN') return 1;
-                              // 같은 역할이면 이름순으로 정렬
-                              return (a.user?.name || '').localeCompare(b.user?.name || '');
-                            })
-                            .map((attendance) => (
-                              <tr key={attendance.id}>
-                                <td>
-                                  <span style={{ display: 'flex', alignItems: 'center' }}>
-                                    {attendance.user?.role === 'ADMIN'
-                                      ? <FaUserCog style={{ color: '#DF773B', marginRight: '5px' }} />
-                                      : <FaUser style={{ color: '#373737', marginRight: '5px' }} />
-                                    }
-                                    {attendance.user?.name || '-'}
-                                  </span>
-                                </td>
-                                <td>{attendance.user?.studentId || '-'}</td>
-                                <td>
-                                  <span style={{
-                                    display: 'inline-block',
-                                    padding: '2px 8px',
-                                    backgroundColor: attendance.user?.role === 'ADMIN' ? '#FEF0E6' : '#F5F5F5',
-                                    color: attendance.user?.role === 'ADMIN' ? '#DF773B' : '#373737',
-                                    borderRadius: '4px',
-                                    fontSize: '0.9em'
-                                  }}>
-                                    {attendance.user?.role === 'ADMIN' ? '운영진' : '아기사자'}
-                                  </span>
-                                </td>
-                                <td>
-                                  <AttendanceStatus status={attendance.status} />
-                                </td>
-                                <td>{attendance.note || '-'}</td>
-                              </tr>
-                            ))
-                        ) : (
-                          <tr>
-                            <td colSpan="5" style={{ textAlign: 'center' }}>참석자 정보가 없습니다.</td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
+                  <span style={{ 
+                      fontSize: '0.8rem', 
+                      color: '#666',
+                      display: 'flex',
+                      alignItems: 'center',
+                      color: 'rgb(223, 119, 59)',
+                      marginBottom: '5px'
+                    }}>
+                      <FaLock style={{ marginRight: '5px' }} />
+                      자신이 포함된 팀의 스케줄만 출석 상태와 비고를 확인할 수 있습니다
+                    </span>
+                  {renderAttendanceList(schedule)}
                 </div>
               </div>
             </div>
