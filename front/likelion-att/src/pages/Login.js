@@ -297,7 +297,7 @@ const Login = () => {
     <div className="login-container">
       <div className="login-card">
         <div className="login-header">
-          <h1 className="login-title">계명대 멋쟁이사자처럼</h1>
+          <h1 className="login-title">계명대학교<br />멋쟁이사자처럼</h1>
         </div>
 
         {errorMessage && (

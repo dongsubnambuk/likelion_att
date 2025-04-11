@@ -20,6 +20,7 @@ import StudentTeams from './pages/student/StudentTeams';
 import StudentSchedules from './pages/student/StudentSchedules';
 import StudentDevelopers from './pages/student/StudentDevelopers';
 import StudentDocuments from './pages/student/StudentDocuments';
+import ScrollToTop from './components/ScrollToTop';
 import './App.css';
 
 // 인증된 사용자만 접근 가능한 라우트 컴포넌트
@@ -67,6 +68,7 @@ function App() {
   return (
     <AuthProvider>
       <Router>
+        <ScrollToTop />
         <Routes>
           {/* 로그인 페이지 */}
           <Route path="/login" element={<Login />} />
