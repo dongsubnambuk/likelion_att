@@ -3,13 +3,19 @@ package com.likelion.attserver.DAO.User;
 import com.likelion.attserver.DAO.Team.TeamDAO;
 import com.likelion.attserver.DTO.AuthDTO;
 import com.likelion.attserver.DTO.UserDTO;
+import com.likelion.attserver.Entity.AttendanceEntity;
+import com.likelion.attserver.Entity.SchedulesEntity;
+import com.likelion.attserver.Entity.TeamEntity;
 import com.likelion.attserver.Entity.UserEntity;
 import com.likelion.attserver.Exception.CustomException;
 import com.likelion.attserver.JWT.CustomUserDetailsService;
 import com.likelion.attserver.JWT.JwtTokenUtil;
+import com.likelion.attserver.Repository.AttendanceRepository;
+import com.likelion.attserver.Repository.TeamRepository;
 import com.likelion.attserver.Repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,7 +24,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 @Transactional
@@ -29,6 +37,8 @@ public class UserDAOImpl implements UserDAO {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final TeamDAO teamDAO;
+    private final TeamRepository teamRepository;
+    private final AttendanceRepository attendanceRepository;
 
     @Override
     public UserDTO addUser(AuthDTO user) {
@@ -85,26 +95,44 @@ public class UserDAOImpl implements UserDAO {
     public void deleteUser(Long id, String password) {
         UserEntity user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("잘못된 유저 ID"));
-        teamDAO.deleteUserTeam(user);
+
+        if (teamRepository.existsByUsersContaining(user)) {
+            TeamEntity teamEntity = teamRepository.getByUsersContaining(user);
+
+            // 유저가 속한 출결 데이터를 명시적으로 삭제
+            for (SchedulesEntity schedule : teamEntity.getSchedules()) {
+                List<AttendanceEntity> toRemove = schedule.getAttendances().stream()
+                        .filter(attendance -> attendance.getUser().equals(user))
+                        .toList();
+
+                toRemove.forEach(attendance -> {
+                    schedule.getAttendances().remove(attendance); // 양방향 관계 정리
+                    attendanceRepository.delete(attendance);
+                });
+            }
+
+            // 팀에서 유저 제거
+            teamEntity.getUsers().remove(user);
+            teamRepository.save(teamEntity);
+            log.info("deleted {} from team {}", id, teamEntity.getId());
+        }
+
         userRepository.deleteById(id);
+        log.info("deleted user {}", id);
     }
 
     @Override
     public UserDTO update(AuthDTO user) {
-        if(userRepository.existsById(user.getId())) {
-            UserEntity userEntity = UserEntity.builder()
-                    .id(user.getId())
-                    .name(user.getName())
-                    .phone(user.getPhone())
-                    .email(user.getEmail())
-                    .password(passwordEncoder.encode(user.getPassword()))
-                    .track(user.getTrack())
-                    .role(user.getRole())
-                    .build();
-            return UserEntity.toDTO(userRepository.save(userEntity));
-        } else {
-            throw new IllegalArgumentException("수정 실패");
-        }
+        UserEntity userEntity = userRepository.findById(user.getId())
+                .orElseThrow(() -> new IllegalArgumentException("잘못된 정보"));
+        userEntity.setName(user.getName());
+        userEntity.setPhone(user.getPhone());
+        userEntity.setEmail(user.getEmail());
+        userEntity.setTrack(user.getTrack());
+        userEntity.setRole(user.getRole());
+        if(user.getPassword() != null)
+            userEntity.setPassword(passwordEncoder.encode(user.getPassword()));
+        return UserEntity.toDTO(userRepository.save(userEntity));
     }
 
     @Override
@@ -116,7 +144,14 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public boolean existsEmail(String mail) {
-        return userRepository.existsByEmail(mail);
+    public boolean existsId(Long id) {
+        return userRepository.existsById(id);
+    }
+
+    @Override
+    public String getEmailById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("잘못된 학번"))
+                .getEmail();
     }
 }

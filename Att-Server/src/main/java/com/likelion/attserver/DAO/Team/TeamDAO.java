@@ -13,5 +13,5 @@ public interface TeamDAO {
     Map<String, List<UserDTO>> getTeam(Long teamId);
     LinkedHashMap<Long, LinkedHashMap<String, List<UserDTO>>> getTeams();
     void removeTeam(Long teamId);
-    void deleteUserTeam(UserEntity user);
+    Long deleteUserTeam(UserEntity user);
 }
