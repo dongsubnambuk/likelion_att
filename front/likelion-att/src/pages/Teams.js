@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { FaPlus, FaSearch, FaEdit, FaTrash, FaUserFriends, FaCalendarAlt, FaExclamationTriangle, FaCheckCircle, FaSort, FaSortUp, FaSortDown, FaUsers } from 'react-icons/fa';
 import { teamApi, userApi } from '../services/api';
 import ErrorBoundary from '../components/ErrorBoundary';
+import Loading from '../components/common/Loading';
 
 // 팀 생성 모달 컴포넌트 (세로 크기 조정 및 스크롤 추가)
 const TeamCreateModal = ({ isOpen, onClose, onSubmit, existingTeams = [] }) => {
@@ -324,9 +325,9 @@ const TeamCreateModal = ({ isOpen, onClose, onSubmit, existingTeams = [] }) => {
               </div>
 
               {loading ? (
-                <div className="loading" style={{ padding: '20px', textAlign: 'center' }}>
+                <Loading className="loading" style={{ padding: '20px', textAlign: 'center' }}>
                   사용자 목록을 불러오는 중...
-                </div>
+                </Loading>
               ) : (
                 <div className="members-list" style={{
                   height: '200px', // 높이 고정

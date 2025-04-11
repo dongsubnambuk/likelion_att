@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { FaChartBar, FaCalendarAlt, FaUserFriends, FaDownload, FaSearch, FaUser, FaSort, FaSortUp, FaSortDown, FaUserCog, FaLaptopCode, FaPhone } from 'react-icons/fa';
 import { teamApi, scheduleApi, attendanceApi } from '../services/api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+import Loading from '../components/common/Loading';
 
 const AttendanceReport = () => {
   const [teams, setTeams] = useState([]);
@@ -445,7 +446,7 @@ const AttendanceReport = () => {
   };
 
   if (loading) {
-    return <div className="loading">로딩 중...</div>;
+    return <Loading className="loading">로딩 중...</Loading>;
   }
 
   if (error) {

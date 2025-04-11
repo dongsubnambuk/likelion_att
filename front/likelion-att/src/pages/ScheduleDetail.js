@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { FaArrowLeft, FaEdit, FaTrash, FaSave, FaExclamationTriangle, FaCheckCircle, FaStar, FaRegStar } from 'react-icons/fa';
 import { scheduleApi, teamApi, attendanceApi } from '../services/api';
+import Loading from '../components/common/Loading';
 
 // 출석 상태 컴포넌트
 const AttendanceStatus = ({ status }) => {
@@ -366,7 +367,7 @@ const ScheduleDetail = () => {
   };
 
   if (loading) {
-    return <div className="loading">로딩 중...</div>;
+    return <Loading className="loading">로딩 중...</Loading>;
   }
 
   if (!schedule || !team) {

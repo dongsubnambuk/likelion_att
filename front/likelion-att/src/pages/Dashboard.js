@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { FaCalendarAlt, FaUserFriends, FaChartBar, FaArrowUp, FaArrowDown } from 'react-icons/fa';
 import { attendanceApi, teamApi, scheduleApi, userApi } from '../services/api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import Loading from '../components/common/Loading';
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -191,7 +192,7 @@ const Dashboard = () => {
   };
 
   if (loading) {
-    return <div className="loading">로딩 중...</div>;
+    return <Loading className="loading">로딩 중...</Loading>;
   }
 
   return (

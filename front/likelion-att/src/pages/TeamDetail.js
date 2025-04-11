@@ -4,6 +4,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { FaUserPlus, FaUserMinus, FaEdit, FaCalendarPlus, FaArrowLeft, FaTrash, FaCalendarAlt, FaUser, FaExclamationTriangle, FaCheckCircle, FaSearch } from 'react-icons/fa';
 import { teamApi, userApi, scheduleApi } from '../services/api';
 import { Tabs, Tab } from '../components/Tabs'; // 외부 Tabs 컴포넌트 임포트
+import Loading from '../components/common/Loading';
 
 // 팀원 관리 탭 컴포넌트
 const MembersTab = ({ team, members, onAddMember, onRemoveMember }) => {
@@ -692,7 +693,7 @@ const TeamDetail = () => {
     };
 
     if (loading) {
-        return <div className="loading">로딩 중...</div>;
+        return <Loading className="loading">로딩 중...</Loading>;
     }
 
     if (!team) {

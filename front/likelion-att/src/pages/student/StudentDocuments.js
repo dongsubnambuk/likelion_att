@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { FaSearch, FaGithub, FaFilter, FaSortAmountDown, FaHistory, FaCalendarAlt, FaUserFriends } from 'react-icons/fa';
 import { documentApi } from '../../services/documentApi';
 import { teamApi } from '../../services/api';
+import Loading from '../../components/common/Loading';
 
 const StudentDocuments = () => {
     const [documents, setDocuments] = useState({});
@@ -159,7 +160,7 @@ const StudentDocuments = () => {
     };
 
     if (loading) {
-        return <div className="loading">로딩 중...</div>;
+        return <Loading className="loading">로딩 중...</Loading>;
     }
 
     if (error) {

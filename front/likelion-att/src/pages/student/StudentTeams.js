@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaSearch, FaExclamationTriangle, FaUsers, FaUserCog, FaUser, FaLaptopCode } from 'react-icons/fa';
 import api from '../../services/api';
+import Loading from '../../components/common/Loading';
 
 const StudentTeams = () => {
   const [teams, setTeams] = useState([]);
@@ -154,7 +155,7 @@ const StudentTeams = () => {
 
       {/* 팀 목록 - 각 팀을 개별 카드로 표시 */}
       {loading ? (
-        <div className="loading">로딩 중...</div>
+        <Loading className="loading">로딩 중...</Loading>
       ) : filteredTeams.length > 0 ? (
         <div>
           {filteredTeams.map((team) => (

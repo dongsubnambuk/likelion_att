@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaGithub, FaFilter, FaSortAmountDown } from 'react-icons/fa';
 import { documentApi } from '../services/documentApi';
 import { teamApi } from '../services/api';
+import Loading from '../components/common/Loading';
 
 const Documents = () => {
     const [documents, setDocuments] = useState({});
@@ -520,7 +521,7 @@ const Documents = () => {
     };
 
     if (loading) {
-        return <div className="loading">로딩 중...</div>;
+        return <Loading className="loading">로딩 중...</Loading>;
     }
 
     const filteredDocuments = getFilteredDocs();

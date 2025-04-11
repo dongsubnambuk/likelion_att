@@ -4,6 +4,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { FaArrowLeft, FaEdit, FaTrash, FaCalendarAlt, FaStar, FaUser, FaUserFriends } from 'react-icons/fa';
 import { userApi, attendanceApi } from '../services/api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import Loading from '../components/common/Loading';
 
 const MemberDetail = () => {
   const { memberId } = useParams();
@@ -97,7 +98,7 @@ const MemberDetail = () => {
   };
 
   if (loading) {
-    return <div className="loading">로딩 중...</div>;
+    return <Loading className="loading">로딩 중...</Loading>;
   }
 
   if (!member) {

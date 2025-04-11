@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaSearch, FaCalendarAlt, FaExclamationTriangle, FaUsers, FaHistory, FaFilter, FaSortAmountDown, FaUserCog, FaUser, FaUserFriends } from 'react-icons/fa';
 import api, { teamApi } from '../services/api';
+import Loading from '../components/common/Loading';
 
 const AllSchedules = () => {
   const [schedulesByTeam, setSchedulesByTeam] = useState({});
@@ -346,7 +347,7 @@ const AllSchedules = () => {
 
       {/* 스케줄 목록 - 변경 없음 */}
       {loading ? (
-        <div className="loading">로딩 중...</div>
+        <Loading className="loading">로딩 중...</Loading>
       ) : filteredSchedules.length > 0 ? (
         <div>
           {filteredSchedules.map((schedule) => (

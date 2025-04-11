@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FaCalendarPlus, FaSearch, FaEdit, FaTrash, FaUserFriends, FaCalendarAlt, FaExclamationTriangle, FaCheckCircle, FaFilter, FaPlus, FaTimes } from 'react-icons/fa';
 import { scheduleApi, teamApi } from '../services/api';
+import Loading from '../components/common/Loading';
 
 // 스케줄 생성 모달 컴포넌트 (여러 날짜 추가 기능 포함)
 const ScheduleCreateModal = ({ isOpen, onClose, onSubmit, teams }) => {
@@ -486,7 +487,7 @@ const Schedules = () => {
   };
 
   if (loading) {
-    return <div className="loading">로딩 중...</div>;
+    return <Loading className="loading">로딩 중...</Loading>;
   }
 
   return (
