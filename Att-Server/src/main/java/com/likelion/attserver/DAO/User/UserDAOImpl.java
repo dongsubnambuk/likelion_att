@@ -3,13 +3,16 @@ package com.likelion.attserver.DAO.User;
 import com.likelion.attserver.DAO.Team.TeamDAO;
 import com.likelion.attserver.DTO.AuthDTO;
 import com.likelion.attserver.DTO.UserDTO;
+import com.likelion.attserver.Entity.TeamEntity;
 import com.likelion.attserver.Entity.UserEntity;
 import com.likelion.attserver.Exception.CustomException;
 import com.likelion.attserver.JWT.CustomUserDetailsService;
 import com.likelion.attserver.JWT.JwtTokenUtil;
+import com.likelion.attserver.Repository.TeamRepository;
 import com.likelion.attserver.Repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,6 +22,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 @Transactional
@@ -29,6 +33,7 @@ public class UserDAOImpl implements UserDAO {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final TeamDAO teamDAO;
+    private final TeamRepository teamRepository;
 
     @Override
     public UserDTO addUser(AuthDTO user) {
@@ -85,26 +90,32 @@ public class UserDAOImpl implements UserDAO {
     public void deleteUser(Long id, String password) {
         UserEntity user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("잘못된 유저 ID"));
-        teamDAO.deleteUserTeam(user);
+        if(teamRepository.existsByUsersContaining(user)) {
+            TeamEntity teamEntity = teamRepository.getByUsersContaining(user);
+            teamEntity.getSchedules().forEach(schedule ->
+                    schedule.getAttendances().removeIf(attendanceEntity ->
+                            attendanceEntity.getUser().equals(user)
+                    )
+            );
+            teamEntity.getUsers().remove(user);
+            log.info("deleted {} on team {}", id, teamRepository.save(teamEntity).getId());
+        }
         userRepository.deleteById(id);
+        log.info("deleted {}", id);
     }
 
     @Override
     public UserDTO update(AuthDTO user) {
-        if(userRepository.existsById(user.getId())) {
-            UserEntity userEntity = UserEntity.builder()
-                    .id(user.getId())
-                    .name(user.getName())
-                    .phone(user.getPhone())
-                    .email(user.getEmail())
-                    .password(passwordEncoder.encode(user.getPassword()))
-                    .track(user.getTrack())
-                    .role(user.getRole())
-                    .build();
-            return UserEntity.toDTO(userRepository.save(userEntity));
-        } else {
-            throw new IllegalArgumentException("수정 실패");
-        }
+        UserEntity userEntity = userRepository.findById(user.getId())
+                .orElseThrow(() -> new IllegalArgumentException("잘못된 정보"));
+        userEntity.setName(user.getName());
+        userEntity.setPhone(user.getPhone());
+        userEntity.setEmail(user.getEmail());
+        userEntity.setTrack(user.getTrack());
+        userEntity.setRole(user.getRole());
+        if(user.getPassword() != null)
+            userEntity.setPassword(passwordEncoder.encode(user.getPassword()));
+        return UserEntity.toDTO(userRepository.save(userEntity));
     }
 
     @Override
