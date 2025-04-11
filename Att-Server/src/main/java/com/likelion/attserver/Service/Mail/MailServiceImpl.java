@@ -45,7 +45,7 @@ public class MailServiceImpl implements MailService {
 
             String body = "";
             body += "<div style='font-family: Arial, sans-serif; padding: 30px; background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 10px; max-width: 500px; margin: auto;'>";
-            body += "  <h2 style='color: #333;'>🙌 멋쟁이 사자처럼 계명대</h2>";
+            body += "  <h2 style='color: #333;'>🦁 멋쟁이 사자처럼 계명대</h2>";
             body += "  <p style='font-size: 16px; color: #555;'>요청하신 인증 번호를 아래에 안내드립니다.</p>";
             body += "  <div style='font-size: 28px; font-weight: bold; color: #4a90e2; background-color: #fff; padding: 15px; border-radius: 8px; border: 1px solid #ddd; text-align: center; margin: 20px 0;'>";
             body +=        number;
