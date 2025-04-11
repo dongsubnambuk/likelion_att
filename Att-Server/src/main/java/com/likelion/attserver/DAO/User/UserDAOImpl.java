@@ -3,11 +3,14 @@ package com.likelion.attserver.DAO.User;
 import com.likelion.attserver.DAO.Team.TeamDAO;
 import com.likelion.attserver.DTO.AuthDTO;
 import com.likelion.attserver.DTO.UserDTO;
+import com.likelion.attserver.Entity.AttendanceEntity;
+import com.likelion.attserver.Entity.SchedulesEntity;
 import com.likelion.attserver.Entity.TeamEntity;
 import com.likelion.attserver.Entity.UserEntity;
 import com.likelion.attserver.Exception.CustomException;
 import com.likelion.attserver.JWT.CustomUserDetailsService;
 import com.likelion.attserver.JWT.JwtTokenUtil;
+import com.likelion.attserver.Repository.AttendanceRepository;
 import com.likelion.attserver.Repository.TeamRepository;
 import com.likelion.attserver.Repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -21,6 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -34,6 +38,7 @@ public class UserDAOImpl implements UserDAO {
     private final PasswordEncoder passwordEncoder;
     private final TeamDAO teamDAO;
     private final TeamRepository teamRepository;
+    private final AttendanceRepository attendanceRepository;
 
     @Override
     public UserDTO addUser(AuthDTO user) {
@@ -90,18 +95,30 @@ public class UserDAOImpl implements UserDAO {
     public void deleteUser(Long id, String password) {
         UserEntity user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("잘못된 유저 ID"));
-        if(teamRepository.existsByUsersContaining(user)) {
+
+        if (teamRepository.existsByUsersContaining(user)) {
             TeamEntity teamEntity = teamRepository.getByUsersContaining(user);
-            teamEntity.getSchedules().forEach(schedule ->
-                    schedule.getAttendances().removeIf(attendanceEntity ->
-                            attendanceEntity.getUser().equals(user)
-                    )
-            );
+
+            // 유저가 속한 출결 데이터를 명시적으로 삭제
+            for (SchedulesEntity schedule : teamEntity.getSchedules()) {
+                List<AttendanceEntity> toRemove = schedule.getAttendances().stream()
+                        .filter(attendance -> attendance.getUser().equals(user))
+                        .toList();
+
+                toRemove.forEach(attendance -> {
+                    schedule.getAttendances().remove(attendance); // 양방향 관계 정리
+                    attendanceRepository.delete(attendance);
+                });
+            }
+
+            // 팀에서 유저 제거
             teamEntity.getUsers().remove(user);
-            log.info("deleted {} on team {}", id, teamRepository.save(teamEntity).getId());
+            teamRepository.save(teamEntity);
+            log.info("deleted {} from team {}", id, teamEntity.getId());
         }
+
         userRepository.deleteById(id);
-        log.info("deleted {}", id);
+        log.info("deleted user {}", id);
     }
 
     @Override

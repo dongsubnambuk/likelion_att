@@ -5,7 +5,7 @@ import jakarta.mail.internet.MimeMessage;
 public interface MailService {
     MimeMessage CreateMail(String mail, Long id);
 
-    void sendMail(Long id);
+    String sendMail(Long id);
 
     void checkMail(Long id, int number);
 }
