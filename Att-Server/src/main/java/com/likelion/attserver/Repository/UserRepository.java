@@ -12,5 +12,4 @@ import java.util.List;
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
     @Query("select new com.likelion.attserver.DTO.UserDTO(u.id, u.name, u.phone, u.email, u.track, u.role) from UserEntity u where u.role = :role")
     List<UserDTO> findByRole(UserEntity.Role role);
-    boolean existsByEmail(String email);
 }

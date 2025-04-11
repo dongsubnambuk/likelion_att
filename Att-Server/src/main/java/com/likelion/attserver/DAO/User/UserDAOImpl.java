@@ -116,7 +116,14 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public boolean existsEmail(String mail) {
-        return userRepository.existsByEmail(mail);
+    public boolean existsId(Long id) {
+        return userRepository.existsById(id);
+    }
+
+    @Override
+    public String getEmailById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("잘못된 학번"))
+                .getEmail();
     }
 }

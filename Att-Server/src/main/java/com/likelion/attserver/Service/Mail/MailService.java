@@ -3,9 +3,9 @@ package com.likelion.attserver.Service.Mail;
 import jakarta.mail.internet.MimeMessage;
 
 public interface MailService {
-    MimeMessage CreateMail(String mail);
+    MimeMessage CreateMail(String mail, Long id);
 
-    void sendMail(String mail);
+    void sendMail(Long id);
 
-    void checkMail(String mail, int number);
+    void checkMail(Long id, int number);
 }

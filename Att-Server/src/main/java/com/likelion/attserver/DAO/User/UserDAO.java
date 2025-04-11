@@ -15,5 +15,6 @@ public interface UserDAO {
     void deleteUser(Long id, String password);
     UserDTO update(AuthDTO user);
     void changePassword(Long id, String password);
-    boolean existsEmail(String mail);
+    boolean existsId(Long id);
+    String getEmailById(Long id);
 }
