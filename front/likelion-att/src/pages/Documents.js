@@ -240,7 +240,7 @@ const Documents = () => {
 
     // 팀 ID에 따라 CSS 클래스 이름 가져오는 함수
     const getTeamColorClass = (teamId) => {
-        const colorIndex = (parseInt(teamId) % 4) - 1;
+        const colorIndex = (parseInt(teamId - 1) % 4);
         return colorIndex;
     };
 

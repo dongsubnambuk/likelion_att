@@ -1,6 +1,6 @@
 {
-  "short_name": "멋사 13기",
-  "name": "멋쟁이사자처럼 13기 출석 관리 시스템",
+  "short_name": "계명대 멋사",
+  "name": "계명대 멋쟁이사자처럼",
   "icons": [
     {
       "src": "favicon.ico",
@@ -29,6 +29,6 @@
   "theme_color": "#DF773B",
   "background_color": "#ffffff",
   "orientation": "portrait",
-  "description": "멋쟁이사자처럼 출석 관리 애플리케이션",
+  "description": "계명대 멋쟁이사자처럼",
   "scope": "/"
 }

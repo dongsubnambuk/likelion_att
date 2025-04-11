@@ -1,5 +1,5 @@
 // public/service-worker.js
-const CACHE_NAME = 'likelion-att-v1';
+const CACHE_NAME = 'kmu-likelion-v1';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -16,7 +16,7 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('캐시 생성됨');
+        // console.log('캐시 생성됨');
         return cache.addAll(urlsToCache);
       })
   );

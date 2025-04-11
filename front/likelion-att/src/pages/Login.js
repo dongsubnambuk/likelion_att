@@ -2,8 +2,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { FaUserCircle, FaLock, FaExclamationTriangle, FaCheckCircle, FaUserPlus } from 'react-icons/fa';
+import { FaUserCircle, FaLock, FaExclamationTriangle, FaCheckCircle, FaUserPlus, FaKey } from 'react-icons/fa';
 import api from '../services/api';
+import PasswordResetModal from '../components/PasswordResetModal'; // 비밀번호 찾기 모달 import
 
 // 회원가입 모달 컴포넌트
 const SignupModal = ({ isOpen, onClose, onSuccess }) => {
@@ -247,6 +248,7 @@ const Login = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
+  const [isPasswordResetModalOpen, setIsPasswordResetModalOpen] = useState(false); // 비밀번호 찾기 모달 상태
   const { login, error } = useAuth();
   const navigate = useNavigate();
 
@@ -275,7 +277,6 @@ const Login = () => {
         navigate('/');
       }
     } catch (err) {
-      // console.error('로그인 실패:', err);
       setErrorMessage(error || '로그인에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setLoading(false);
@@ -296,8 +297,7 @@ const Login = () => {
     <div className="login-container">
       <div className="login-card">
         <div className="login-header">
-          <h1 className="login-title">계명대 멋사 13기</h1>
-          {/* <p className="login-subtitle">로그인</p> */}
+          <h1 className="login-title">계명대 멋쟁이사자처럼</h1>
         </div>
 
         {errorMessage && (
@@ -350,6 +350,26 @@ const Login = () => {
               </div>
             </div>
           </div>
+          
+          {/* 비밀번호 찾기 버튼 */}
+          <button
+            type="button"
+            onClick={() => setIsPasswordResetModalOpen(true)}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#666',
+              cursor: 'pointer',
+              fontSize: '0.85rem',
+              marginBottom: '15px',
+              display: 'flex',
+              alignItems: 'center',
+              marginLeft: 'auto'
+            }}
+          >
+            <FaKey style={{ fontSize: '0.75rem', marginRight: '5px' }} />
+            비밀번호 변경
+          </button>
 
           <button
             type="submit"
@@ -377,6 +397,12 @@ const Login = () => {
         isOpen={isSignupModalOpen}
         onClose={() => setIsSignupModalOpen(false)}
         onSuccess={handleSignupSuccess}
+      />
+
+      {/* 비밀번호 찾기 모달 */}
+      <PasswordResetModal
+        isOpen={isPasswordResetModalOpen}
+        onClose={() => setIsPasswordResetModalOpen(false)}
       />
     </div>
   );
