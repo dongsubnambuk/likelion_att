@@ -61,6 +61,7 @@ const AdminLayout = () => {
       // 탈퇴 성공 후 로그아웃 처리
       logout();
       navigate('/login');
+      alert('정상적으로 탈퇴되었습니다.');
     } catch (error) {
       alert('회원 탈퇴 실패. 비밀번호를 확인해주세요.');
       setDeleteError('회원 탈퇴에 실패했습니다. 비밀번호를 확인해주세요.');

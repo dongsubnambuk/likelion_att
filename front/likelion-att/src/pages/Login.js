@@ -10,11 +10,12 @@ const SignupModal = ({ isOpen, onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
     id: '',
     name: '',
+    email: '',
     password: '',
     confirmPassword: '',
-    phone: '', // 추가된 필드
-    track: 'EduFront', // 추가된 필드 (기본값 EduFront)
-    role: 'STUDENT' // 기본값 STUDENT
+    phone: '',
+    track: 'EduFront',
+    role: 'STUDENT'
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -36,8 +37,15 @@ const SignupModal = ({ isOpen, onClose, onSuccess }) => {
     e.preventDefault();
     
     // 유효성 검사
-    if (!formData.id || !formData.name || !formData.password || !formData.phone) {
+    if (!formData.id || !formData.name || !formData.password || !formData.phone || !formData.email) {
       setError('모든 필수 항목을 입력해주세요.');
+      return;
+    }
+
+    // 이메일 형식 검사
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError('올바른 이메일 형식을 입력해주세요.');
       return;
     }
 
@@ -50,13 +58,13 @@ const SignupModal = ({ isOpen, onClose, onSuccess }) => {
     setError('');
 
     try {
-      // API 호출 - 수정된 요청 형식 사용
       const response = await api.post('/api/auth', {
         id: Number(formData.id),
         name: formData.name,
+        email: formData.email,
         password: formData.password,
-        phone: formData.phone, // 추가
-        track: formData.track, // 추가
+        phone: formData.phone,
+        track: formData.track,
         role: formData.role
       });
       
@@ -66,7 +74,6 @@ const SignupModal = ({ isOpen, onClose, onSuccess }) => {
         throw new Error('회원가입 응답이 올바르지 않습니다.');
       }
     } catch (err) {
-      // console.error('회원가입 오류:', err);
       setError(err.response?.data?.content || '회원가입에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setLoading(false);
@@ -116,6 +123,20 @@ const SignupModal = ({ isOpen, onClose, onSuccess }) => {
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="이름을 입력하세요"
+                disabled={loading}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="email" className="form-label">이메일 *</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                className="form-control"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="이메일을 입력하세요"
                 disabled={loading}
               />
             </div>

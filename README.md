@@ -18,6 +18,10 @@
 <br><br>
 운영진과 아기사자를 위한 별도의 인터페이스를 제공하여 역할에 맞는 기능을 사용가능.
 
+## 🛜 접속 링크
+
+멋사 13기 출석 관리 시스템 : <a href="https://likelion-13th-att.netlify.app" target="_blank">https://likelion-13th-att.netlify.app</a>
+
 ## 👨‍💻 개발팀
 
 <table>
@@ -27,7 +31,7 @@
         <img src="https://avatars.githubusercontent.com/u/81566899?v=4" width="100px;" alt="홍길동 프로필"/><br />
         <sub><b>손경락</b></sub>
       </a><br />
-      <sub>프론트엔드</sub><br />
+      <sub>프론트엔드</sub><br /><br />
       <img src="https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=React&logoColor=black" />
       <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black" />
     </td>
@@ -36,7 +40,7 @@
         <img src="https://avatars.githubusercontent.com/u/107734276?v=4" width="100px;" alt="박맹구 프로필"/><br />
         <sub><b>한동균</b></sub>
       </a><br />
-      <sub>백엔드</sub><br />
+      <sub>백엔드</sub><br /><br />
       <img src="https://img.shields.io/badge/Spring-6DB33F?style=flat-square&logo=spring&logoColor=white" />
       <img src="https://img.shields.io/badge/MariaDB-003545?style=flat-square&logo=mariadb&logoColor=white" />
     </td>
