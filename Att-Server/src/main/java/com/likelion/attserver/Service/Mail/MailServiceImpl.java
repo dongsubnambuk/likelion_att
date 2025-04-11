@@ -69,11 +69,13 @@ public class MailServiceImpl implements MailService {
     }
 
     @Override
-    public void sendMail(Long id) {
+    public String sendMail(Long id) {
         if (!userDAO.existsId(id))
             throw new CustomException("등록되지 않은 학번", HttpStatus.BAD_REQUEST);
-        MimeMessage message = CreateMail(userDAO.getEmailById(id), id);
+        String destination = userDAO.getEmailById(id);
+        MimeMessage message = CreateMail(destination, id);
         javaMailSender.send(message);
+        return destination;
     }
 
     @Override
