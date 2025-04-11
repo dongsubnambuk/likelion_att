@@ -125,7 +125,10 @@ const StudentTeams = () => {
 
   return (
     <div>
-      <h1 style={{marginBottom: '20px', borderBottom: '1px solid var(--gray)', paddingBottom: '20px'}}>전체 팀 조회</h1>
+      <h1>전체 팀 조회</h1>
+      <p className="subtitle" style={{ marginTop: '10px', marginBottom: '20px', borderBottom: '1px solid var(--gray)', paddingBottom: '20px', color: '#6c757d' }}>
+        계명대학교 멋쟁이사자처럼 13기 인원들을 소개합니다!
+      </p>
 
       {/* 에러 메시지 */}
       {error && (

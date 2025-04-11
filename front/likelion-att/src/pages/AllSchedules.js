@@ -467,7 +467,7 @@ const AllSchedules = () => {
       ) : (
         <div className="card" style={{ padding: '30px', textAlign: 'center' }}>
           <p>검색 결과가 없습니다.</p>
-          <p>아래의 버튼을 눌러 지난 스케줄을 표시해보세요.</p>
+          <p>아래의 버튼을 눌러 지난 스케줄을 확인해보세요.</p>
           {(searchTerm || filterStartDate || filterEndDate || !showPastSchedules || filterTeamId !== 'all') && (
             <div style={{ marginTop: '15px', display: 'flex', gap: '10px', justifyContent: 'center' }}>
               {!showPastSchedules && (

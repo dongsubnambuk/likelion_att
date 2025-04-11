@@ -21,11 +21,11 @@ const StudentSchedules = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
+
         // 팀 목록 불러오기
         const teamsResponse = await teamApi.getAll();
         const teamsData = teamsResponse.data;
-        
+
         if (teamsData && typeof teamsData === 'object') {
           const processedTeams = Object.entries(teamsData).map(([teamId, teamInfo]) => {
             const description = Object.keys(teamInfo)[0];
@@ -37,7 +37,7 @@ const StudentSchedules = () => {
           });
           setTeams(processedTeams);
         }
-        
+
         // 스케줄 목록 불러오기
         const response = await api.get('/api/schedules/all');
         setSchedulesByTeam(response.data);
@@ -184,16 +184,16 @@ const StudentSchedules = () => {
     // 사용자가 속한 팀이 아니면 비공개 처리
     if (!isUserTeam) {
       return (
-        <span className="attendance-status status-private">
+        <span className="attendance-status status-private" style={{ paddingLeft: '0px' }}>
           <FaLock style={{ marginRight: '5px', fontSize: '0.8em' }} />
           비공개
         </span>
       );
     }
-  
+
     let statusClass = 'status-none';
     let statusText = '미처리';
-  
+
     switch (status) {
       case 'PRESENT':
         statusClass = 'status-present';
@@ -213,7 +213,7 @@ const StudentSchedules = () => {
         statusText = '미처리';
         break;
     }
-  
+
     return <span className={`attendance-status ${statusClass}`}>{statusText}</span>;
   };
 
@@ -233,14 +233,14 @@ const StudentSchedules = () => {
     return scheduleDate < today;
   };
 
-   // 스케줄 카드 내의 출석 명단 렌더링 부분 수정
-   const renderAttendanceList = (schedule) => {
+  // 스케줄 카드 내의 출석 명단 렌더링 부분 수정
+  const renderAttendanceList = (schedule) => {
     // 현재 로그인한 사용자 정보 가져오기
     const currentUser = JSON.parse(localStorage.getItem('user')) || {};
-    
+
     // 스케줄의 참석자 목록에 현재 사용자가 있는지 확인
-    const isUserInSchedule = Array.isArray(schedule.attendances) && 
-      schedule.attendances.some(attendance => 
+    const isUserInSchedule = Array.isArray(schedule.attendances) &&
+      schedule.attendances.some(attendance =>
         attendance.user && (
           (currentUser.name && attendance.user.name === currentUser.name) ||
           (currentUser.studentId && attendance.user.studentId === currentUser.studentId) ||
@@ -248,7 +248,7 @@ const StudentSchedules = () => {
           (currentUser.id && attendance.user.id === currentUser.id)
         )
       );
-    
+
     return (
       <div className="table-container">
         <table>
@@ -279,7 +279,7 @@ const StudentSchedules = () => {
                     (currentUser.email && attendance.user.email === currentUser.email) ||
                     (currentUser.id && attendance.user.id === currentUser.id)
                   );
-  
+
                   // 사용자 이름 하이라이트 스타일
                   const userNameStyle = isCurrentUser ? {
                     fontWeight: 'bold',
@@ -288,7 +288,7 @@ const StudentSchedules = () => {
                     padding: '2px 8px',
                     borderRadius: '4px'
                   } : {};
-  
+
                   return (
                     <tr key={attendance.id} style={isCurrentUser ? { backgroundColor: '#f8f9fa' } : {}}>
                       <td>
@@ -298,7 +298,7 @@ const StudentSchedules = () => {
                             : <FaUser style={{ color: '#373737', marginRight: '5px' }} />
                           }
                           <span style={userNameStyle}>
-                            {attendance.user?.name || '-'} 
+                            {attendance.user?.name || '-'}
                             {isCurrentUser && ' (나)'}
                           </span>
                         </span>
@@ -318,20 +318,22 @@ const StudentSchedules = () => {
                       </td>
                       <td>
                         {/* 수정된 부분: 사용자가 포함된 스케줄이면 모든 출석 상태 표시, 아니면 본인만 */}
-                        <AttendanceStatus 
-                          status={attendance.status} 
-                          isUserTeam={isUserInSchedule || isCurrentUser} 
+                        <AttendanceStatus
+                          status={attendance.status}
+                          isUserTeam={isUserInSchedule || isCurrentUser}
                         />
                       </td>
                       <td>
                         {/* 비고도 사용자 참여 여부에 따라 표시/비공개 처리 */}
                         {isUserInSchedule || isCurrentUser
-                          ? (attendance.note || '-') 
-                          : <span style={{ fontSize: '0.75rem', 
-                            fontWeight: 'bold'  }}>
-                              <FaLock style={{ marginRight: '5px' }} />
-                              비공개
-                            </span>
+                          ? (attendance.note || '-')
+                          : <span style={{
+                            fontSize: '0.75rem',
+                            fontWeight: 'bold'
+                          }}>
+                            <FaLock style={{ marginRight: '5px' }} />
+                            비공개
+                          </span>
                         }
                       </td>
                     </tr>
@@ -351,6 +353,49 @@ const StudentSchedules = () => {
   return (
     <div>
       <h1 style={{ marginBottom: '20px', borderBottom: '1px solid var(--gray)', paddingBottom: '20px' }}>전체 스케줄 조회</h1>
+
+      {/* 사용법 안내 문구 추가 */}
+      <div className="alert alert-info" style={{
+        marginBottom: '20px',
+        display: 'flex',
+        alignItems: 'center',
+        backgroundColor: '#e3f2fd',
+        borderLeft: '4px solid #2196f3',
+        padding: '15px'
+      }}>
+        <div style={{ marginRight: '15px', color: '#2196f3' }}>
+          <FaCalendarAlt size={24} />
+        </div>
+        <div>
+          <p style={{ margin: 0, fontWeight: 'bold', fontSize: '1rem' }}>
+            자신의 출결 정보와 세션 일정을 확인하세요!
+          </p>
+          <p style={{ margin: '5px 0 0 0', fontSize: '0.9rem', color: '#333' }}>
+            진행된 세션의 출결 상태와 앞으로 예정된 세션의 일정을 확인할 수 있습니다.
+          </p>
+        </div>
+      </div>
+      <div className="alert alert-info" style={{
+        marginBottom: '20px',
+        display: 'flex',
+        alignItems: 'center',
+        backgroundColor: '#f0f7e6',
+        borderLeft: '4px solid #4caf50',
+        padding: '15px'
+      }}>
+        <div style={{ marginRight: '15px', color: '#4caf50' }}>
+          <FaUserFriends size={24} />
+        </div>
+        <div>
+          <p style={{ margin: 0, fontWeight: 'bold', fontSize: '1rem' }}>
+            다른 트랙 세션도 참여할 수 있어요!
+          </p>
+          <p style={{ margin: '5px 0 0 0', fontSize: '0.9rem', color: '#333' }}>
+            자신의 트랙 외에도 타 트랙의 세션 일정을 확인하고, 참여를 원하시면 해당 팀 운영진에게 카톡으로 연락해보세요.
+            해당 팀 운영진의 허락 하에 다양한 세션에 참여할 수 있습니다.
+          </p>
+        </div>
+      </div>
 
       {/* 에러 메시지 */}
       {error && (
@@ -500,10 +545,10 @@ const StudentSchedules = () => {
                       {(() => {
                         // 현재 사용자 정보
                         const currentUser = JSON.parse(localStorage.getItem('user')) || {};
-                        
+
                         // 스케줄의 참석자 목록에 현재 사용자가 있는지 확인
-                        const isUserSchedule = Array.isArray(schedule.attendances) && 
-                          schedule.attendances.some(attendance => 
+                        const isUserSchedule = Array.isArray(schedule.attendances) &&
+                          schedule.attendances.some(attendance =>
                             attendance.user && (
                               (currentUser.name && attendance.user.name === currentUser.name) ||
                               (currentUser.studentId && attendance.user.studentId === currentUser.studentId) ||
@@ -511,17 +556,17 @@ const StudentSchedules = () => {
                               (currentUser.id && attendance.user.id === currentUser.id)
                             )
                           );
-                          
+
                         if (isUserSchedule) {
                           return (
-                            <span style={{ 
-                              marginLeft: '10px', 
-                              backgroundColor: '#e3fcef', 
-                              color: '#0ca678', 
-                              padding: '2px 8px', 
-                              borderRadius: '10px', 
-                              fontSize: '0.75rem', 
-                              fontWeight: 'bold' 
+                            <span style={{
+                              marginLeft: '10px',
+                              backgroundColor: '#e3fcef',
+                              color: '#0ca678',
+                              padding: '2px 8px',
+                              borderRadius: '10px',
+                              fontSize: '0.75rem',
+                              fontWeight: 'bold'
                             }}>
                               내 스케줄
                             </span>
@@ -556,19 +601,19 @@ const StudentSchedules = () => {
                   <h4 style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
                     <FaUsers style={{ marginRight: '10px' }} />
                     참석자 명단 ({Array.isArray(schedule.attendances) ? schedule.attendances.length : 0}명)
-                    
+
                   </h4>
-                  <span style={{ 
-                      fontSize: '0.8rem', 
-                      color: '#666',
-                      display: 'flex',
-                      alignItems: 'center',
-                      color: 'rgb(223, 119, 59)',
-                      marginBottom: '5px'
-                    }}>
-                      <FaLock style={{ marginRight: '5px' }} />
-                      자신이 포함된 팀의 스케줄만 출석 상태와 비고를 확인할 수 있습니다
-                    </span>
+                  <span style={{
+                    fontSize: '0.8rem',
+                    color: '#666',
+                    display: 'flex',
+                    alignItems: 'center',
+                    color: 'rgb(223, 119, 59)',
+                    marginBottom: '5px'
+                  }}>
+                    <FaLock style={{ marginRight: '5px' }} />
+                    자신이 포함된 팀의 스케줄만 출석 상태와 비고를 확인할 수 있습니다
+                  </span>
                   {renderAttendanceList(schedule)}
                 </div>
               </div>
@@ -578,7 +623,7 @@ const StudentSchedules = () => {
       ) : (
         <div className="card" style={{ padding: '30px', textAlign: 'center' }}>
           <p>검색 결과가 없습니다.</p>
-          <p>아래의 버튼을 눌러 지난 스케줄을 표시해보세요.</p>
+          <p>아래의 버튼을 눌러 지난 스케줄을 확인해보세요.</p>
           {(searchTerm || filterStartDate || filterEndDate || !showPastSchedules || filterTeamId !== 'all') && (
             <div style={{ marginTop: '15px', display: 'flex', gap: '10px', justifyContent: 'center' }}>
               {!showPastSchedules && (

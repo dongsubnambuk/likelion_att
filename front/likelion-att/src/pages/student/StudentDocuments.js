@@ -1,6 +1,6 @@
 // src/pages/student/StudentDocuments.js
 import React, { useState, useEffect } from 'react';
-import { FaSearch, FaGithub, FaFilter, FaSortAmountDown, FaHistory } from 'react-icons/fa';
+import { FaSearch, FaGithub, FaFilter, FaSortAmountDown, FaHistory, FaCalendarAlt, FaUserFriends } from 'react-icons/fa';
 import { documentApi } from '../../services/documentApi';
 import { teamApi } from '../../services/api';
 
@@ -154,7 +154,7 @@ const StudentDocuments = () => {
 
     // 팀 ID에 따라 CSS 클래스 이름 가져오는 함수 추가
     const getTeamColorClass = (teamId) => {
-        const colorIndex = (parseInt(teamId) % 4) -1;
+        const colorIndex = (parseInt(teamId) % 4) - 1;
         return colorIndex;
     };
 
@@ -176,7 +176,29 @@ const StudentDocuments = () => {
 
     return (
         <div>
-            <h1 style={{marginBottom: '20px', borderBottom: '1px solid var(--gray)', paddingBottom: '20px'}}>교육자료 확인</h1>
+            <h1 style={{ marginBottom: '20px', borderBottom: '1px solid var(--gray)', paddingBottom: '20px' }}>교육자료 확인</h1>
+
+            {/* 사용법 안내 문구 추가 */}
+            <div className="alert alert-info" style={{
+                marginBottom: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                backgroundColor: '#e3f2fd',
+                borderLeft: '4px solid #2196f3',
+                padding: '15px'
+            }}>
+                <div style={{ marginRight: '15px', color: '#2196f3' }}>
+                    <FaCalendarAlt size={24} />
+                </div>
+                <div>
+                    <p style={{ margin: 0, fontWeight: 'bold', fontSize: '1rem' }}>
+                        세션 교육자료 확인하기
+                    </p>
+                    <p style={{ margin: '5px 0 0 0', fontSize: '0.9rem', color: '#333' }}>
+                        이전에 진행된 모든 세션의 교육자료를 확인할 수 있습니다. 자신의 트랙 외에도 다른 트랙의 교육자료를 필터를 사용해 원하는 자료를 쉽게 찾아보세요!
+                    </p>
+                </div>
+            </div>
 
             {/* 필터 영역 */}
             <div className="card" style={{ marginBottom: '20px' }}>

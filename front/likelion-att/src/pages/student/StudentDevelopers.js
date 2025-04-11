@@ -99,7 +99,7 @@ const StudentDevelopers = () => {
     <div>
       <h1>운영진 정보</h1>
       <p className="subtitle" style={{ marginTop: '10px', marginBottom: '20px', borderBottom: '1px solid var(--gray)', paddingBottom: '20px', color: '#6c757d' }}>
-        계명대학교 멋쟁이사자처럼 13기 운영진을 소개합니다.
+        계명대학교 멋쟁이사자처럼 13기 운영진을 소개합니다!
       </p>
 
       <div className="developer-grid" style={{ 
