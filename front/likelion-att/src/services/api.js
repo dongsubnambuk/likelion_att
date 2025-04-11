@@ -77,6 +77,24 @@ export const userApi = {
 
   // 대량 사용자 등록
   bulkCreate: (formData) => api.post('/api/user/bulk', formData),
+
+  // 회원 정보 수정
+  updateUserDetail: async (userData) => {
+    try {
+      const response = await api.put('/api/auth/detail', {
+        id: userData.id,
+        name: userData.name,
+        password: userData.password,
+        phone: userData.phone,
+        email: userData.email,
+        track: userData.track,
+        role: userData.role
+      });
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
 };
 
 // 팀 관련 API

@@ -464,6 +464,7 @@ const StudentSchedules = () => {
               className="form-control"
               value={filterTeamId}
               onChange={(e) => setFilterTeamId(e.target.value)}
+              style={{paddingRight: '30px'}}
             >
               <option value="all">모든 팀</option>
               {teams.map(team => (

@@ -12,17 +12,21 @@ import {
   FaTimes,
   FaTachometerAlt,
   FaBook,
-  FaUserMinus
+  FaUserMinus,
+  FaEnvelope,
+  FaUserEdit
 } from 'react-icons/fa';
 import './Layout.css';
 import DeleteAccountModal from './common/DeleteAccountModal';
+import EditProfileModal from './common/EditProfileModal';
 import { userApi } from '../services/api';
 
 const AdminLayout = () => {
-  const { currentUser, logout } = useAuth();
+  const { currentUser, logout, setCurrentUser } = useAuth();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [deleteError, setDeleteError] = useState('');
 
   const handleLogout = () => {
@@ -54,6 +58,14 @@ const AdminLayout = () => {
     setDeleteError('');
   };
 
+  const openEditModal = () => {
+    setIsEditModalOpen(true);
+  };
+
+  const closeEditModal = () => {
+    setIsEditModalOpen(false);
+  };
+
   const handleDeleteAccount = async (password) => {
     try {
       await userApi.deleteAccount(currentUser.id, password);
@@ -66,6 +78,13 @@ const AdminLayout = () => {
       alert('회원 탈퇴 실패. 비밀번호를 확인해주세요.');
       setDeleteError('회원 탈퇴에 실패했습니다. 비밀번호를 확인해주세요.');
     }
+  };
+
+  // 정보 수정 성공 처리
+  const handleProfileUpdateSuccess = (updatedUser) => {
+    // 컨텍스트의 사용자 정보 업데이트
+    setCurrentUser(updatedUser);
+    closeEditModal();
   };
 
   return (
@@ -99,6 +118,20 @@ const AdminLayout = () => {
               </button>
             </div>
             <span className="user-role">{currentUser?.role === 'ADMIN' ? '운영진' : '사용자'}</span>
+
+            {/* 이메일 표시 추가 */}
+            {currentUser?.email && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                fontSize: '0.8rem',
+                marginTop: '4px',
+                color: '#888'
+              }}>
+                <FaEnvelope style={{ marginRight: '5px', fontSize: '0.7rem' }} />
+                <span style={{ wordBreak: 'break-all' }}>{currentUser.email}</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -130,6 +163,13 @@ const AdminLayout = () => {
         </nav>
 
         <div className="sidebar-footer">
+          <button
+            className="logout-button"
+            onClick={openEditModal}
+          >
+            <FaUserEdit style={{ marginRight: '8px' }} /> 정보 수정
+          </button>
+
           <button className="logout-button" onClick={handleLogout}>
             <FaSignOutAlt /> 로그아웃
           </button>
@@ -146,6 +186,14 @@ const AdminLayout = () => {
         isOpen={isDeleteModalOpen}
         onClose={closeDeleteModal}
         onConfirm={handleDeleteAccount}
+      />
+
+      {/* 정보 수정 모달 */}
+      <EditProfileModal
+        isOpen={isEditModalOpen}
+        onClose={closeEditModal}
+        user={currentUser}
+        onSuccess={handleProfileUpdateSuccess}
       />
     </div>
   );

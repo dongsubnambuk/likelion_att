@@ -46,6 +46,8 @@ const DeleteAccountModal = ({ isOpen, onClose, onConfirm }) => {
             {!showConfirmation ? (
               <>
                 <p>회원 탈퇴를 진행하시려면 비밀번호를 입력해주세요.</p>
+                <p style={{color: '#DF773B'}}>*현재 소속된 팀이 있다면 먼저 담당 운영진에게 문의 부탁드립니다.</p>
+                <br />
                 <div className="form-group">
                   <label htmlFor="password" className="form-label">비밀번호 확인</label>
                   <input

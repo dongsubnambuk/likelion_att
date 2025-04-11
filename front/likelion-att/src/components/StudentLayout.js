@@ -2,16 +2,18 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { FaUserFriends, FaCalendarAlt, FaSignOutAlt, FaBars, FaTimes, FaUserCog, FaBook, FaUserMinus } from 'react-icons/fa';
+import { FaUserFriends, FaCalendarAlt, FaSignOutAlt, FaBars, FaTimes, FaUserCog, FaBook, FaUserMinus, FaUserEdit, FaEnvelope } from 'react-icons/fa';
 import './Layout.css';
-import DeleteAccountModal from './common/DeleteAccountModal'; // 모달 컴포넌트 import
-import { userApi } from '../services/api'; // userApi import
+import DeleteAccountModal from './common/DeleteAccountModal';
+import EditProfileModal from './common/EditProfileModal';
+import { userApi } from '../services/api';
 
 const StudentLayout = () => {
-  const { currentUser, logout } = useAuth();
+  const { currentUser, logout, setCurrentUser } = useAuth();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [deleteError, setDeleteError] = useState('');
 
   const handleLogout = () => {
@@ -44,6 +46,16 @@ const StudentLayout = () => {
     setIsDeleteModalOpen(false);
     setDeleteError('');
   };
+
+  // 정보 수정 모달 열기
+  const openEditModal = () => {
+    setIsEditModalOpen(true);
+  };
+  
+  // 정보 수정 모달 닫기
+  const closeEditModal = () => {
+    setIsEditModalOpen(false);
+  };
   
   // 회원 탈퇴 처리
   const handleDeleteAccount = async (password) => {
@@ -58,6 +70,13 @@ const StudentLayout = () => {
       alert('회원 탈퇴 실패. 비밀번호를 확인해주세요.');
       setDeleteError('회원 탈퇴에 실패했습니다. 비밀번호를 확인해주세요.');
     }
+  };
+
+  // 정보 수정 성공 처리
+  const handleProfileUpdateSuccess = (updatedUser) => {
+    // 컨텍스트의 사용자 정보 업데이트
+    setCurrentUser(updatedUser);
+    closeEditModal();
   };
 
   return (
@@ -91,6 +110,20 @@ const StudentLayout = () => {
               </button>
             </div>
             <span className="user-role">{currentUser?.role === 'STUDENT' ? '아기사자' : '사용자'}</span>
+            
+            {/* 이메일 표시 추가 */}
+            {currentUser?.email && (
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                fontSize: '0.8rem', 
+                marginTop: '4px',
+                color: '#888'
+              }}>
+                <FaEnvelope style={{ marginRight: '5px', fontSize: '0.7rem' }} />
+                <span style={{ wordBreak: 'break-all' }}>{currentUser.email}</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -110,6 +143,14 @@ const StudentLayout = () => {
         </nav>
 
         <div className="sidebar-footer">
+          {/* 정보 수정 버튼 추가 - App.css 스타일 적용 */}
+          <button 
+            className="logout-button" 
+            onClick={openEditModal}
+          >
+            <FaUserEdit style={{ marginRight: '8px' }} /> 정보 수정
+          </button>
+          
           <button className="logout-button" onClick={handleLogout}>
             <FaSignOutAlt /> 로그아웃
           </button>
@@ -126,6 +167,14 @@ const StudentLayout = () => {
         isOpen={isDeleteModalOpen}
         onClose={closeDeleteModal}
         onConfirm={handleDeleteAccount}
+      />
+
+      {/* 정보 수정 모달 */}
+      <EditProfileModal
+        isOpen={isEditModalOpen}
+        onClose={closeEditModal}
+        user={currentUser}
+        onSuccess={handleProfileUpdateSuccess}
       />
     </div>
   );
