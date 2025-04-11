@@ -125,23 +125,8 @@ public class TeamDAOImpl implements TeamDAO {
     }
 
     @Override
-    public void deleteUserTeam(UserEntity user) {
-        if(teamRepository.existsByUsersContaining(user)) {
-            TeamEntity team = teamRepository.getByUsersContaining(user);
-            for (SchedulesEntity schedule : team.getSchedules()) {
-                List<AttendanceEntity> attendances = schedule.getAttendances();
-                for (AttendanceEntity attendance : attendances) {
-                    if (attendance.getUser().equals(user)) {
-                        attendances.remove(attendance);
-                        attendanceRepository.delete(attendance);
-                    }
-                }
-                log.info("Delete user attendance presence");
-                schedulesRepository.save(schedule);
-                log.info("Delete user schedule presence");
-            }
-            team.getUsers().remove(user);
-            teamRepository.save(team);
-        }
+    public Long deleteUserTeam(UserEntity user) {
+        TeamEntity teamEntity = teamRepository.getByUsersContaining(user);
+        return addTeam(teamEntity.getId(), teamEntity.getNote(), List.of(user.getId()));
     }
 }
