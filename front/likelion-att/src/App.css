@@ -1000,3 +1000,110 @@ tr:hover {
 .button-container {
   margin-top: auto;
 }
+
+.member-item {
+  padding: 10px;
+  margin-bottom: 8px;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.member-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.member-item-current {
+  background-color: #e8f5e9;
+  border-left: 4px solid #4caf50;
+}
+
+.member-item-other {
+  background-color: #fff3e0;
+  border-left: 4px solid #ff9800;
+}
+
+.member-item-none {
+  background-color: var(--gray-light);
+}
+
+.member-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.75em;
+  margin-left: 8px;
+  font-weight: bold;
+}
+
+.member-badge-admin {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.member-track {
+  display: inline-block;
+  background-color: #f1f1f1;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-right: 6px;
+  font-size: 0.85em;
+  color: var(--text-light);
+}
+
+.team-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-right: 4px;
+  border: 1px solid;
+  font-size: 0.8em;
+}
+
+.team-badge-current {
+  background-color: #e8f5e9;
+  color: #4caf50;
+  border-color: #4caf50;
+}
+
+.team-badge-other {
+  background-color: #fff3e0;
+  color: #ff9800;
+  border-color: #ff9800;
+}
+
+.member-status {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background-color: #eeeeee;
+  color: #888;
+  font-size: 0.8em;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+}
+
+.legend-color {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  margin-right: 5px;
+}
+
+.legend-color-current {
+  background-color: #e8f5e9;
+  border-left: 4px solid #4caf50;
+}
+
+.legend-color-other {
+  background-color: #fff3e0;
+  border-left: 4px solid #ff9800;
+}
+
+.legend-color-none {
+  background-color: var(--gray-light);
+}

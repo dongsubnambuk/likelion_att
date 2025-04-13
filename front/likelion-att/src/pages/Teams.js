@@ -5,6 +5,7 @@ import { FaPlus, FaSearch, FaEdit, FaTrash, FaUserFriends, FaCalendarAlt, FaExcl
 import { teamApi, userApi } from '../services/api';
 import ErrorBoundary from '../components/ErrorBoundary';
 import Loading from '../components/common/Loading';
+import { TRACK_MAPPING } from '../utils/constants';
 
 // 팀 생성 모달 컴포넌트 (세로 크기 조정 및 스크롤 추가)
 const TeamCreateModal = ({ isOpen, onClose, onSubmit, existingTeams = [] }) => {
@@ -17,6 +18,9 @@ const TeamCreateModal = ({ isOpen, onClose, onSubmit, existingTeams = [] }) => {
   const [error, setError] = useState('');
   const [isCreating, setIsCreating] = useState(true); // 생성 모드인지 수정 모드인지 구분
   const [showAdmins, setShowAdmins] = useState(true); // 운영진 표시 여부 (기본값: 표시)
+  const [memberTeams, setMemberTeams] = useState({});
+  const [currentTeamMembers, setCurrentTeamMembers] = useState([]);
+  const [membershipFilter, setMembershipFilter] = useState('all'); // 'all', 'current', 'other', 'none'
 
   const teamsArray = Array.isArray(existingTeams) ? existingTeams : [];
 
@@ -24,10 +28,8 @@ const TeamCreateModal = ({ isOpen, onClose, onSubmit, existingTeams = [] }) => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        // console.log('사용자 목록 불러오기 시작');
         setLoading(true);
         const response = await userApi.getAll();
-        // console.log('사용자 목록 응답:', response);
 
         // API 응답 구조에 따라 사용자 데이터 추출
         let usersData = [];
@@ -44,11 +46,9 @@ const TeamCreateModal = ({ isOpen, onClose, onSubmit, existingTeams = [] }) => {
         if (Array.isArray(usersData)) {
           setAllMembers(usersData);
         } else {
-          // console.error('유효한 사용자 데이터가 아닙니다:', usersData);
           setAllMembers([]);
         }
       } catch (err) {
-        // console.error('사용자 목록 불러오기 실패:', err);
         setError('사용자 목록을 불러오는데 실패했습니다.');
         setAllMembers([]);
       } finally {
@@ -56,16 +56,82 @@ const TeamCreateModal = ({ isOpen, onClose, onSubmit, existingTeams = [] }) => {
       }
     };
 
+    const fetchTeamMemberships = async () => {
+      if (isOpen) {
+        // 모든 팀 정보를 가져와서 각 사용자가 어떤 팀에 속해있는지 매핑
+        try {
+          const response = await teamApi.getAll();
+          const teamsData = response.data;
+          const memberships = {};
+
+          if (teamsData && typeof teamsData === 'object') {
+            // 각 팀별로 멤버 정보 순회
+            Object.entries(teamsData).forEach(([teamId, teamInfo]) => {
+              const teamName = Object.keys(teamInfo)[0];
+              const members = teamInfo[teamName];
+
+              // 각 멤버의 팀 소속 정보 기록
+              if (Array.isArray(members)) {
+                members.forEach(member => {
+                  const studentId = member.studentId.toString();
+                  if (!memberships[studentId]) {
+                    memberships[studentId] = [];
+                  }
+                  memberships[studentId].push({
+                    teamId: parseInt(teamId),
+                    teamName: `팀 ${teamId} (${teamName})`
+                  });
+                });
+              }
+            });
+          }
+
+          setMemberTeams(memberships);
+        } catch (error) {
+          console.error('팀 구성원 정보 로딩 실패:', error);
+        }
+      }
+    };
+
     if (isOpen) {
       fetchUsers();
+      fetchTeamMemberships();
       setIsCreating(true);
       setTeamId('');
       setTeamNote(''); // 설명 필드 초기화
       setSelectedMembers([]);
       setError('');
       setShowAdmins(true); // 모달이 열릴 때 운영진 표시 설정 초기화
+      setMembershipFilter('all');
     }
   }, [isOpen]);
+
+  // 팀 선택 시 현재 팀 멤버 가져오기
+  useEffect(() => {
+    const fetchCurrentTeamMembers = async () => {
+      if (!isCreating && teamId) {
+        try {
+          const response = await teamApi.getById(teamId);
+          if (response.data && response.data.members) {
+            // 현재 팀 멤버의 학번 목록 저장
+            const memberIds = response.data.members.map(member =>
+              member.studentId.toString()
+            );
+            setCurrentTeamMembers(memberIds);
+
+            // 기존 팀원 자동 선택 (선택적으로 활성화)
+            // setSelectedMembers(memberIds);
+          }
+        } catch (error) {
+          console.error('현재 팀 멤버 로딩 실패:', error);
+        }
+      } else {
+        setCurrentTeamMembers([]);
+      }
+    };
+
+    fetchCurrentTeamMembers();
+  }, [teamId, isCreating]);
 
   // 기존 팀 선택 시 모드 변경 및 설명 가져오기
   const handleTeamIdChange = (e) => {
@@ -99,8 +165,6 @@ const TeamCreateModal = ({ isOpen, onClose, onSubmit, existingTeams = [] }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // console.log('폼 제출 시작', { teamId, teamNote, selectedMembers, allMembers });
-
     if (!teamId && isCreating) {
       // 새 팀 생성 시 팀 ID가 없으면 오류
       setError('팀 ID를 입력해주세요.');
@@ -126,8 +190,6 @@ const TeamCreateModal = ({ isOpen, onClose, onSubmit, existingTeams = [] }) => {
           (m.id !== undefined && m.id === memberId) ||
           (m.studentId !== undefined && m.studentId === memberId)
         );
-
-        // console.log('검색된 멤버:', member, '검색 ID:', memberId);
 
         if (member && member.studentId) {
           // 문자열로 된 학번을 숫자로 변환 (필요한 경우)
@@ -162,8 +224,6 @@ const TeamCreateModal = ({ isOpen, onClose, onSubmit, existingTeams = [] }) => {
       }
     }
 
-    // console.log('전송할 학번 배열:', studentIds);
-
     if (studentIds.length === 0) {
       setError('유효한 멤버를 선택하지 않았습니다.');
       return;
@@ -173,7 +233,6 @@ const TeamCreateModal = ({ isOpen, onClose, onSubmit, existingTeams = [] }) => {
       // 팀 설명을 note 파라미터로 전달
       onSubmit(numericTeamId, studentIds, isCreating, teamNote);
     } catch (error) {
-      // console.error('팀 생성/수정 중 오류 발생:', error);
       setError('팀 생성/수정 중 오류가 발생했습니다. 다시 시도해주세요.');
     }
   };
@@ -181,7 +240,6 @@ const TeamCreateModal = ({ isOpen, onClose, onSubmit, existingTeams = [] }) => {
   // 필터링 부분 수정 - 운영진 표시 여부 추가
   const filteredMembers = React.useMemo(() => {
     if (!Array.isArray(allMembers)) {
-      // console.error('allMembers가 배열이 아닙니다:', allMembers);
       return [];
     }
 
@@ -196,8 +254,31 @@ const TeamCreateModal = ({ isOpen, onClose, onSubmit, existingTeams = [] }) => {
       filtered = filtered.filter(member => member.role !== 'ADMIN');
     }
 
+    // 팀 소속 상태별로 필터링
+    if (membershipFilter !== 'all') {
+      filtered = filtered.filter(member => {
+        const studentId = member.studentId?.toString();
+        const memberTeamInfo = memberTeams[studentId] || [];
+        const isCurrentMember = currentTeamMembers.includes(studentId);
+
+        if (membershipFilter === 'current') {
+          // 현재 팀 소속 멤버만 표시
+          return !isCreating && isCurrentMember;
+        } else if (membershipFilter === 'other') {
+          // 다른 팀 소속 멤버만 표시 (현재 팀에 속하지 않은)
+          return memberTeamInfo.length > 0 &&
+            (!teamId || memberTeamInfo.every(t => t.teamId !== parseInt(teamId)));
+        } else if (membershipFilter === 'none') {
+          // 팀 미소속 멤버만 표시
+          return memberTeamInfo.length === 0;
+        }
+
+        return true;
+      });
+    }
+
     return filtered;
-  }, [allMembers, searchTerm, showAdmins]);
+  }, [allMembers, searchTerm, showAdmins, membershipFilter, memberTeams, currentTeamMembers, teamId, isCreating]);
 
   if (!isOpen) return null;
 
@@ -324,65 +405,283 @@ const TeamCreateModal = ({ isOpen, onClose, onSubmit, existingTeams = [] }) => {
                 </button>
               </div>
 
+              <div style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '8px',
+                marginBottom: '12px',
+                marginTop: '8px'
+              }}>
+                <button
+                  type="button"
+                  className={`btn btn-sm ${membershipFilter === 'all' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                  onClick={() => setMembershipFilter('all')}
+                  title="모든 멤버 표시"
+                >
+                  전체 보기
+                </button>
+
+                {/* 팀 수정 모드에서만 '현재 팀 소속' 버튼 표시 */}
+                {!isCreating && teamId && (
+                  <button
+                    type="button"
+                    className={`btn btn-sm ${membershipFilter === 'current' ? 'btn-success' : 'btn-outline-success'}`}
+                    onClick={() => setMembershipFilter('current')}
+                    title="현재 팀 소속 멤버만 표시"
+                    style={{
+                      backgroundColor: membershipFilter === 'current' ? '#4caf50' : 'transparent',
+                      borderColor: '#4caf50',
+                      color: membershipFilter === 'current' ? 'white' : '#4caf50'
+                    }}
+                  >
+                    현재 팀 소속
+                  </button>
+                )}
+
+                {/* 팀 수정 모드에서만 '다른 팀 소속' 버튼 표시 */}
+                {!isCreating && teamId && (
+                  <button
+                    type="button"
+                    className={`btn btn-sm ${membershipFilter === 'other' ? 'btn-warning' : 'btn-outline-warning'}`}
+                    onClick={() => setMembershipFilter('other')}
+                    title="다른 팀 소속 멤버만 표시"
+                    style={{
+                      backgroundColor: membershipFilter === 'other' ? '#ff9800' : 'transparent',
+                      borderColor: '#ff9800',
+                      color: membershipFilter === 'other' ? 'white' : '#ff9800'
+                    }}
+                  >
+                    다른 팀 소속
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  className={`btn btn-sm ${membershipFilter === 'none' ? 'btn-secondary' : 'btn-outline-secondary'}`}
+                  onClick={() => setMembershipFilter('none')}
+                  title="팀 미소속 멤버만 표시"
+                >
+                  팀 미소속
+                </button>
+              </div>
+
               {loading ? (
-                <Loading className="loading" style={{ padding: '20px', textAlign: 'center' }}>
-                  사용자 목록을 불러오는 중...
-                </Loading>
+                <Loading message="사용자 목록을 불러오는 중..." />
               ) : (
                 <div className="members-list" style={{
-                  height: '200px', // 높이 고정
+                  height: '300px', // 높이 증가
                   overflowY: 'auto',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
+                  border: '1px solid var(--gray)',
+                  borderRadius: 'var(--border-radius)',
                   padding: '10px'
                 }}>
                   {filteredMembers.length > 0 ? (
-                    filteredMembers.map(member => (
-                      <div
-                        key={member.id || member.studentId}
-                        className="member-item"
-                        style={{
-                          padding: '8px',
-                          marginBottom: '5px',
-                          backgroundColor: selectedMembers.includes(member.id || member.studentId) ? '#e3f2fd' : '#f5f5f5',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center'
-                        }}
-                        onClick={() => toggleMemberSelection(member.id || member.studentId)}
-                      >
-                        <div>
-                          <strong>{member.name || '이름 없음'}</strong> ({member.studentId || '학번 없음'})
-                          {member.role === 'ADMIN' && <span style={{ marginLeft: '5px', color: '#3498db', fontWeight: 'bold' }}>운영진</span>}
+                    filteredMembers.map(member => {
+                      // 학번 문자열로 변환하여 비교
+                      const studentId = member.studentId?.toString();
+                      const isCurrentMember = currentTeamMembers.includes(studentId);
+                      // 현재 학생의 소속 팀 정보
+                      const memberTeamInfo = memberTeams[studentId] || [];
+                      // 현재 선택된 팀에 이미 속해 있는 멤버인지 확인
+                      const isInSelectedTeam = !isCreating && isCurrentMember;
+                      // 다른 팀에 소속된 멤버인지 확인
+                      const isInOtherTeam = memberTeamInfo.length > 0 &&
+                        (!teamId || memberTeamInfo.some(t => t.teamId !== parseInt(teamId)));
+
+                      // 필터 초기화 시 membershipFilter도 초기화
+                      const handleResetFilters = () => {
+                        setSearchTerm('');
+                        setMembershipFilter('all');
+                      };
+
+                      return (
+                        <div
+                          key={member.id || member.studentId}
+                          className="member-item"
+                          style={{
+                            padding: '10px',
+                            marginBottom: '8px',
+                            backgroundColor: selectedMembers.includes(member.id || member.studentId)
+                              ? '#e3f2fd'
+                              : isInSelectedTeam
+                                ? '#e8f5e9' // 현재 선택된 팀 멤버는 연한 녹색
+                                : isInOtherTeam
+                                  ? '#fff3e0' // 다른 팀 소속 멤버는 연한 주황색
+                                  : 'var(--gray-light)', // 미소속 멤버는 기본 회색
+                            borderRadius: 'var(--border-radius)',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'flex-start',
+                            borderLeft: isInSelectedTeam ? '4px solid #4caf50' : isInOtherTeam ? '4px solid #ff9800' : 'none',
+                            transition: 'all 0.3s',
+                            boxShadow: selectedMembers.includes(member.id || member.studentId) ? 'var(--shadow)' : 'none'
+                          }}
+                          onClick={() => toggleMemberSelection(member.id || member.studentId)}
+                          onMouseOver={(e) => {
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                            e.currentTarget.style.boxShadow = 'var(--shadow)';
+                          }}
+                          onMouseOut={(e) => {
+                            if (!selectedMembers.includes(member.id || member.studentId)) {
+                              e.currentTarget.style.transform = 'none';
+                              e.currentTarget.style.boxShadow = 'none';
+                            }
+                          }}
+                        >
+                          <div style={{ flex: 1 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
+                              <strong>{member.name || '이름 없음'}</strong>
+                              <span style={{ marginLeft: '8px', color: 'var(--text-light)', fontSize: '0.9em' }}>
+                                ({member.studentId || '학번 없음'})
+                              </span>
+                              {member.role === 'ADMIN' &&
+                                <span style={{
+                                  marginLeft: '8px',
+                                  color: '#fff',
+                                  fontWeight: 'bold',
+                                  fontSize: '0.75em',
+                                  padding: '2px 6px',
+                                  backgroundColor: 'var(--primary-color)',
+                                  borderRadius: '10px'
+                                }}>
+                                  운영진
+                                </span>
+                              }
+                            </div>
+
+                            <div style={{ fontSize: '0.85em', color: 'var(--text-light)' }}>
+                              <span style={{
+                                display: 'inline-block',
+                                backgroundColor: '#f1f1f1',
+                                padding: '2px 8px',
+                                borderRadius: '10px',
+                                marginRight: '6px'
+                              }}>
+                                {TRACK_MAPPING[member.track] || member.track || '트랙 미지정'}
+                              </span>
+
+                              {/* 소속 팀 정보 표시 */}
+                              {memberTeamInfo.length > 0 && (
+                                <div style={{ marginTop: '4px', fontSize: '0.8em', color: 'var(--text-light)' }}>
+                                  소속: {memberTeamInfo.map((team) => (
+                                    <span key={team.teamId} style={{
+                                      display: 'inline-block',
+                                      padding: '2px 8px',
+                                      borderRadius: '10px',
+                                      marginRight: '4px',
+                                      backgroundColor: team.teamId === parseInt(teamId) ? '#e8f5e9' : '#fff3e0',
+                                      color: team.teamId === parseInt(teamId) ? '#4caf50' : '#ff9800',
+                                      border: '1px solid',
+                                      borderColor: team.teamId === parseInt(teamId) ? '#4caf50' : '#ff9800',
+                                    }}>
+                                      {team.teamName}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+
+                              {memberTeamInfo.length === 0 && (
+                                <span style={{
+                                  display: 'inline-block',
+                                  padding: '2px 8px',
+                                  borderRadius: '10px',
+                                  backgroundColor: '#eeeeee',
+                                  color: '#888',
+                                  fontSize: '0.8em',
+                                  marginTop: '4px'
+                                }}>미소속</span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div style={{
+                            width: '20px',
+                            height: '20px',
+                            borderRadius: '3px',
+                            border: '1px solid var(--gray)',
+                            backgroundColor: selectedMembers.includes(member.id || member.studentId) ? 'var(--primary-color)' : 'white',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white',
+                            flexShrink: 0,
+                            transition: 'all 0.2s'
+                          }}>
+                            {selectedMembers.includes(member.id || member.studentId) && '✓'}
+                          </div>
                         </div>
-                        <div style={{
-                          width: '20px',
-                          height: '20px',
-                          borderRadius: '3px',
-                          border: '1px solid #aaa',
-                          backgroundColor: selectedMembers.includes(member.id || member.studentId) ? '#3498db' : 'white',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: 'white'
-                        }}>
-                          {selectedMembers.includes(member.id || member.studentId) && '✓'}
-                        </div>
-                      </div>
-                    ))
+                      );
+                    })
                   ) : (
-                    <p style={{ textAlign: 'center', color: '#666' }}>
+                    <p style={{ textAlign: 'center', color: 'var(--text-light)' }}>
                       {searchTerm ? '검색 결과가 없습니다.' : '사용자가 없습니다.'}
                     </p>
                   )}
                 </div>
               )}
 
-              <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between', flexDirection: 'column'}}>
-                
+              {/* 범례 추가 */}
+              <div style={{
+                marginTop: '10px',
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '10px',
+                fontSize: '0.8em',
+                color: 'var(--text-light)'
+              }}>
+                {/* 팀 수정 모드일 때만 '현재 팀 소속' 범례 표시 */}
+                {!isCreating && teamId && (
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <div style={{
+                      width: '14px',
+                      height: '14px',
+                      backgroundColor: '#e8f5e9',
+                      borderRadius: '3px',
+                      marginRight: '5px',
+                      borderLeft: '4px solid #4caf50'
+                    }}></div>
+                    <span>현재 팀 소속</span>
+                  </div>
+                )}
 
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <div style={{
+                      width: '14px',
+                      height: '14px',
+                      backgroundColor: '#fff3e0',
+                      borderRadius: '3px',
+                      marginRight: '5px',
+                      borderLeft: '4px solid #ff9800'
+                    }}></div>
+                    <span>다른 팀 소속</span>
+                  </div>
+
+                {/* 항상 표시되는 범례들 */}
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <div style={{
+                    width: '14px',
+                    height: '14px',
+                    backgroundColor: 'var(--gray-light)',
+                    borderRadius: '3px',
+                    marginRight: '5px'
+                  }}></div>
+                  <span>팀 미소속</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <div style={{
+                    width: '14px',
+                    height: '14px',
+                    backgroundColor: '#e3f2fd',
+                    borderRadius: '3px',
+                    marginRight: '5px',
+                    border: '1px solid var(--primary-color)'
+                  }}></div>
+                  <span>선택됨</span>
+                </div>
+              </div>
+
+              <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between', flexDirection: 'column' }}>
                 {/* 전체 선택/해제 버튼 추가 */}
                 <div>
                   <button
