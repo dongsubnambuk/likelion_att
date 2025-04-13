@@ -429,7 +429,7 @@ const TeamCreateModal = ({ isOpen, onClose, onSubmit, existingTeams = [] }) => {
                     onClick={() => setMembershipFilter('current')}
                     title="현재 팀 소속 멤버만 표시"
                     style={{
-                      backgroundColor: membershipFilter === 'current' ? '#4caf50' : 'transparent',
+                      backgroundColor: membershipFilter === 'current' ? '#4caf50' : '#4caf5030',
                       borderColor: '#4caf50',
                       color: membershipFilter === 'current' ? 'white' : '#4caf50'
                     }}
@@ -446,7 +446,7 @@ const TeamCreateModal = ({ isOpen, onClose, onSubmit, existingTeams = [] }) => {
                     onClick={() => setMembershipFilter('other')}
                     title="다른 팀 소속 멤버만 표시"
                     style={{
-                      backgroundColor: membershipFilter === 'other' ? '#ff9800' : 'transparent',
+                      backgroundColor: membershipFilter === 'other' ? '#ff9800' : '#ff980030',
                       borderColor: '#ff9800',
                       color: membershipFilter === 'other' ? 'white' : '#ff9800'
                     }}
