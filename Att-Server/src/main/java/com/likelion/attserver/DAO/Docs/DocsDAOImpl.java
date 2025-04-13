@@ -59,8 +59,9 @@ public class DocsDAOImpl implements DocsDAO {
 
     @Override
     public void deleteTeamDocs(Long teamId) {
-        if (!docsRepository.existsByTeamId(teamId))
+        if (!teamRepository.existsById(teamId))
             throw new CustomException("Team not found", HttpStatus.NOT_FOUND);
+        else if (!docsRepository.existsByTeamId(teamId)) return;
         docsRepository.deleteAll(docsRepository.findByTeamId(teamId));
     }
 

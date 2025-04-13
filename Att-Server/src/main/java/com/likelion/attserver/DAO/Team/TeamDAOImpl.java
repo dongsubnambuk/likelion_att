@@ -117,11 +117,10 @@ public class TeamDAOImpl implements TeamDAO {
     }
 
     @Override
-    public void removeTeam(Long teamId) {
-        TeamEntity team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new IllegalArgumentException("Team not found"));
+    public void removeTeam(Long teamId) throws IllegalArgumentException {
         docsDAO.deleteTeamDocs(teamId);
-        teamRepository.delete(team);
+        teamRepository.deleteById(teamId);
+        log.info("Removing team {} from database", teamId);
     }
 
     @Override
