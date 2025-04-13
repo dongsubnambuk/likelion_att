@@ -639,94 +639,102 @@ const Documents = () => {
             {/* 교육자료 목록 */}
             {hasDocuments ? (
                 <div className="document-grid">
-                    {Object.entries(filteredDocuments).flatMap(([teamId, docs]) => {
-                        // 팀 ID에 해당하는 색상 클래스 가져오기
-                        const teamColorIndex = getTeamColorClass(teamId);
-                        // 팀 설명 가져오기
-                        const teamDescription = getTeamDescription(teamId);
+                    {Object.entries(filteredDocuments)
+                        .flatMap(([teamId, docs]) =>
+                            docs.map(doc => ({ ...doc, teamId: teamId }))
+                        )
+                        .sort((a, b) => {
+                            const dateA = new Date(a.created);
+                            const dateB = new Date(b.created);
+                            return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
+                        })
+                        .map((doc) => {
+                            const teamId = doc.teamId;
+                            const teamColorIndex = getTeamColorClass(teamId);
+                            const teamDescription = getTeamDescription(teamId);
 
-                        return docs.map((doc) => (
-                            <div key={doc.id} className="document-card">
-                                <div className={`document-card-header document-card-header-${teamColorIndex}`}>
-                                    {/* 수정/삭제 버튼 */}
-                                    <div style={{
-                                        position: 'absolute',
-                                        top: '10px',
-                                        right: '10px',
-                                        display: 'flex',
-                                        gap: '8px'
-                                    }}>
-                                        <button
-                                            className="btn btn-sm btn-secondary"
-                                            style={{
-                                                padding: '4px',
-                                                minWidth: '32px',
-                                                height: '32px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center'
-                                            }}
-                                            onClick={() => {
-                                                setSelectedDoc(doc);
-                                                setIsEditModalOpen(true);
-                                            }}
-                                        >
-                                            <FaEdit style={{ margin: 0 }} />
-                                        </button>
-                                        <button
-                                            className="btn btn-sm btn-danger"
-                                            style={{
-                                                padding: '4px',
-                                                minWidth: '32px',
-                                                height: '32px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center'
-                                            }}
-                                            onClick={() => {
-                                                setSelectedDoc(doc);
-                                                setIsDeleteModalOpen(true);
-                                            }}
-                                        >
-                                            <FaTrash style={{ margin: 0 }} />
-                                        </button>
+                            return (
+                                <div key={doc.id} className="document-card">
+                                    <div className={`document-card-header document-card-header-${teamColorIndex}`}>
+                                        {/* 수정/삭제 버튼 */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '10px',
+                                            right: '10px',
+                                            display: 'flex',
+                                            gap: '8px'
+                                        }}>
+                                            <button
+                                                className="btn btn-sm btn-secondary"
+                                                style={{
+                                                    padding: '4px',
+                                                    minWidth: '32px',
+                                                    height: '32px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center'
+                                                }}
+                                                onClick={() => {
+                                                    setSelectedDoc(doc);
+                                                    setIsEditModalOpen(true);
+                                                }}
+                                            >
+                                                <FaEdit style={{ margin: 0 }} />
+                                            </button>
+                                            <button
+                                                className="btn btn-sm btn-danger"
+                                                style={{
+                                                    padding: '4px',
+                                                    minWidth: '32px',
+                                                    height: '32px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center'
+                                                }}
+                                                onClick={() => {
+                                                    setSelectedDoc(doc);
+                                                    setIsDeleteModalOpen(true);
+                                                }}
+                                            >
+                                                <FaTrash style={{ margin: 0 }} />
+                                            </button>
+                                        </div>
+
+                                        <h3 style={{ marginBottom: '8px', fontSize: '1.3rem' }}>{doc.title}</h3>
+                                        <span className={`team-tag team-tag-${teamColorIndex}`}>
+                                            {getTeamName(teamId)} - {teamDescription}
+                                        </span>
                                     </div>
 
-                                    <h3 style={{ marginBottom: '8px', fontSize: '1.3rem' }}>{doc.title}</h3>
-                                    <span className={`team-tag team-tag-${teamColorIndex}`}>
-                                        {getTeamName(teamId)} - {teamDescription}
-                                    </span>
-                                </div>
-
-                                <div className="document-card-content">
-                                    <p className="document-date">
-                                        <strong>교육 날짜:</strong> {formatDate(doc.created)}
-                                    </p>
-                                    <p className="document-description">
-                                        {doc.description}
-                                    </p>
-                                    <div className="button-container">
-                                        <a
-                                            href={doc.content}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className={`btn btn-primary-${teamColorIndex + 1}`}
-                                            style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                gap: '8px',
-                                                width: '100%',
-                                                color: '#fff',
-                                            }}
-                                        >
-                                            <FaGithub /> 교육자료 확인하기
-                                        </a>
+                                    <div className="document-card-content">
+                                        <p className="document-date">
+                                            <strong>교육 날짜:</strong> {formatDate(doc.created)}
+                                        </p>
+                                        <p className="document-description">
+                                            {doc.description}
+                                        </p>
+                                        <div className="button-container">
+                                            <a
+                                                href={doc.content}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className={`btn btn-primary-${teamColorIndex + 1}`}
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    gap: '8px',
+                                                    width: '100%',
+                                                    color: '#fff',
+                                                }}
+                                            >
+                                                <FaGithub /> 교육자료 확인하기
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ));
-                    })}
+                            );
+                        })}
                 </div>
             ) : (
                 <div className="card" style={{ padding: '30px', textAlign: 'center' }}>

@@ -292,13 +292,21 @@ const StudentDocuments = () => {
             {/* 교육자료 목록 */}
             {hasDocuments ? (
                 <div className="document-grid">
-                    {Object.entries(filteredDocuments).flatMap(([teamId, docs]) => {
-                        // 팀 ID에 해당하는 색상 클래스 가져오기
-                        const teamColorIndex = getTeamColorClass(teamId);
-                        // 팀 설명 가져오기
-                        const teamDescription = getTeamDescription(teamId);
+                    {Object.entries(filteredDocuments)
+                        .flatMap(([teamId, docs]) =>
+                            docs.map(doc => ({ ...doc, teamId: teamId }))
+                        )
+                        .sort((a, b) => {
+                            const dateA = new Date(a.created);
+                            const dateB = new Date(b.created);
+                            return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
+                        })
+                        .map((doc) => {
+                            const teamId = doc.teamId;
+                            const teamColorIndex = getTeamColorClass(teamId);
+                            const teamDescription = getTeamDescription(teamId);
 
-                        return docs.map((doc) => (
+                            return (
                             <div key={doc.id} className="document-card">
                                 <div className={`document-card-header document-card-header-${teamColorIndex}`}>
                                     <h3 style={{ marginBottom: '8px', fontSize: '1.3rem' }}>{doc.title}</h3>
@@ -334,7 +342,7 @@ const StudentDocuments = () => {
                                     </div>
                                 </div>
                             </div>
-                        ));
+                        );
                     })}
                 </div>
             ) : (
