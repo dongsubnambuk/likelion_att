@@ -1,8 +1,11 @@
 // src/contexts/AuthContext.js
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useRef } from 'react';
 import api from '../services/api';
 
 const AuthContext = createContext();
+
+// 자동 로그아웃 시간 설정 (밀리초 단위)
+const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30분
 
 export function useAuth() {
   return useContext(AuthContext);
@@ -12,8 +15,41 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const inactivityTimerRef = useRef(null);
 
-  // 로컬 스토리지에서 토큰 불러오기
+  // 활동 감지 시 타이머 재설정
+  const resetInactivityTimer = () => {
+    if (inactivityTimerRef.current) {
+      clearTimeout(inactivityTimerRef.current);
+    }
+
+    // 로그인된 상태일 때만 자동 로그아웃 타이머 설정
+    if (localStorage.getItem('token')) {
+      inactivityTimerRef.current = setTimeout(() => {
+        // 자동 로그아웃 실행
+        logout();
+        alert('장시간 활동이 없어 자동 로그아웃되었습니다.');
+        window.location.href = '/login';
+      }, INACTIVITY_TIMEOUT);
+    }
+  };
+
+  // 사용자 활동 감지 이벤트 리스너 설정
+  const setupActivityListeners = () => {
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+    
+    events.forEach(event => {
+      document.addEventListener(event, resetInactivityTimer, true);
+    });
+
+    return () => {
+      events.forEach(event => {
+        document.removeEventListener(event, resetInactivityTimer, true);
+      });
+    };
+  };
+
+  // 로컬 스토리지에서 토큰 불러오기 및 자동 로그아웃 설정
   useEffect(() => {
     const token = localStorage.getItem('token');
     const user = localStorage.getItem('user');
@@ -21,9 +57,23 @@ export function AuthProvider({ children }) {
     if (token && user) {
       setCurrentUser(JSON.parse(user));
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      
+      // 초기 로그인 상태에서 타이머 설정
+      resetInactivityTimer();
     }
     
     setLoading(false);
+    
+    // 활동 감지 이벤트 리스너 설정
+    const cleanupListeners = setupActivityListeners();
+    
+    // 컴포넌트 언마운트 시 타이머와 이벤트 리스너 정리
+    return () => {
+      if (inactivityTimerRef.current) {
+        clearTimeout(inactivityTimerRef.current);
+      }
+      cleanupListeners();
+    };
   }, []);
 
   // 로그인 함수 - API 형식에 맞게 수정
@@ -45,6 +95,9 @@ export function AuthProvider({ children }) {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setCurrentUser(user);
       
+      // 로그인 후 자동 로그아웃 타이머 설정
+      resetInactivityTimer();
+      
       return user;
     } catch (err) {
       // console.error('로그인 실패:', err);
@@ -59,6 +112,12 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('user');
     delete api.defaults.headers.common['Authorization'];
     setCurrentUser(null);
+    
+    // 로그아웃 시 타이머 정리
+    if (inactivityTimerRef.current) {
+      clearTimeout(inactivityTimerRef.current);
+      inactivityTimerRef.current = null;
+    }
   };
 
   const value = {
@@ -66,7 +125,8 @@ export function AuthProvider({ children }) {
     setCurrentUser,
     login,
     logout,
-    error
+    error,
+    resetInactivityTimer // 필요시 타이머 재설정할 수 있도록 export
   };
 
   return (

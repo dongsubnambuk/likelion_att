@@ -21,6 +21,7 @@ import StudentSchedules from './pages/student/StudentSchedules';
 import StudentDevelopers from './pages/student/StudentDevelopers';
 import StudentDocuments from './pages/student/StudentDocuments';
 import ScrollToTop from './components/ScrollToTop';
+import SessionTimeoutModal from './components/SessionTimeoutModal';
 import './App.css';
 
 // 인증된 사용자만 접근 가능한 라우트 컴포넌트
@@ -64,9 +65,12 @@ const StudentRoute = ({ children }) => {
   return children;
 };
 
-function App() {
+// 인증 상태를 확인하고 세션 타임아웃 모달을 포함하는 컴포넌트
+const AuthenticatedApp = () => {
+  const { currentUser } = useAuth();
+  
   return (
-    <AuthProvider>
+    <>
       <Router>
         <ScrollToTop />
         <Routes>
@@ -113,6 +117,17 @@ function App() {
           } />
         </Routes>
       </Router>
+      
+      {/* 세션 타임아웃 모달 - 로그인 상태일 때만 표시 */}
+      {currentUser && <SessionTimeoutModal />}
+    </>
+  );
+};
+
+function App() {
+  return (
+    <AuthProvider>
+      <AuthenticatedApp />
     </AuthProvider>
   );
 }
