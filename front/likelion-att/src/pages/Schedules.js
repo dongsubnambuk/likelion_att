@@ -594,7 +594,7 @@ const Schedules = () => {
                   <th>시간</th>
                   <th>팀</th>
                   <th>참석률</th>
-                  <th>생성일</th>
+                  {/* <th>생성일</th> */}
                   <th>관리</th>
                 </tr>
               </thead>
@@ -607,7 +607,7 @@ const Schedules = () => {
                       <Link to={`/teams/${schedule.teamId}`}>{schedule.teamName}</Link>
                     </td>
                     <td>{schedule.attendanceRate || '0'}%</td>
-                    <td>{new Date(schedule.createdAt).toLocaleDateString()}</td>
+                    {/* <td>{new Date(schedule.createdAt).toLocaleDateString()}</td> */}
                     <td>
                       <div style={{ display: 'flex', gap: '5px' }}>
                         <Link

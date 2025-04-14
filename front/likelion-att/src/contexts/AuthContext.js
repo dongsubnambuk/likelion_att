@@ -87,7 +87,7 @@ export function AuthProvider({ children }) {
       const { id, name, phone, role, track, email, token } = response.data;
       
       const user = { id, name, phone, role, track, email };
-      console.log('로그인 성공:', user);
+      // console.log('로그인 성공:', user);
       
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));

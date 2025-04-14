@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FaChartBar, FaCalendarAlt, FaUserFriends, FaDownload, FaSearch, FaUser, FaSort, FaSortUp, FaSortDown, FaUserCog, FaLaptopCode, FaPhone } from 'react-icons/fa';
-import { teamApi, scheduleApi, attendanceApi } from '../services/api';
+import { teamApi, scheduleApi, attendanceApi, userApi } from '../services/api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 import Loading from '../components/common/Loading';
 
@@ -29,7 +29,10 @@ const AttendanceReport = () => {
   const [teamStats, setTeamStats] = useState([]);
   const [memberStats, setMemberStats] = useState([]);
   const [scheduleStats, setScheduleStats] = useState([]);
-  const [sortConfig, setSortConfig] = useState({ key: 'attendanceRate', direction: 'desc' });
+  // 각 테이블별 독립적인 정렬 상태 설정
+  const [teamSortConfig, setTeamSortConfig] = useState({ key: 'name', direction: 'asc' });
+  const [scheduleSortConfig, setScheduleSortConfig] = useState({ key: 'date', direction: 'asc' });
+  const [memberSortConfig, setMemberSortConfig] = useState({ key: 'name', direction: 'asc' });
   const [error, setError] = useState(null);
 
   // 데이터 불러오기
@@ -42,12 +45,19 @@ const AttendanceReport = () => {
         const teamsResponse = await teamApi.getAll();
         const teamsData = teamsResponse.data;
 
+        // 사용자 목록 가져오기
+        const usersResponse = await userApi.getAll();
+        const usersData = usersResponse.data;
+        const adminCount = usersData.admin ? usersData.admin.length : 0;
+        const userCount = usersData.users ? usersData.users.length : 0;
+        const totalMembers = adminCount + userCount;
+
         // 스케줄 정보 가져오기
         const schedulesResponse = await scheduleApi.getAll();
         const schedulesData = schedulesResponse.data;
 
         // 데이터 가공 및 통계 계산
-        const stats = calculateStatistics(teamsData, schedulesData);
+        const stats = calculateStatistics(teamsData, schedulesData, totalMembers);
 
         // 상태 업데이트
         setTeams(stats.teamStats);
@@ -68,10 +78,10 @@ const AttendanceReport = () => {
   }, []);
 
   // 통계 계산 함수
-  const calculateStatistics = (teamData, scheduleData) => {
+  const calculateStatistics = (teamData, scheduleData, totalMembersCount) => {
     // 기본 통계 정보 초기화
     const stats = {
-      totalMembers: 0,
+      totalMembers: totalMembersCount, // 전체 부원 수 사용
       totalSchedules: 0,
       totalAttendances: 0,
       presentCount: 0,
@@ -95,7 +105,7 @@ const AttendanceReport = () => {
       const description = Object.keys(teamInfo)[0]; // 팀 설명은 객체의 첫 번째 키
       const members = teamInfo[description]; // 팀원들은 그 키의 값
 
-      stats.totalMembers += members.length;
+      // stats.totalMembers += members.length;
 
       // 팀별 통계 객체 초기화
       teamStats.push({
@@ -222,10 +232,11 @@ const AttendanceReport = () => {
             }
           });
 
-          // 해당 스케줄의 출석률 계산 (출석 + 지각) / 전체
+          // 각 스케줄의 출석률 계산 (출석 + 지각) / (전체 - 미처리)
           const effectiveAttendances = scheduleStat.presentCount + scheduleStat.lateCount;
-          scheduleStat.attendanceRate = scheduleStat.totalMembers > 0
-            ? Math.round((effectiveAttendances / scheduleStat.totalMembers) * 100)
+          const effectiveTotal = scheduleStat.totalMembers - scheduleStat.notCount;
+          scheduleStat.attendanceRate = effectiveTotal > 0
+            ? Math.round((effectiveAttendances / effectiveTotal) * 100)
             : 0;
         }
 
@@ -236,23 +247,26 @@ const AttendanceReport = () => {
     // 각 팀의 출석률 계산
     teamStats.forEach(team => {
       const effectiveAttendances = team.presentCount + team.lateCount;
-      team.attendanceRate = team.totalAttendances > 0
-        ? Math.round((effectiveAttendances / team.totalAttendances) * 100)
+      const effectiveTotal = team.totalAttendances - team.notCount;
+      team.attendanceRate = effectiveTotal > 0
+        ? Math.round((effectiveAttendances / effectiveTotal) * 100)
         : 0;
     });
 
     // 각 부원의 출석률 계산
     Object.values(memberStats).forEach(member => {
       const effectiveAttendances = member.presentCount + member.lateCount;
-      member.attendanceRate = member.totalSchedules > 0
-        ? Math.round((effectiveAttendances / member.totalSchedules) * 100)
+      const effectiveTotal = member.totalSchedules - member.notCount;
+      member.attendanceRate = effectiveTotal > 0
+        ? Math.round((effectiveAttendances / effectiveTotal) * 100)
         : 0;
     });
 
     // 전체 출석률 계산
     const effectiveAttendances = stats.presentCount + stats.lateCount;
-    const attendanceRate = stats.totalAttendances > 0
-      ? Math.round((effectiveAttendances / stats.totalAttendances) * 100)
+    const effectiveTotal = stats.totalAttendances - stats.notCount;
+    const attendanceRate = effectiveTotal > 0
+      ? Math.round((effectiveAttendances / effectiveTotal) * 100)
       : 0;
     const presentRate = stats.totalAttendances > 0
       ? Math.round((stats.presentCount / stats.totalAttendances) * 100)
@@ -319,21 +333,55 @@ const AttendanceReport = () => {
     setScheduleStats(filtered.scheduleStats);
   };
 
-  // 정렬 처리 함수
-  const requestSort = (key) => {
+  // 팀 테이블 정렬 함수
+  const requestTeamSort = (key) => {
     let direction = 'desc';
-    if (sortConfig.key === key && sortConfig.direction === 'desc') {
+    if (teamSortConfig.key === key && teamSortConfig.direction === 'desc') {
       direction = 'asc';
     }
-    setSortConfig({ key, direction });
+    setTeamSortConfig({ key, direction });
   };
 
-  // 정렬 아이콘 표시
-  const getSortIcon = (key) => {
-    if (sortConfig.key !== key) {
+  // 스케줄 테이블 정렬 함수
+  const requestScheduleSort = (key) => {
+    let direction = 'desc';
+    if (scheduleSortConfig.key === key && scheduleSortConfig.direction === 'desc') {
+      direction = 'asc';
+    }
+    setScheduleSortConfig({ key, direction });
+  };
+
+  // 부원 테이블 정렬 함수
+  const requestMemberSort = (key) => {
+    let direction = 'desc';
+    if (memberSortConfig.key === key && memberSortConfig.direction === 'desc') {
+      direction = 'asc';
+    }
+    setMemberSortConfig({ key, direction });
+  };
+
+  // 팀 테이블 정렬 아이콘
+  const getTeamSortIcon = (key) => {
+    if (teamSortConfig.key !== key) {
       return <FaSort />;
     }
-    return sortConfig.direction === 'desc' ? <FaSortDown /> : <FaSortUp />;
+    return teamSortConfig.direction === 'desc' ? <FaSortDown /> : <FaSortUp />;
+  };
+
+  // 스케줄 테이블 정렬 아이콘
+  const getScheduleSortIcon = (key) => {
+    if (scheduleSortConfig.key !== key) {
+      return <FaSort />;
+    }
+    return scheduleSortConfig.direction === 'desc' ? <FaSortDown /> : <FaSortUp />;
+  };
+
+  // 부원 테이블 정렬 아이콘
+  const getMemberSortIcon = (key) => {
+    if (memberSortConfig.key !== key) {
+      return <FaSort />;
+    }
+    return memberSortConfig.direction === 'desc' ? <FaSortDown /> : <FaSortUp />;
   };
 
   // 트랙 표시 함수
@@ -366,24 +414,31 @@ const AttendanceReport = () => {
   const statusDistributionData = [
     { name: '출석', value: overallStats?.presentRate || 0, color: '#219653' },
     { name: '지각', value: overallStats?.lateRate || 0, color: '#f2994a' },
-    { name: '결석', value: overallStats?.absentRate || 0, color: '#eb5757' }
+    { name: '결석', value: overallStats?.absentRate || 0, color: '#eb5757' },
+    {
+      name: '미처리', value: overallStats?.totalAttendances > 0
+        ? Math.round((overallStats?.notCount / overallStats?.totalAttendances) * 100)
+        : 0, color: '#bdbdbd'
+    }
   ];
 
   // 정렬된 부원 통계 가져오기
   const getSortedMemberStats = () => {
-    if (!sortConfig.key) return memberStats;
+    if (!memberSortConfig.key) return memberStats;
 
     return [...memberStats].sort((a, b) => {
       // null 값 처리
-      if (a[sortConfig.key] === null || a[sortConfig.key] === undefined) return sortConfig.direction === 'desc' ? 1 : -1;
-      if (b[sortConfig.key] === null || b[sortConfig.key] === undefined) return sortConfig.direction === 'desc' ? -1 : 1;
+      if (a[memberSortConfig.key] === null || a[memberSortConfig.key] === undefined)
+        return memberSortConfig.direction === 'desc' ? 1 : -1;
+      if (b[memberSortConfig.key] === null || b[memberSortConfig.key] === undefined)
+        return memberSortConfig.direction === 'desc' ? -1 : 1;
 
       // 일반적인 비교 로직
-      let valueA = a[sortConfig.key];
-      let valueB = b[sortConfig.key];
+      let valueA = a[memberSortConfig.key];
+      let valueB = b[memberSortConfig.key];
 
       // 학번은 숫자로 변환하여 비교
-      if (sortConfig.key === 'studentId') {
+      if (memberSortConfig.key === 'studentId') {
         valueA = Number(String(valueA).replace(/\D/g, '')) || 0;
         valueB = Number(String(valueB).replace(/\D/g, '')) || 0;
       }
@@ -394,10 +449,10 @@ const AttendanceReport = () => {
       }
 
       if (valueA < valueB) {
-        return sortConfig.direction === 'desc' ? 1 : -1;
+        return memberSortConfig.direction === 'desc' ? 1 : -1;
       }
       if (valueA > valueB) {
-        return sortConfig.direction === 'desc' ? -1 : 1;
+        return memberSortConfig.direction === 'desc' ? -1 : 1;
       }
       return 0;
     });
@@ -405,14 +460,21 @@ const AttendanceReport = () => {
 
   // 정렬된 팀 통계 가져오기
   const getSortedTeamStats = () => {
-    if (!sortConfig.key) return teamStats;
+    if (!teamSortConfig.key) return teamStats;
 
     return [...teamStats].sort((a, b) => {
-      if (a[sortConfig.key] < b[sortConfig.key]) {
-        return sortConfig.direction === 'desc' ? 1 : -1;
+      // null 값 처리
+      if (a[teamSortConfig.key] === null || a[teamSortConfig.key] === undefined)
+        return teamSortConfig.direction === 'desc' ? 1 : -1;
+      if (b[teamSortConfig.key] === null || b[teamSortConfig.key] === undefined)
+        return teamSortConfig.direction === 'desc' ? -1 : 1;
+
+      // 일반적인 비교 로직
+      if (a[teamSortConfig.key] < b[teamSortConfig.key]) {
+        return teamSortConfig.direction === 'desc' ? 1 : -1;
       }
-      if (a[sortConfig.key] > b[sortConfig.key]) {
-        return sortConfig.direction === 'desc' ? -1 : 1;
+      if (a[teamSortConfig.key] > b[teamSortConfig.key]) {
+        return teamSortConfig.direction === 'desc' ? -1 : 1;
       }
       return 0;
     });
@@ -420,21 +482,27 @@ const AttendanceReport = () => {
 
   // 정렬된 스케줄 통계 가져오기
   const getSortedScheduleStats = () => {
-    if (!sortConfig.key) return scheduleStats;
+    if (!scheduleSortConfig.key) return scheduleStats;
 
     return [...scheduleStats].sort((a, b) => {
+      // null 값 처리
+      if (a[scheduleSortConfig.key] === null || a[scheduleSortConfig.key] === undefined)
+        return scheduleSortConfig.direction === 'desc' ? 1 : -1;
+      if (b[scheduleSortConfig.key] === null || b[scheduleSortConfig.key] === undefined)
+        return scheduleSortConfig.direction === 'desc' ? -1 : 1;
+
       // 날짜 비교는 특별 처리
-      if (sortConfig.key === 'date') {
+      if (scheduleSortConfig.key === 'date') {
         const dateA = new Date(a.date);
         const dateB = new Date(b.date);
-        return sortConfig.direction === 'desc' ? dateB - dateA : dateA - dateB;
+        return scheduleSortConfig.direction === 'desc' ? dateB - dateA : dateA - dateB;
       }
 
-      if (a[sortConfig.key] < b[sortConfig.key]) {
-        return sortConfig.direction === 'desc' ? 1 : -1;
+      if (a[scheduleSortConfig.key] < b[scheduleSortConfig.key]) {
+        return scheduleSortConfig.direction === 'desc' ? 1 : -1;
       }
-      if (a[sortConfig.key] > b[sortConfig.key]) {
-        return sortConfig.direction === 'desc' ? -1 : 1;
+      if (a[scheduleSortConfig.key] > b[scheduleSortConfig.key]) {
+        return scheduleSortConfig.direction === 'desc' ? -1 : 1;
       }
       return 0;
     });
@@ -622,29 +690,32 @@ const AttendanceReport = () => {
             <table>
               <thead>
                 <tr>
-                  <th onClick={() => requestSort('name')} style={{ cursor: 'pointer' }}>
-                    팀명 {getSortIcon('name')}
+                  <th onClick={() => requestTeamSort('name')} style={{ cursor: 'pointer' }}>
+                    팀명 {getTeamSortIcon('name')}
                   </th>
-                  <th onClick={() => requestSort('description')} style={{ cursor: 'pointer' }}>
-                    설명 {getSortIcon('description')}
+                  <th onClick={() => requestTeamSort('description')} style={{ cursor: 'pointer' }}>
+                    설명 {getTeamSortIcon('description')}
                   </th>
-                  <th onClick={() => requestSort('memberCount')} style={{ cursor: 'pointer' }}>
-                    인원 수 {getSortIcon('memberCount')}
+                  <th onClick={() => requestTeamSort('memberCount')} style={{ cursor: 'pointer' }}>
+                    인원 수 {getTeamSortIcon('memberCount')}
                   </th>
-                  <th onClick={() => requestSort('scheduleCount')} style={{ cursor: 'pointer' }}>
-                    스케줄 수 {getSortIcon('scheduleCount')}
+                  <th onClick={() => requestTeamSort('scheduleCount')} style={{ cursor: 'pointer' }}>
+                    스케줄 수 {getTeamSortIcon('scheduleCount')}
                   </th>
-                  <th onClick={() => requestSort('presentCount')} style={{ cursor: 'pointer' }}>
-                    출석 {getSortIcon('presentCount')}
+                  <th onClick={() => requestTeamSort('presentCount')} style={{ cursor: 'pointer' }}>
+                    출석 {getTeamSortIcon('presentCount')}
                   </th>
-                  <th onClick={() => requestSort('lateCount')} style={{ cursor: 'pointer' }}>
-                    지각 {getSortIcon('lateCount')}
+                  <th onClick={() => requestTeamSort('lateCount')} style={{ cursor: 'pointer' }}>
+                    지각 {getTeamSortIcon('lateCount')}
                   </th>
-                  <th onClick={() => requestSort('absentCount')} style={{ cursor: 'pointer' }}>
-                    결석 {getSortIcon('absentCount')}
+                  <th onClick={() => requestTeamSort('absentCount')} style={{ cursor: 'pointer' }}>
+                    결석 {getTeamSortIcon('absentCount')}
                   </th>
-                  <th onClick={() => requestSort('attendanceRate')} style={{ cursor: 'pointer' }}>
-                    출석률 {getSortIcon('attendanceRate')}
+                  <th onClick={() => requestTeamSort('notCount')} style={{ cursor: 'pointer' }}>
+                    미처리 {getTeamSortIcon('notCount')}
+                  </th>
+                  <th onClick={() => requestTeamSort('attendanceRate')} style={{ cursor: 'pointer' }}>
+                    출석률 {getTeamSortIcon('attendanceRate')}
                   </th>
                 </tr>
               </thead>
@@ -661,6 +732,7 @@ const AttendanceReport = () => {
                       <td style={{ color: '#219653' }}>{team.presentCount}회</td>
                       <td style={{ color: '#f2994a' }}>{team.lateCount}회</td>
                       <td style={{ color: '#eb5757' }}>{team.absentCount}회</td>
+                      <td style={{ color: '#bdbdbd' }}>{team.notCount}회</td>
                       <td style={{ fontWeight: 'bold', color: team.attendanceRate >= 80 ? '#219653' : team.attendanceRate >= 60 ? '#f2994a' : '#eb5757' }}>
                         {team.attendanceRate}%
                       </td>
@@ -668,7 +740,7 @@ const AttendanceReport = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="8" style={{ textAlign: 'center' }}>팀 통계 데이터가 없습니다.</td>
+                    <td colSpan="9" style={{ textAlign: 'center' }}>팀 통계 데이터가 없습니다.</td>
                   </tr>
                 )}
               </tbody>
@@ -685,30 +757,33 @@ const AttendanceReport = () => {
             <FaCalendarAlt /> 스케줄 관리
           </Link>
         </div>
-        <div className="table-container">
+        <div className="table-container" style={{ maxHeight: '600px', overflowY: 'auto' }}>
           <table>
             <thead>
               <tr>
-                <th onClick={() => requestSort('date')} style={{ cursor: 'pointer' }}>
-                  날짜 {getSortIcon('date')}
+                <th onClick={() => requestScheduleSort('date')} style={{ cursor: 'pointer' }}>
+                  날짜 {getScheduleSortIcon('date')}
                 </th>
-                <th onClick={() => requestSort('time')} style={{ cursor: 'pointer' }}>
-                  시간 {getSortIcon('time')}
+                <th onClick={() => requestScheduleSort('time')} style={{ cursor: 'pointer' }}>
+                  시간 {getScheduleSortIcon('time')}
                 </th>
-                <th onClick={() => requestSort('teamName')} style={{ cursor: 'pointer' }}>
-                  팀 {getSortIcon('teamName')}
+                <th onClick={() => requestScheduleSort('teamName')} style={{ cursor: 'pointer' }}>
+                  팀 {getScheduleSortIcon('teamName')}
                 </th>
-                <th onClick={() => requestSort('presentCount')} style={{ cursor: 'pointer' }}>
-                  출석 {getSortIcon('presentCount')}
+                <th onClick={() => requestScheduleSort('presentCount')} style={{ cursor: 'pointer' }}>
+                  출석 {getScheduleSortIcon('presentCount')}
                 </th>
-                <th onClick={() => requestSort('lateCount')} style={{ cursor: 'pointer' }}>
-                  지각 {getSortIcon('lateCount')}
+                <th onClick={() => requestScheduleSort('lateCount')} style={{ cursor: 'pointer' }}>
+                  지각 {getScheduleSortIcon('lateCount')}
                 </th>
-                <th onClick={() => requestSort('absentCount')} style={{ cursor: 'pointer' }}>
-                  결석 {getSortIcon('absentCount')}
+                <th onClick={() => requestScheduleSort('absentCount')} style={{ cursor: 'pointer' }}>
+                  결석 {getScheduleSortIcon('absentCount')}
                 </th>
-                <th onClick={() => requestSort('attendanceRate')} style={{ cursor: 'pointer' }}>
-                  출석률 {getSortIcon('attendanceRate')}
+                <th onClick={() => requestScheduleSort('notCount')} style={{ cursor: 'pointer' }}>
+                  미처리 {getScheduleSortIcon('notCount')}
+                </th>
+                <th onClick={() => requestScheduleSort('attendanceRate')} style={{ cursor: 'pointer' }}>
+                  출석률 {getScheduleSortIcon('attendanceRate')}
                 </th>
               </tr>
             </thead>
@@ -722,6 +797,7 @@ const AttendanceReport = () => {
                     <td style={{ color: '#219653' }}>{schedule.presentCount}명</td>
                     <td style={{ color: '#f2994a' }}>{schedule.lateCount}명</td>
                     <td style={{ color: '#eb5757' }}>{schedule.absentCount}명</td>
+                    <td style={{ color: '#bdbdbd' }}>{schedule.notCount}명</td>
                     <td style={{ fontWeight: 'bold', color: schedule.attendanceRate >= 80 ? '#219653' : schedule.attendanceRate >= 60 ? '#f2994a' : '#eb5757' }}>
                       {schedule.attendanceRate}%
                     </td>
@@ -729,7 +805,7 @@ const AttendanceReport = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="7" style={{ textAlign: 'center' }}>스케줄 통계 데이터가 없습니다.</td>
+                  <td colSpan="8" style={{ textAlign: 'center' }}>스케줄 통계 데이터가 없습니다.</td>
                 </tr>
               )}
             </tbody>
@@ -745,36 +821,39 @@ const AttendanceReport = () => {
             <FaUser /> 부원 관리
           </Link>
         </div>
-        <div className="table-container">
+        <div className="table-container" style={{ maxHeight: '600px', overflowY: 'auto' }}>
           <table>
             <thead>
               <tr>
-                <th onClick={() => requestSort('name')} style={{ cursor: 'pointer' }}>
-                  이름 {getSortIcon('name')}
+                <th onClick={() => requestMemberSort('name')} style={{ cursor: 'pointer' }}>
+                  이름 {getMemberSortIcon('name')}
                 </th>
-                <th onClick={() => requestSort('studentId')} style={{ cursor: 'pointer' }}>
-                  학번 {getSortIcon('studentId')}
+                <th onClick={() => requestMemberSort('studentId')} style={{ cursor: 'pointer' }}>
+                  학번 {getMemberSortIcon('studentId')}
                 </th>
-                <th onClick={() => requestSort('role')} style={{ cursor: 'pointer' }}>
-                  역할 {getSortIcon('role')}
+                <th onClick={() => requestMemberSort('role')} style={{ cursor: 'pointer' }}>
+                  역할 {getMemberSortIcon('role')}
                 </th>
-                <th onClick={() => requestSort('track')} style={{ cursor: 'pointer' }}>
-                  트랙 {getSortIcon('track')}
+                <th onClick={() => requestMemberSort('track')} style={{ cursor: 'pointer' }}>
+                  트랙 {getMemberSortIcon('track')}
                 </th>
-                <th onClick={() => requestSort('teamName')} style={{ cursor: 'pointer' }}>
-                  팀 {getSortIcon('teamName')}
+                <th onClick={() => requestMemberSort('teamName')} style={{ cursor: 'pointer' }}>
+                  팀 {getMemberSortIcon('teamName')}
                 </th>
-                <th onClick={() => requestSort('presentCount')} style={{ cursor: 'pointer' }}>
-                  출석 {getSortIcon('presentCount')}
+                <th onClick={() => requestMemberSort('presentCount')} style={{ cursor: 'pointer' }}>
+                  출석 {getMemberSortIcon('presentCount')}
                 </th>
-                <th onClick={() => requestSort('lateCount')} style={{ cursor: 'pointer' }}>
-                  지각 {getSortIcon('lateCount')}
+                <th onClick={() => requestMemberSort('lateCount')} style={{ cursor: 'pointer' }}>
+                  지각 {getMemberSortIcon('lateCount')}
                 </th>
-                <th onClick={() => requestSort('absentCount')} style={{ cursor: 'pointer' }}>
-                  결석 {getSortIcon('absentCount')}
+                <th onClick={() => requestMemberSort('absentCount')} style={{ cursor: 'pointer' }}>
+                  결석 {getMemberSortIcon('absentCount')}
                 </th>
-                <th onClick={() => requestSort('attendanceRate')} style={{ cursor: 'pointer' }}>
-                  출석률 {getSortIcon('attendanceRate')}
+                <th onClick={() => requestMemberSort('notCount')} style={{ cursor: 'pointer' }}>
+                  미처리 {getMemberSortIcon('notCount')}
+                </th>
+                <th onClick={() => requestMemberSort('attendanceRate')} style={{ cursor: 'pointer' }}>
+                  출석률 {getMemberSortIcon('attendanceRate')}
                 </th>
               </tr>
             </thead>
@@ -811,6 +890,7 @@ const AttendanceReport = () => {
                     <td style={{ color: '#219653' }}>{member.presentCount}회</td>
                     <td style={{ color: '#f2994a' }}>{member.lateCount}회</td>
                     <td style={{ color: '#eb5757' }}>{member.absentCount}회</td>
+                    <td style={{ color: '#bdbdbd' }}>{member.notCount}회</td>
                     <td style={{ fontWeight: 'bold', color: member.attendanceRate >= 80 ? '#219653' : member.attendanceRate >= 60 ? '#f2994a' : '#eb5757' }}>
                       {member.attendanceRate}%
                     </td>
@@ -818,7 +898,7 @@ const AttendanceReport = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="9" style={{ textAlign: 'center' }}>부원 통계 데이터가 없습니다.</td>
+                  <td colSpan="10" style={{ textAlign: 'center' }}>부원 통계 데이터가 없습니다.</td>
                 </tr>
               )}
             </tbody>
