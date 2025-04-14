@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { FaUserCircle, FaLock, FaExclamationTriangle, FaCheckCircle, FaUserPlus, FaKey } from 'react-icons/fa';
 import api from '../services/api';
 import PasswordResetModal from '../components/PasswordResetModal'; // 비밀번호 찾기 모달 import
+import Footer from '../components/Footer';
 
 // 회원가입 모달 컴포넌트
 const SignupModal = ({ isOpen, onClose, onSuccess }) => {
@@ -294,6 +295,7 @@ const Login = () => {
   };
 
   return (
+    <div>
     <div className="login-container">
       <div className="login-card">
         <div className="login-header">
@@ -404,6 +406,8 @@ const Login = () => {
         isOpen={isPasswordResetModalOpen}
         onClose={() => setIsPasswordResetModalOpen(false)}
       />
+    </div>
+    <Footer />  
     </div>
   );
 };

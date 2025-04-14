@@ -84,10 +84,10 @@ export function AuthProvider({ children }) {
       const response = await api.post(`/api/auth/signin?id=${username}&password=${password}`);
       
       // 응답 구조에 맞게 토큰과 사용자 정보 추출
-      const { id, name, phone, role, Track, email, token } = response.data;
+      const { id, name, phone, role, track, email, token } = response.data;
       
-      const user = { id, name, phone, role, Track, email };
-      // console.log('로그인 성공:', user);
+      const user = { id, name, phone, role, track, email };
+      console.log('로그인 성공:', user);
       
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));

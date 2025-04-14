@@ -29,6 +29,8 @@ const EditProfileModal = ({ isOpen, onClose, user, onSuccess }) => {
 
     // 사용자 정보가 변경되면 폼 데이터를 업데이트
     useEffect(() => {
+        const currentUser = JSON.parse(localStorage.getItem('user'));
+        console.log('currentUser', currentUser);
         if (user) {
             setFormData({
                 id: user.id || user.studentId,
@@ -99,7 +101,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onSuccess }) => {
                     name: response.data.name,
                     email: response.data.email,
                     phone: response.data.phone,
-                    track: response.data.Track
+                    track: response.data.track
                 };
                 localStorage.setItem('user', JSON.stringify(updatedUser));
 

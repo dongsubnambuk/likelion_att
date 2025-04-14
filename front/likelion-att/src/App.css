@@ -499,7 +499,7 @@ tr:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
+  min-height: 90vh;
   background: linear-gradient(135deg, #DF773B30, #37373730), url('https://source.unsplash.com/random/1920x1080/?abstract') center/cover;
 }
 
