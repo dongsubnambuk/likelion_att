@@ -1,39 +1,105 @@
 // src/pages/MemberDetail.js
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { FaArrowLeft, FaEdit, FaTrash, FaCalendarAlt, FaStar, FaUser, FaUserFriends } from 'react-icons/fa';
-import { userApi, attendanceApi } from '../services/api';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import {
+  FaArrowLeft, FaEdit, FaUser, FaUserCog, FaEnvelope, FaPhone, FaLaptopCode,
+  FaCalendarAlt, FaStar, FaRegStar, FaExclamationTriangle, FaCheckCircle
+} from 'react-icons/fa';
+import { userApi, scheduleApi } from '../services/api';
 import Loading from '../components/common/Loading';
+
+// 출석 상태 컴포넌트
+const AttendanceStatus = ({ status }) => {
+  let statusClass = 'status-none';
+  let statusText = '미출결';
+
+  switch (status) {
+    case 'PRESENT':
+    case 'present':
+      statusClass = 'status-present';
+      statusText = '출석';
+      break;
+    case 'LATE':
+    case 'late':
+      statusClass = 'status-late';
+      statusText = '지각';
+      break;
+    case 'ABSENT':
+    case 'absent':
+      statusClass = 'status-absent';
+      statusText = '결석';
+      break;
+    case 'NOT':
+    case 'not':
+    default:
+      statusClass = 'status-none';
+      statusText = '미출결';
+      break;
+  }
+
+  return <span className={`attendance-status ${statusClass}`}>{statusText}</span>;
+};
+
+// 평가 별점 표시 컴포넌트
+const RatingStars = ({ rating }) => {
+  return (
+    <div className="rating">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <span key={star} className="rating-star" style={{ color: star <= rating ? '#DF773B' : '#ddd' }}>
+          {star <= rating ? <FaStar /> : <FaRegStar />}
+        </span>
+      ))}
+    </div>
+  );
+};
 
 const MemberDetail = () => {
   const { memberId } = useParams();
   const navigate = useNavigate();
   const [member, setMember] = useState(null);
-  const [attendanceStats, setAttendanceStats] = useState(null);
-  const [recentAttendances, setRecentAttendances] = useState([]);
+  const [attendances, setAttendances] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [notification, setNotification] = useState(null);
+  const [stats, setStats] = useState({
+    present: 0,
+    late: 0,
+    absent: 0,
+    none: 0,
+    total: 0,
+    rate: 0,
+    averageRating: 0
+  });
 
-  // 부원 정보 및 출석 통계 불러오기
+  // 부원 정보 불러오기
   useEffect(() => {
     const fetchMemberData = async () => {
       try {
         setLoading(true);
-        
-        // 부원 정보 가져오기
-        const memberResponse = await userApi.getById(memberId);
-        setMember(memberResponse.data);
-        
-        // 출석 통계 가져오기
-        const statsResponse = await attendanceApi.getStats(memberId);
-        setAttendanceStats(statsResponse.data);
-        
-        // 최근 출석 기록 가져오기
-        const attendanceResponse = await attendanceApi.getByUser(memberId);
-        setRecentAttendances(attendanceResponse.data);
-        
+
+        // 부원 정보를 전체 회원 목록에서 찾아서 가져오는 방식으로 변경
+        const allUsersResponse = await userApi.getAll();
+
+        if (allUsersResponse.data) {
+          const { admin = [], users = [] } = allUsersResponse.data;
+          // 모든 사용자 배열을 합친 후 학번으로 필터링
+          const allUsers = [...admin, ...users];
+          const foundMember = allUsers.find(user => user.studentId.toString() === memberId.toString());
+
+          if (foundMember) {
+            setMember(foundMember);
+
+            // 해당 회원의 출석 기록 가져오기
+            await fetchMemberAttendances(foundMember);
+          } else {
+            setError('부원 정보를 찾을 수 없습니다.');
+          }
+        } else {
+          setError('부원 목록을 불러올 수 없습니다.');
+        }
       } catch (error) {
-        // console.error('부원 데이터 로딩 실패:', error);
+        console.error('부원 데이터 로딩 실패:', error);
+        setError('부원 정보를 불러오는데 실패했습니다.');
       } finally {
         setLoading(false);
       }
@@ -42,69 +108,143 @@ const MemberDetail = () => {
     fetchMemberData();
   }, [memberId]);
 
-  const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString('ko-KR', options);
+  // 회원의 출석 기록 가져오기
+  const fetchMemberAttendances = async (member) => {
+    try {
+      // 전체 스케줄 가져오기
+      const schedulesResponse = await scheduleApi.getAll();
+
+      if (schedulesResponse.data) {
+        let memberAttendances = [];
+
+        // 각 팀의 스케줄에서 해당 회원의 출석 정보 찾기
+        Object.entries(schedulesResponse.data).forEach(([teamId, schedules]) => {
+          if (Array.isArray(schedules)) {
+            schedules.forEach(schedule => {
+              if (schedule.attendances && Array.isArray(schedule.attendances)) {
+                const userAttendance = schedule.attendances.find(
+                  att => att.user && att.user.studentId.toString() === member.studentId.toString()
+                );
+
+                if (userAttendance) {
+                  memberAttendances.push({
+                    ...userAttendance,
+                    schedule: {
+                      id: schedule.id,
+                      date: schedule.date,
+                      time: schedule.time,
+                      teamId: parseInt(teamId),
+                      teamName: `팀 ${teamId}`
+                    }
+                  });
+                }
+              }
+            });
+          }
+        });
+
+        // 날짜순 정렬 (최신 순)
+        memberAttendances.sort((a, b) => {
+          return new Date(b.schedule.date) - new Date(a.schedule.date);
+        });
+
+        setAttendances(memberAttendances);
+        calculateStats(memberAttendances);
+      }
+    } catch (error) {
+      console.error('출석 기록 로딩 실패:', error);
+      setNotification({
+        type: 'error',
+        message: '출석 기록을 불러오는데 실패했습니다.'
+      });
+    }
   };
 
-  // 출석 상태 컴포넌트
-  const AttendanceStatus = ({ status }) => {
-    let statusClass = 'status-none';
-    let statusText = '미처리';
+  // 출석 통계 계산
+  const calculateStats = (attendanceData) => {
+    const total = attendanceData.length;
 
-    switch (status) {
-      case 'present':
-        statusClass = 'status-present';
-        statusText = '출석';
-        break;
-      case 'late':
-        statusClass = 'status-late';
-        statusText = '지각';
-        break;
-      case 'absent':
-        statusClass = 'status-absent';
-        statusText = '결석';
-        break;
-      default:
-        break;
+    // 상태 값 통일 (대소문자 구분 없이)
+    const presentCount = attendanceData.filter(a =>
+      a.status === 'PRESENT' || a.status === 'present').length;
+    const lateCount = attendanceData.filter(a =>
+      a.status === 'LATE' || a.status === 'late').length;
+    const absentCount = attendanceData.filter(a =>
+      a.status === 'ABSENT' || a.status === 'absent').length;
+    const noneCount = attendanceData.filter(a =>
+      a.status === 'NOT' || a.status === 'not' || !a.status).length;
+
+    // 출석률 계산 (출석 + 지각) / (전체 - 미처리)
+    // 미처리는 통계에서 제외
+    const effectiveTotal = total - noneCount;
+    const attendanceRate = effectiveTotal > 0
+      ? Math.round(((presentCount + lateCount) / effectiveTotal) * 100)
+      : 0;
+
+    // 평균 평가 점수 계산
+    let totalRating = 0;
+    let ratingCount = 0;
+
+    attendanceData.forEach(attendance => {
+      if (attendance.score && attendance.score > 0) {
+        totalRating += attendance.score;
+        ratingCount++;
+      }
+    });
+
+    const averageRating = ratingCount > 0 ? (totalRating / ratingCount).toFixed(1) : 0;
+
+    setStats({
+      present: presentCount,
+      late: lateCount,
+      absent: absentCount,
+      none: noneCount,
+      total,
+      effectiveTotal, // 미처리를 제외한 유효한 출석 수
+      rate: attendanceRate,
+      averageRating
+    });
+  };
+
+  // 전화번호 포맷팅
+  const formatPhone = (phone) => {
+    if (!phone) return '-';
+    const phoneStr = String(phone);
+
+    if (phoneStr.length === 11) {
+      return `${phoneStr.slice(0, 3)}-${phoneStr.slice(3, 7)}-${phoneStr.slice(7)}`;
     }
 
-    return <span className={`attendance-status ${statusClass}`}>{statusText}</span>;
+    return phoneStr;
   };
 
-  // 출석 통계 지표 계산 함수
-  const formatAttendanceRate = (rate) => {
-    if (rate === undefined || rate === null) return '0%';
-    return `${Math.round(rate)}%`;
+  // 트랙 표시 함수
+  const getTrackDisplay = (track) => {
+    const TRACK_MAPPING = {
+      'EduFront': '교육 프론트엔드',
+      'EduBack': '교육 백엔드',
+      'ProFront': '프로젝트 프론트엔드',
+      'ProBack': '프로젝트 백엔드'
+    };
+
+    return TRACK_MAPPING[track] || track || '-';
   };
 
-  // 평가 별점 표시 컴포넌트
-  const Rating = ({ value }) => {
-    const maxRating = 5;
-    const fullStars = Math.floor(value);
-    const halfStar = value - fullStars >= 0.5;
-    
-    return (
-      <div className="rating">
-        {[...Array(fullStars)].map((_, i) => (
-          <span key={i} className="rating-star">★</span>
-        ))}
-        {halfStar && <span className="rating-star">★</span>}
-        {[...Array(maxRating - fullStars - (halfStar ? 1 : 0))].map((_, i) => (
-          <span key={i + fullStars + (halfStar ? 1 : 0)} className="rating-star" style={{ color: '#ddd' }}>★</span>
-        ))}
-      </div>
-    );
+  // 날짜 포맷팅
+  const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+    return new Date(dateString).toLocaleDateString('ko-KR', options);
   };
 
   if (loading) {
     return <Loading className="loading">로딩 중...</Loading>;
   }
 
-  if (!member) {
+  if (error || !member) {
     return (
       <div className="card" style={{ padding: '30px', textAlign: 'center' }}>
-        <p>부원 정보를 찾을 수 없습니다.</p>
+        <p>{error || '부원 정보를 찾을 수 없습니다.'}</p>
         <button
           className="btn btn-primary"
           style={{ marginTop: '20px' }}
@@ -116,66 +256,84 @@ const MemberDetail = () => {
     );
   }
 
-  // 출석 상태 분포 데이터
-  const pieChartData = [
-    { name: '출석', value: attendanceStats?.totalPresent || 0, color: '#219653' },
-    { name: '지각', value: attendanceStats?.totalLate || 0, color: '#f2994a' },
-    { name: '결석', value: attendanceStats?.totalAbsent || 0, color: '#eb5757' },
-    { name: '미처리', value: attendanceStats?.totalNone || 0, color: '#9e9e9e' }
-  ];
-
-  // 월별 출석률 데이터
-  const monthlyData = attendanceStats?.monthly || [];
-
   return (
     <div>
-      <div className="card-header">
-        <button
-          className="btn btn-secondary"
-          onClick={() => navigate('/members')}
-          style={{ marginRight: '10px' }}
-        >
-          <FaArrowLeft /> 목록으로
-        </button>
-        <h1>{member.name}</h1>
+      <div className="card-header" style={{ marginBottom: '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <button
+            className="btn btn-secondary btn-sm"
+            onClick={() => navigate('/members')}
+            style={{ marginRight: '15px' }}
+          >
+            <FaArrowLeft /> 목록으로
+          </button>
+          <h1>
+            {member.role === 'ADMIN' ? (
+              <FaUserCog style={{ color: '#DF773B', marginRight: '10px' }} />
+            ) : (
+              <FaUser style={{ color: '#373737', marginRight: '10px' }} />
+            )}
+            {member.name}
+          </h1>
+        </div>
       </div>
+
+      {/* 알림 메시지 */}
+      {notification && (
+        <div className={`alert alert-${notification.type}`}>
+          {notification.type === 'success' ? <FaCheckCircle /> : <FaExclamationTriangle />}
+          <span>{notification.message}</span>
+        </div>
+      )}
 
       {/* 기본 정보 카드 */}
       <div className="card" style={{ marginBottom: '20px' }}>
         <div className="card-header">
-          <h2>기본 정보</h2>
-          <button className="btn btn-primary btn-sm">
-            <FaEdit /> 수정
-          </button>
+          <h2 className="card-title">기본 정보</h2>
         </div>
         <div style={{ padding: '15px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
             <div>
-              <p>
-                <strong>이름:</strong> {member.name}
+              <p style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
+                <FaUser style={{ color: '#373737', marginRight: '10px', width: '20px' }} />
+                <strong style={{ width: '80px' }}>이름:</strong>
+                <span>{member.name}</span>
               </p>
-              <p>
-                <strong>학번:</strong> {member.studentId}
+              <p style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
+                <FaUser style={{ color: '#373737', marginRight: '10px', width: '20px' }} />
+                <strong style={{ width: '80px' }}>학번:</strong>
+                <span>{member.studentId}</span>
               </p>
-              <p>
-                <strong>연락처:</strong> {member.phone || '-'}
+              <p style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
+                <FaPhone style={{ color: '#373737', marginRight: '10px', width: '20px' }} />
+                <strong style={{ width: '80px' }}>연락처:</strong>
+                <span>{formatPhone(member.phone)}</span>
               </p>
-              <p>
-                <strong>이메일:</strong> {member.email || '-'}
+              <p style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
+                <FaEnvelope style={{ color: '#373737', marginRight: '10px', width: '20px' }} />
+                <strong style={{ width: '80px' }}>이메일:</strong>
+                <span>{member.email || '-'}</span>
               </p>
-            </div>
-            <div>
-              <p>
-                <strong>가입일:</strong> {formatDate(member.createdAt)}
+              <p style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
+                <FaLaptopCode style={{ color: '#DF773B', marginRight: '10px', width: '20px' }} />
+                <strong style={{ width: '80px' }}>트랙:</strong>
+                <span>{getTrackDisplay(member.track)}</span>
               </p>
-              <p>
-                <strong>소속 팀:</strong> {member.teams?.length || 0}개 팀
-              </p>
-              <p>
-                <strong>참여 스케줄:</strong> {attendanceStats?.totalSchedules || 0}개
-              </p>
-              <p>
-                <strong>평가 평균:</strong> <Rating value={attendanceStats?.averageRating || 0} /> ({attendanceStats?.averageRating?.toFixed(1) || '0.0'})
+              <p style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
+                <FaUserCog style={{ color: member.role === 'ADMIN' ? '#DF773B' : '#373737', marginRight: '10px', width: '20px' }} />
+                <strong style={{ width: '80px' }}>역할:</strong>
+                <span>
+                  <span style={{
+                    display: 'inline-block',
+                    padding: '2px 8px',
+                    backgroundColor: member.role === 'ADMIN' ? '#FEF0E6' : '#F5F5F5',
+                    color: member.role === 'ADMIN' ? '#DF773B' : '#373737',
+                    borderRadius: '4px',
+                    fontSize: '0.9em'
+                  }}>
+                    {member.role === 'ADMIN' ? '운영진' : '아기사자'}
+                  </span>
+                </span>
               </p>
             </div>
           </div>
@@ -185,116 +343,75 @@ const MemberDetail = () => {
       {/* 출석 통계 카드 */}
       <div className="card" style={{ marginBottom: '20px' }}>
         <div className="card-header">
-          <h2>출석 통계</h2>
+          <h2 className="card-title">출석 통계</h2>
         </div>
         <div style={{ padding: '15px' }}>
-          <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))' }}>
+          <div className="stats-grid">
             <div className="stat-card">
               <div className="stat-title">전체 출석률</div>
-              <div className="stat-value">{formatAttendanceRate(attendanceStats?.attendanceRate)}</div>
+              <div className="stat-value" style={{ color: stats.rate >= 80 ? '#219653' : stats.rate >= 60 ? '#f2994a' : '#eb5757' }}>
+                {stats.rate}%
+              </div>
               <div className="stat-change">
-                총 {attendanceStats?.totalSchedules || 0}개 스케줄
+                유효 {stats.effectiveTotal}개 중 {stats.present + stats.late}개
               </div>
             </div>
-            
+
             <div className="stat-card">
               <div className="stat-title">출석</div>
-              <div className="stat-value">{attendanceStats?.totalPresent || 0}</div>
+              <div className="stat-value" style={{ color: '#219653' }}>{stats.present}회</div>
               <div className="stat-change">
-                {formatAttendanceRate(attendanceStats?.presentRate)}
+                {stats.total > 0 ? Math.round((stats.present / stats.total) * 100) : 0}%
               </div>
             </div>
-            
+
             <div className="stat-card">
               <div className="stat-title">지각</div>
-              <div className="stat-value">{attendanceStats?.totalLate || 0}</div>
+              <div className="stat-value" style={{ color: '#f2994a' }}>{stats.late}회</div>
               <div className="stat-change">
-                {formatAttendanceRate(attendanceStats?.lateRate)}
+                {stats.total > 0 ? Math.round((stats.late / stats.total) * 100) : 0}%
               </div>
             </div>
-            
+
             <div className="stat-card">
               <div className="stat-title">결석</div>
-              <div className="stat-value">{attendanceStats?.totalAbsent || 0}</div>
+              <div className="stat-value" style={{ color: '#eb5757' }}>{stats.absent}회</div>
               <div className="stat-change">
-                {formatAttendanceRate(attendanceStats?.absentRate)}
+                {stats.total > 0 ? Math.round((stats.absent / stats.total) * 100) : 0}%
               </div>
             </div>
-            
+
+            <div className="stat-card">
+              <div className="stat-title">미처리</div>
+              <div className="stat-value" style={{ color: '#bdbdbd' }}>{stats.none}회</div>
+              <div className="stat-change">
+                {stats.total > 0 ? Math.round((stats.none / stats.total) * 100) : 0}%
+              </div>
+            </div>
+
             <div className="stat-card">
               <div className="stat-title">평가 평균</div>
-              <div className="stat-value">{attendanceStats?.averageRating?.toFixed(1) || '0.0'}</div>
+              <div className="stat-value">{stats.averageRating}</div>
               <div className="stat-change">
-                <Rating value={attendanceStats?.averageRating || 0} />
-              </div>
-            </div>
-          </div>
-
-          {/* 차트 섹션 */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '30px' }}>
-            {/* 출석 상태 분포 파이 차트 */}
-            <div>
-              <h3 style={{ marginBottom: '15px', textAlign: 'center' }}>출석 상태 분포</h3>
-              <div style={{ width: '100%', height: 250 }}>
-                <ResponsiveContainer>
-                  <PieChart>
-                    <Pie
-                      data={pieChartData}
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={80}
-                      fill="#8884d8"
-                      labelLine={true}
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    >
-                      {pieChartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value) => `${value}회`} />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            {/* 월별 출석률 막대 차트 */}
-            <div>
-              <h3 style={{ marginBottom: '15px', textAlign: 'center' }}>월별 출석률</h3>
-              <div style={{ width: '100%', height: 250 }}>
-                <ResponsiveContainer>
-                  <BarChart
-                    data={monthlyData}
-                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis domain={[0, 100]} />
-                    <Tooltip formatter={(value) => `${value}%`} />
-                    <Legend />
-                    <Bar dataKey="rate" name="출석률" fill="#3498db" />
-                  </BarChart>
-                </ResponsiveContainer>
+                <RatingStars rating={Number(stats.averageRating)} />
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 최근 출석 기록 카드 */}
+      {/* 출석 기록 카드 */}
       <div className="card">
         <div className="card-header">
-          <h2>최근 출석 기록</h2>
+          <h2 className="card-title">출석 기록</h2>
         </div>
-        {recentAttendances.length > 0 ? (
-          <div className="table-container">
+        <div className="table-container" style={{ maxHeight: '500px', overflowY: 'auto' }}>
+          {attendances.length > 0 ? (
             <table>
               <thead>
                 <tr>
                   <th>날짜</th>
-                  <th>스케줄</th>
+                  <th>시간</th>
                   <th>팀</th>
                   <th>출석 상태</th>
                   <th>평가</th>
@@ -302,36 +419,28 @@ const MemberDetail = () => {
                 </tr>
               </thead>
               <tbody>
-                {recentAttendances.map((attendance) => (
+                {attendances.map((attendance) => (
                   <tr key={attendance.id}>
-                    <td>{formatDate(attendance.schedule?.date)}</td>
+                    <td>{formatDate(attendance.schedule.date)}</td>
+                    <td>{attendance.schedule.time}</td>
                     <td>
-                      <Link to={`/schedules/${attendance.scheduleId}`}>
-                        {attendance.schedule?.title}
+                      <Link to={`/teams/${attendance.schedule.teamId}`}>
+                        {attendance.schedule.teamName}
                       </Link>
                     </td>
-                    <td>
-                      <Link to={`/teams/${attendance.schedule?.teamId}`}>
-                        {attendance.schedule?.teamName}
-                      </Link>
-                    </td>
-                    <td>
-                      <AttendanceStatus status={attendance.status} />
-                    </td>
-                    <td>
-                      <Rating value={attendance.rating || 0} />
-                    </td>
+                    <td><AttendanceStatus status={attendance.status} /></td>
+                    <td><RatingStars rating={attendance.score || 0} /></td>
                     <td>{attendance.note || '-'}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
-        ) : (
-          <p style={{ padding: '20px', textAlign: 'center' }}>
-            출석 기록이 없습니다.
-          </p>
-        )}
+          ) : (
+            <div style={{ padding: '30px', textAlign: 'center' }}>
+              <p>출석 기록이 없습니다.</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

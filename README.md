@@ -201,7 +201,9 @@
 
 #### 부원 관리
 
-<img src="./READMEImgs/mem1.png" width="600px" alt="부원 목록"/>
+<img src="./READMEImgs/mem1.png" width="600px" alt="부원 목록1"/>
+<img src="./READMEImgs/mem2.png" width="600px" alt="부원 목록2"/>
+<img src="./READMEImgs/mem3.png" width="600px" alt="부원 목록3"/>
 
 #### 팀 관리
 
@@ -339,6 +341,11 @@
       <td><b>v1.3.6</b></td>
       <td>2025.04.14</td>
       <td>정보 수정 트랙 문제 수정, 로그인 푸터 추가</td>
+    </tr>
+    <tr>
+      <td><b>v1.3.7</b></td>
+      <td>2025.04.15</td>
+      <td>회원가입 전화번호 포맷 설정, 스케줄 생성일 삭제, 출석 통계에서 부원 계산 수정, 출석 통계에 '미처리' 추가(미처리는 출석률에 영향 X), 출석 현황 테이블 세로 크기 조정, 부원 관리에서 부원별 세부 정보 확인 가능(기본 정보, 출석률, 평가 등)</td>
     </tr>
   </table>
 </div>
